@@ -25,8 +25,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 	// 4. Shutdown and cleanup the app before exiting
 	app->Shutdown();
 
-	std::cin.get();
-
 
 #ifdef _DEBUG
 	DestroyConsole();

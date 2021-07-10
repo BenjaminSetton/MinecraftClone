@@ -13,14 +13,14 @@ public:
 		DECISECONDS,
 		CENTISECONDS,
 		MILLISECONDS,
-		MICROSECONDS,
-		NANOSECONDS
+		MICROSECONDS = 6,
+		NANOSECONDS = 9
 	};
 
 	// Delete constructor, destructor and copy constructor for static clock class
-	Clock() = delete;
-	~Clock() = delete;
-	Clock(const Clock&) = delete;
+	Clock();
+	~Clock();
+	Clock(const Clock&);
 
 	static void Initialize();
 

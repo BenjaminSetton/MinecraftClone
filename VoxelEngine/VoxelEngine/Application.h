@@ -1,14 +1,19 @@
 #ifndef _APPLICATION_H
 #define _APPLICATION_H
 
+///////////////////////////////
+// PRE-PROCESSING DIRECTIVES //
+///////////////////////////////
+#define WIN32_LEAN_AND_MEAN
+
 ////////////////////////
 ///	INCLUDES
 ////////////////////////
 #include <windows.h>
 
+#include "Input.h"
 #include "Graphics.h"
 #include "Clock.h"
-#include "Input.h"
 
 class Application
 {
@@ -24,9 +29,16 @@ public:
 
 	void Shutdown();
 
+	LRESULT CALLBACK MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam);
+
 private:
 
 	bool Frame();
+
+	void InitializeWindows(int& screenWidth, int& screenHeight);
+
+	void ShutdownWindows();
+
 
 
 	LPCWSTR m_applicationName;
@@ -37,5 +49,8 @@ private:
 	Graphics* m_Graphics;
 	Clock* m_Clock;
 };
+
+// Static application handle pointer
+static Application* ApplicationHandle = nullptr;
 
 #endif
