@@ -1,7 +1,10 @@
 #ifndef _GRAPHICS_H
 #define _GRAPHICS_H
 
-// TODO: Include CAMERA_CLASS, D3D_CLASS, and other necessary classes used for rendering
+// TODO: Include CAMERA_CLASS, SHADERS, and other necessary classes used for rendering
+#include "D3D.h"
+
+// idk why it makes me include this here..again
 #include <windows.h>
 
 /////////////
@@ -26,6 +29,8 @@ public:
 	bool Frame(const float& deltaTime);
 
 private:
+
+	D3D* m_D3D;
 
 };
 

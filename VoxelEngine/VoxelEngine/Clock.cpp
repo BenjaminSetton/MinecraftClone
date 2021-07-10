@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "Clock.h"
 
 // Initialize the static Clock member variables

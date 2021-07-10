@@ -1,7 +1,20 @@
+#include "pch.h"
+
 #include "Graphics.h"
 
-Graphics::Graphics(){}
-Graphics::~Graphics(){}
+Graphics::Graphics()
+{
+	m_D3D = nullptr;
+}
+Graphics::~Graphics()
+{
+	if (m_D3D) 
+	{
+		m_D3D->Shutdown();
+		delete m_D3D;
+		m_D3D = nullptr;
+	}
+}
 Graphics::Graphics(const Graphics&){}
 
 bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND windowHandle)

@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "Input.h"
 
 std::bitset<256> Input::m_keys = std::bitset<256>(false);

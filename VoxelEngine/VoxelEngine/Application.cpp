@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "Application.h"
 
 // Windows procedure
@@ -215,7 +217,9 @@ LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam
 	case WM_KEYDOWN:
 	{
 		// If a key is pressed send it to the input object so it can record that state.
-		m_Input->KeyDown((unsigned int)wparam);
+		m_Input->KeyDown(static_cast<unsigned int>(wparam));
+
+		std::cout << (char)wparam << " was pressed\n";
 		return 0;
 	}
 
@@ -223,7 +227,9 @@ LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam
 	case WM_KEYUP:
 	{
 		// If a key is released then send it to the input object so it can unset the state for that key.
-		m_Input->KeyUp((unsigned int)wparam);
+		m_Input->KeyUp(static_cast<unsigned int>(wparam));
+
+		std::cout << (char)wparam << " was released\n";
 		return 0;
 	}
 
