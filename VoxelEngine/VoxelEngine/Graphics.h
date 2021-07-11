@@ -20,8 +20,8 @@ class Graphics
 public:
 
 	Graphics();
-	~Graphics();
 	Graphics(const Graphics&);
+	~Graphics();
 
 	bool Initialize(const int& screenWidth, const int& screenHeight, HWND windowHandle);
 	void Shutdown();

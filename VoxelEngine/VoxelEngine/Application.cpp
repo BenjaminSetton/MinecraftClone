@@ -29,9 +29,39 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
 	}
 }
 
-Application::Application(){}
-Application::~Application(){}
+Application::Application()
+{
+	m_Input = nullptr;
+	m_Graphics = nullptr;
+	m_Clock = nullptr;
+
+}
 Application::Application(const Application&){}
+
+Application::~Application()
+{
+	// Clean up in reverse order of object initialization
+
+	if (m_Clock)
+	{
+		delete m_Clock;
+		m_Clock = nullptr;
+	}
+
+	if (m_Graphics)
+	{
+		// Shutdown the graphics class before deleting
+		m_Graphics->Shutdown();
+		delete m_Graphics;
+		m_Graphics = nullptr;
+	}
+
+	if(m_Input)
+	{
+		delete m_Input;
+		m_Input = nullptr;
+	}
+}
 
 bool Application::Initialize() 
 {
@@ -115,18 +145,16 @@ void Application::Shutdown()
 
 bool Application::Frame() 
 {
-	float dt;
-
-	// Signal the clock every frame to obtain deltaTime
-	m_Clock->Signal();
-
-	// Store the frame's delta time in dt
-	dt = m_Clock->GetDeltaTime(Clock::TimePrecision::MILLISECONDS);
-
 	// Quit running if ESC is pressed
 	if (m_Input->IsKeyDown(VK_ESCAPE)) return false;
 
+	// Signal the clock every frame to obtain deltaTime
+	m_Clock->Signal();
+	// Store the frame's delta time in dt
+	float dt = m_Clock->GetDeltaTime(Clock::TimePrecision::MILLISECONDS);
 
+	// Process each frame in the graphics class
+	m_Graphics->Frame(dt);
 
 	return true;
 }
@@ -142,7 +170,7 @@ void Application::InitializeWindows(int& screenWidth, int& screenHeight)
 	m_hinstance = GetModuleHandle(NULL);
 
 	// Give the application a name.
-	m_applicationName = L"Minecraft Clone";
+	m_applicationName = L"Voxel Engine";
 
 	// Setup the windows class with default settings.
 	WNDCLASSEX wc;
@@ -218,8 +246,6 @@ LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam
 	{
 		// If a key is pressed send it to the input object so it can record that state.
 		m_Input->KeyDown(static_cast<unsigned int>(wparam));
-
-		std::cout << (char)wparam << " was pressed\n";
 		return 0;
 	}
 
@@ -228,8 +254,6 @@ LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam
 	{
 		// If a key is released then send it to the input object so it can unset the state for that key.
 		m_Input->KeyUp(static_cast<unsigned int>(wparam));
-
-		std::cout << (char)wparam << " was released\n";
 		return 0;
 	}
 

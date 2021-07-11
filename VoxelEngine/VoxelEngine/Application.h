@@ -20,8 +20,8 @@ class Application
 public:
 
 	Application();
-	~Application();
 	Application(const Application&);
+	~Application();
 
 	bool Initialize();
 
@@ -38,7 +38,6 @@ private:
 	void InitializeWindows(int& screenWidth, int& screenHeight);
 
 	void ShutdownWindows();
-
 
 
 	LPCWSTR m_applicationName;
