@@ -39,7 +39,7 @@ void Graphics::Shutdown()
 
 bool Graphics::Frame(const float& deltaTime)
 {
-	m_D3D->BeginScene(XMFLOAT4(1.0f, 0, 0, 1.0f));
+	m_D3D->BeginScene(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
 
 	// Render models, calculate shadows, render UI, etc
 

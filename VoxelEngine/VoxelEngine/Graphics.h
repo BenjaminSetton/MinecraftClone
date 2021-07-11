@@ -10,8 +10,8 @@
 /////////////
 // GLOBALS
 /////////////
-const bool FULL_SCREEN = false;
-const bool VSYNC_ENABLED = true;
+const bool FULL_SCREEN = true;
+const bool VSYNC_ENABLED = false;
 const float SCREEN_FAR = 1000.0f;
 const float SCREEN_NEAR = 0.1f;
 
@@ -19,11 +19,13 @@ class Graphics
 {
 public:
 
+	// Graphics class rule of 3
 	Graphics();
 	Graphics(const Graphics&);
 	~Graphics();
 
 	bool Initialize(const int& screenWidth, const int& screenHeight, HWND windowHandle);
+
 	void Shutdown();
 
 	bool Frame(const float& deltaTime);
