@@ -3,6 +3,7 @@
 
 // TODO: Include CAMERA_CLASS, SHADERS, and other necessary classes used for rendering
 #include "D3D.h"
+#include "Camera.h"
 
 // idk why it makes me include this here..again
 #include <windows.h>
@@ -33,6 +34,7 @@ public:
 private:
 
 	D3D* m_D3D;
+	Camera* m_debugCam;
 
 };
 
