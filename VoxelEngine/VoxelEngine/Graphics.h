@@ -4,6 +4,7 @@
 // TODO: Include CAMERA_CLASS, SHADERS, and other necessary classes used for rendering
 #include "D3D.h"
 #include "Camera.h"
+#include "DefaultBlockShader.h"
 
 // idk why it makes me include this here..again
 #include <windows.h>
@@ -11,7 +12,7 @@
 /////////////
 // GLOBALS
 /////////////
-const bool FULL_SCREEN = true;
+const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = false;
 const float SCREEN_FAR = 1000.0f;
 const float SCREEN_NEAR = 0.1f;
@@ -35,7 +36,7 @@ private:
 
 	D3D* m_D3D;
 	Camera* m_debugCam;
-
+	DefaultBlockShader* m_shader;
 };
 
 #endif

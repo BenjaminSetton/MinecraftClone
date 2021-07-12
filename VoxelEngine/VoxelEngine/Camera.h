@@ -11,7 +11,7 @@ public:
 	~Camera();
 	Camera(const Camera& camera);
 
-	void Render();
+	void ConstructMatrix();
 
 	DirectX::XMFLOAT3 GetPosition();
 	void SetPosition(const DirectX::XMFLOAT3 pos);

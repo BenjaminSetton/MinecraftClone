@@ -2,7 +2,7 @@
 
 #include "D3D.h"
 
-
+using namespace DirectX;
 
 D3D::D3D(){}
 D3D::D3D(const D3D&){}
@@ -277,7 +277,7 @@ bool D3D::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd,
 	if (FAILED(result)) { return false; }
 
 	// Now set the default rasterizer state.
-	m_deviceContext->RSSetState(m_defaultRasterState);
+	m_deviceContext->RSSetState(m_wireframeRasterState);
 
 
 	// Setup the viewport for rendering.
@@ -403,7 +403,7 @@ void D3D::Shutdown()
 	}
 }
 
-void D3D::BeginScene(DirectX::XMFLOAT4 clearToColor)
+void D3D::BeginScene(XMFLOAT4 clearToColor)
 {
 	float color[4] = { clearToColor.x, clearToColor.y, clearToColor.z, clearToColor.w };
 
@@ -433,9 +433,9 @@ ID3D11Device* D3D::GetDevice() { return m_device; }
 
 ID3D11DeviceContext* D3D::GetDeviceContext() { return m_deviceContext; }
 
-void D3D::GetWorldMatrix(DirectX::XMMATRIX& out_Matrix) { out_Matrix = m_worldMatrix; }
-void D3D::GetProjectionMatrix(DirectX::XMMATRIX& out_Matrix) { out_Matrix = m_projectionMatrix; }
-void D3D::GetOrthoMatrix(DirectX::XMMATRIX& out_Matrix) { out_Matrix = m_orthoMatrix; }
+const XMMATRIX D3D::GetWorldMatrix() { return m_worldMatrix; }
+const XMMATRIX D3D::GetProjectionMatrix() { return m_projectionMatrix; }
+const XMMATRIX D3D::GetOrthoMatrix() { return m_orthoMatrix; }
 
 void D3D::GetVideoCardInfo(char* videoCardDescription, int& videoCardMemory)
 {

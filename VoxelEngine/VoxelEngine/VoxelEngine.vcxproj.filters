@@ -16,15 +16,18 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{203fe98d-cb48-45ac-b839-253b009f0d37}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Debug Classes">
+      <UniqueIdentifier>{c52d5a52-6491-46c9-b43e-6941c23725b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Misc">
+      <UniqueIdentifier>{11e23bc2-916c-4a87-8b14-eecb96dc86c2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Application.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Input.cpp">
@@ -39,21 +42,24 @@
     <ClCompile Include="D3D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Block.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ScopeTimer.cpp">
+      <Filter>Debug Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="DefaultBlockShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Input.h">
@@ -68,13 +74,19 @@
     <ClInclude Include="D3D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="pch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Block.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ScopeTimer.h">
+      <Filter>Debug Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="DefaultBlockShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

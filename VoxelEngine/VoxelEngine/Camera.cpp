@@ -16,7 +16,7 @@ Camera::Camera()
 Camera::~Camera(){}
 Camera::Camera(const Camera& camera){}
 
-void Camera::Render()
+void Camera::ConstructMatrix()
 {
 	XMVECTOR up, position, lookAt;
 	float yaw, pitch, roll;

@@ -150,8 +150,10 @@ bool Application::Frame()
 
 	// Signal the clock every frame to obtain deltaTime
 	m_Clock->Signal();
+
 	// Store the frame's delta time in dt
-	float dt = m_Clock->GetDeltaTime(Clock::TimePrecision::MILLISECONDS);
+	float dt = m_Clock->GetDeltaTime(Clock::TimePrecision::SECONDS);
+	
 
 	// Process each frame in the graphics class
 	m_Graphics->Frame(dt);

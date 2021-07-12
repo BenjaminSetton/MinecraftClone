@@ -1,7 +1,6 @@
 #include "pch.h"
 
 #include "Application.h"
-#include <iostream>
 
 void CreateConsole();
 void DestroyConsole();

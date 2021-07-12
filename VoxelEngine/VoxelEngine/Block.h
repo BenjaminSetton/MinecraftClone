@@ -1,7 +1,7 @@
 #ifndef _BLOCK_H
 #define _BLOCK_H
 
-#include<DirectXMath.h>
+#include <DirectXMath.h>
 
 // NOTE: This is not the most efficient way to store vertices for voxel worlds, since most verts will
 //		 be exactly on top of other verts. The origin is at { 0.0f, 0.0f, 0.0f }
@@ -26,6 +26,7 @@ static unsigned int indicies[36] =
 	1, 5, 2, 5, 6, 2, // right face
 	3, 2, 7, 2, 6, 7, // bottom face
 	0, 1, 3, 1, 2, 3, // back face
+	0, 4, 5, 0, 5, 1, // top face
 };
 
 enum class BlockType 
