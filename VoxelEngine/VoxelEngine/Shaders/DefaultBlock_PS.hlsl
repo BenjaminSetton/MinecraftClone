@@ -22,7 +22,7 @@ float4 main(VertexOut input) : SV_TARGET
     float4 color = ambientLight;
     
     // Sample the block texture
-    float4 diffuse = { 0.0f, 0.6f, 0.0f, 1.0f }; //= blockTexture.Sample(samp, input.uv);
+    float4 diffuse = blockTexture.Sample(samp, input.uv);
     
     float4 lightIntensity = saturate(dot(normalize(-lightDir), input.norm));
     

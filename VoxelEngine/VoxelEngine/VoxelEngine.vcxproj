@@ -89,7 +89,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>../Misc/pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -107,7 +107,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>../Misc/pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -147,32 +147,39 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Application.cpp" />
-    <ClCompile Include="Block.cpp" />
-    <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="Clock.cpp" />
-    <ClCompile Include="D3D.cpp" />
-    <ClCompile Include="DefaultBlockShader.cpp" />
-    <ClCompile Include="Graphics.cpp" />
-    <ClCompile Include="Input.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="pch.cpp">
+    <ClCompile Include="Core\Application.cpp" />
+    <ClCompile Include="Core\Block.cpp" />
+    <ClCompile Include="Core\Camera.cpp" />
+    <ClCompile Include="Core\D3D.cpp" />
+    <ClCompile Include="Core\DefaultBlockShader.cpp" />
+    <ClCompile Include="Core\Graphics.cpp" />
+    <ClCompile Include="Core\main.cpp" />
+    <ClCompile Include="Core\TextureManager.cpp" />
+    <ClCompile Include="Misc\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="ScopeTimer.cpp" />
+    <ClCompile Include="Utility\Clock.cpp" />
+    <ClCompile Include="Utility\Input.cpp" />
+    <ClCompile Include="Utility\ScopeTimer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Application.h" />
-    <ClInclude Include="Block.h" />
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="Clock.h" />
-    <ClInclude Include="D3D.h" />
-    <ClInclude Include="DefaultBlockShader.h" />
-    <ClInclude Include="Graphics.h" />
-    <ClInclude Include="Input.h" />
-    <ClInclude Include="pch.h" />
-    <ClInclude Include="ScopeTimer.h" />
+    <ClInclude Include="Core\Application.h" />
+    <ClInclude Include="Core\Block.h" />
+    <ClInclude Include="Core\Camera.h" />
+    <ClInclude Include="Core\D3D.h" />
+    <ClInclude Include="Core\DefaultBlockShader.h" />
+    <ClInclude Include="Core\Graphics.h" />
+    <ClInclude Include="Core\TextureManager.h" />
+    <ClInclude Include="Misc\pch.h" />
+    <ClInclude Include="Utility\Clock.h" />
+    <ClInclude Include="Utility\DDSTextureLoader.h" />
+    <ClInclude Include="Utility\Input.h" />
+    <ClInclude Include="Utility\ScopeTimer.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\DefaultBlock_PS.hlsl">
@@ -191,6 +198,11 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DirectXTK-jan2021\DirectXTK-jan2021\DirectXTK_Desktop_2019.vcxproj">
+      <Project>{e0b52ae7-e160-4d32-bf3f-910b785e5a8e}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

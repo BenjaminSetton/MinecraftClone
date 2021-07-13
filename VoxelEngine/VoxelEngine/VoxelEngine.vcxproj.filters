@@ -16,78 +16,90 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{203fe98d-cb48-45ac-b839-253b009f0d37}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Debug Classes">
-      <UniqueIdentifier>{c52d5a52-6491-46c9-b43e-6941c23725b5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Misc">
       <UniqueIdentifier>{11e23bc2-916c-4a87-8b14-eecb96dc86c2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utility">
+      <UniqueIdentifier>{c52d5a52-6491-46c9-b43e-6941c23725b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{39835100-cff8-4b44-b952-43fa05ba4d3b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Utility\Clock.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Application.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Utility\Input.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Input.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Utility\ScopeTimer.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Graphics.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Core\Application.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="Clock.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Core\Block.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="D3D.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Core\Camera.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Core\D3D.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="Block.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Core\DefaultBlockShader.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="ScopeTimer.cpp">
-      <Filter>Debug Classes</Filter>
+    <ClCompile Include="Core\Graphics.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="pch.cpp">
+    <ClCompile Include="Core\main.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Misc\pch.cpp">
       <Filter>Misc</Filter>
     </ClCompile>
-    <ClCompile Include="DefaultBlockShader.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Core\TextureManager.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Application.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Utility\Clock.h">
+      <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Input.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Utility\Input.h">
+      <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Graphics.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Utility\ScopeTimer.h">
+      <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Clock.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Core\Application.h">
+      <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="D3D.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Core\Block.h">
+      <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="Block.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Core\Camera.h">
+      <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Core\D3D.h">
+      <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="ScopeTimer.h">
-      <Filter>Debug Classes</Filter>
+    <ClInclude Include="Core\DefaultBlockShader.h">
+      <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="pch.h">
+    <ClInclude Include="Core\Graphics.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Misc\pch.h">
       <Filter>Misc</Filter>
     </ClInclude>
-    <ClInclude Include="DefaultBlockShader.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Utility\DDSTextureLoader.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\TextureManager.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
