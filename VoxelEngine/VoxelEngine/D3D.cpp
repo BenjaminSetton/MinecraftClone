@@ -277,7 +277,7 @@ bool D3D::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd,
 	if (FAILED(result)) { return false; }
 
 	// Now set the default rasterizer state.
-	m_deviceContext->RSSetState(m_wireframeRasterState);
+	m_deviceContext->RSSetState(m_defaultRasterState);
 
 
 	// Setup the viewport for rendering.

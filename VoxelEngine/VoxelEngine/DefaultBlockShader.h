@@ -13,7 +13,7 @@ public:
 	void CreateObjects(ID3D11Device* device, const WCHAR* vsFilename, const WCHAR* psFilename);
 
 	void Render(ID3D11DeviceContext* context, unsigned int indexCount, DirectX::XMMATRIX WM, 
-		DirectX::XMMATRIX VM, DirectX::XMMATRIX PM);
+		DirectX::XMMATRIX VM, DirectX::XMMATRIX PM, DirectX::XMFLOAT3 lightDir, DirectX::XMFLOAT4 lightCol);
 
 	void Shutdown();
 
@@ -27,12 +27,15 @@ private:
 		DirectX::XMMATRIX projectionMatrix;
 	};
 
-	struct BlockVertex
+	struct LightBuffer
 	{
-		DirectX::XMFLOAT3 pos;
+		DirectX::XMFLOAT3 lightDir;
+		DirectX::XMFLOAT4 lightCol;
+		float padding;
 	};
 
-	void SetShaderParameters(ID3D11DeviceContext* context, DirectX::XMMATRIX WM, DirectX::XMMATRIX VM, DirectX::XMMATRIX PM);
+	void SetShaderParameters(ID3D11DeviceContext* context, DirectX::XMMATRIX WM, DirectX::XMMATRIX VM, 
+		DirectX::XMMATRIX PM, DirectX::XMFLOAT3 lightDir, DirectX::XMFLOAT4 lightCol);
 
 	void CreateD3DObjects(ID3D11Device* device);
 
@@ -44,6 +47,8 @@ private:
 	ID3D11PixelShader* m_pixelShader;
 
 	ID3D11Buffer* m_matrixBuffer;
+	ID3D11Buffer* m_lightBuffer;
+
 	ID3D11Buffer* m_vertexBuffer;
 	ID3D11Buffer* m_indexBuffer;
 

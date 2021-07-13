@@ -67,7 +67,8 @@ bool Graphics::Frame(const float& deltaTime)
 	m_debugCam->ConstructMatrix();
 
 	// Render models, calculate shadows, render UI, etc
-	m_shader->Render(m_D3D->GetDeviceContext(), 36, m_D3D->GetWorldMatrix(), m_debugCam->GetViewMatrix(), m_D3D->GetProjectionMatrix());
+	m_shader->Render(m_D3D->GetDeviceContext(), 36, m_D3D->GetWorldMatrix(), m_debugCam->GetViewMatrix(), 
+		m_D3D->GetProjectionMatrix(), { 1.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
 
 	// End the scene and present the swap chain
 	m_D3D->EndScene();

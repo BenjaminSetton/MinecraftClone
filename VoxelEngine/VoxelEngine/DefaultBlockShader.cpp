@@ -15,10 +15,10 @@ void DefaultBlockShader::CreateObjects(ID3D11Device* device, const WCHAR* vsFile
 }
 
 void DefaultBlockShader::Render(ID3D11DeviceContext* context, unsigned int indexCount,
-	XMMATRIX WM, XMMATRIX VM, XMMATRIX PM)
+	XMMATRIX WM, XMMATRIX VM, XMMATRIX PM, XMFLOAT3 lightDir, XMFLOAT4 lightCol)
 {
 	// Set the shader parameters
-	SetShaderParameters(context, WM, VM, PM);
+	SetShaderParameters(context, WM, VM, PM, lightDir, lightCol);
 
 	// Render the model
 	context->DrawIndexed(36, 0, 0);
@@ -31,6 +31,13 @@ void DefaultBlockShader::Shutdown()
 	{
 		m_sampler->Release();
 		m_sampler = nullptr;
+	}
+
+	// Release the matrix constant buffer.
+	if (m_lightBuffer)
+	{
+		m_lightBuffer->Release();
+		m_lightBuffer = nullptr;
 	}
 
 	// Release the matrix constant buffer.
@@ -77,7 +84,8 @@ void DefaultBlockShader::Shutdown()
 void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 {
 	HRESULT hr;
-	D3D11_BUFFER_DESC matrixDesc;
+	D3D11_BUFFER_DESC matrixBufferDesc;
+	D3D11_BUFFER_DESC lightBufferDesc;
 	D3D11_BUFFER_DESC vertexBufferDesc;
 	D3D11_BUFFER_DESC indexBufferDesc;
 	D3D11_SUBRESOURCE_DATA vertexBufferData;
@@ -85,15 +93,27 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 	D3D11_SAMPLER_DESC samplerDesc;
 
 	// Setup the description of the matrix dynamic constant buffer that is in the vertex shader.
-	matrixDesc.Usage = D3D11_USAGE_DYNAMIC;
-	matrixDesc.ByteWidth = sizeof(MatrixBuffer);
-	matrixDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	matrixDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	matrixDesc.MiscFlags = 0;
-	matrixDesc.StructureByteStride = 0;
+	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	matrixBufferDesc.ByteWidth = sizeof(MatrixBuffer);
+	matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	matrixBufferDesc.MiscFlags = 0;
+	matrixBufferDesc.StructureByteStride = 0;
 
 	// Create the matrix constant buffer pointer so we can access the vertex shader constant buffer from within this class.
-	hr = device->CreateBuffer(&matrixDesc, NULL, &m_matrixBuffer);
+	hr = device->CreateBuffer(&matrixBufferDesc, NULL, &m_matrixBuffer);
+	assert(!FAILED(hr));
+
+	// Setup the description of the light dynamic constant buffer that is in the pixel shader.
+	lightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	lightBufferDesc.ByteWidth = sizeof(LightBuffer);
+	lightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	lightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	lightBufferDesc.MiscFlags = 0;
+	lightBufferDesc.StructureByteStride = 0;
+
+	// Create the matrix constant buffer pointer so we can access the vertex shader constant buffer from within this class.
+	hr = device->CreateBuffer(&lightBufferDesc, NULL, &m_lightBuffer);
 	assert(!FAILED(hr));
 
 	// Create a texture sampler state description.
@@ -120,7 +140,7 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 
 	// Set up the description of the static vertex buffer.
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.ByteWidth = sizeof(BlockVertex) * 8;
+	vertexBufferDesc.ByteWidth = sizeof(BlockVertex) * 24;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.MiscFlags = 0;
@@ -159,7 +179,7 @@ void DefaultBlockShader::CreateShaders(ID3D11Device* device, const WCHAR* vsFile
 	HRESULT hr;
 	ID3D10Blob* VSBlob;
 	ID3D10Blob* PSBlob;
-	D3D11_INPUT_ELEMENT_DESC inputElementDesc;
+	D3D11_INPUT_ELEMENT_DESC inputElementDesc[3];
 
 	// Compile the vertex shader
 	hr = D3DCompileFromFile(vsFilename, nullptr, nullptr, "main", "vs_5_0",
@@ -178,16 +198,32 @@ void DefaultBlockShader::CreateShaders(ID3D11Device* device, const WCHAR* vsFile
 	assert(!FAILED(hr));
 
 	// Create the input element description
-	inputElementDesc.SemanticName = "POSITION";
-	inputElementDesc.SemanticIndex = 0;
-	inputElementDesc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	inputElementDesc.InputSlot = 0;
-	inputElementDesc.AlignedByteOffset = 0;
-	inputElementDesc.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-	inputElementDesc.InstanceDataStepRate = 0;
+	inputElementDesc[0].SemanticName = "POSITION";
+	inputElementDesc[0].SemanticIndex = 0;
+	inputElementDesc[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	inputElementDesc[0].InputSlot = 0;
+	inputElementDesc[0].AlignedByteOffset = 0;
+	inputElementDesc[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+	inputElementDesc[0].InstanceDataStepRate = 0;
+
+	inputElementDesc[1].SemanticName = "NORMAL";
+	inputElementDesc[1].SemanticIndex = 0;
+	inputElementDesc[1].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	inputElementDesc[1].InputSlot = 0;
+	inputElementDesc[1].AlignedByteOffset = 0;
+	inputElementDesc[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+	inputElementDesc[1].InstanceDataStepRate = 0;
+
+	inputElementDesc[2].SemanticName = "TEXCOORD";
+	inputElementDesc[2].SemanticIndex = 0;
+	inputElementDesc[2].Format = DXGI_FORMAT_R32G32_FLOAT;
+	inputElementDesc[2].InputSlot = 0;
+	inputElementDesc[2].AlignedByteOffset = 0;
+	inputElementDesc[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+	inputElementDesc[2].InstanceDataStepRate = 0;
 
 	// Create the vertex input layout.
-	hr = device->CreateInputLayout(&inputElementDesc, 1, VSBlob->GetBufferPointer(),
+	hr = device->CreateInputLayout(inputElementDesc, 3, VSBlob->GetBufferPointer(),
 		VSBlob->GetBufferSize(), &m_inputLayout);
 	assert(!FAILED(hr));
 
@@ -199,11 +235,13 @@ void DefaultBlockShader::CreateShaders(ID3D11Device* device, const WCHAR* vsFile
 }
 
 
-void DefaultBlockShader::SetShaderParameters(ID3D11DeviceContext* context, DirectX::XMMATRIX WM, DirectX::XMMATRIX VM, DirectX::XMMATRIX PM)
+void DefaultBlockShader::SetShaderParameters(ID3D11DeviceContext* context, XMMATRIX WM, XMMATRIX VM, 
+	XMMATRIX PM, XMFLOAT3 lightDir, XMFLOAT4 lightCol)
 {
 	HRESULT hr;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	MatrixBuffer* bufferPtr;
+	MatrixBuffer* matrixBufferPtr;
+	LightBuffer* lightBufferPtr; 
 	unsigned int stride = sizeof(BlockVertex);
 	unsigned int offset = 0;
 
@@ -212,23 +250,36 @@ void DefaultBlockShader::SetShaderParameters(ID3D11DeviceContext* context, Direc
 	VM = XMMatrixTranspose(VM);
 	PM = XMMatrixTranspose(PM);
 
+
 	// Lock the matrix constant buffer so it can be written to.
 	hr = context->Map(m_matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	assert(!FAILED(hr));
-
 	// Get a pointer to the data in the constant buffer.
-	bufferPtr = (MatrixBuffer*)mappedResource.pData;
-
+	matrixBufferPtr = (MatrixBuffer*)mappedResource.pData;
 	// Copy the matrices into the constant buffer.
-	bufferPtr->worldMatrix = WM;
-	bufferPtr->viewMatrix = VM;
-	bufferPtr->projectionMatrix = PM;
-
+	matrixBufferPtr->worldMatrix = WM;
+	matrixBufferPtr->viewMatrix = VM;
+	matrixBufferPtr->projectionMatrix = PM;
 	// Unlock the matrix constant buffer.
 	context->Unmap(m_matrixBuffer, 0);
 
+	// Lock the matrix constant buffer so it can be written to.
+	hr = context->Map(m_lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	assert(!FAILED(hr));
+	// Get a pointer to the data in the constant buffer.
+	lightBufferPtr = (LightBuffer*)mappedResource.pData;
+	// Copy the matrices into the constant buffer.
+	lightBufferPtr->lightDir = lightDir;
+	lightBufferPtr->lightCol = lightCol;
+	lightBufferPtr->padding = 0.0f;
+	// Unlock the matrix constant buffer.
+	context->Unmap(m_lightBuffer, 0);
+
 	// Now set the matrix constant buffer in the vertex shader with the updated values.
 	context->VSSetConstantBuffers(0, 1, &m_matrixBuffer);
+
+	// Set the light constant buffer in the pixel shader
+	context->PSSetConstantBuffers(0, 1, &m_lightBuffer);
 
 	// Set the vertex input layout.
 	context->IASetInputLayout(m_inputLayout);
