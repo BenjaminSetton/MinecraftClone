@@ -12,8 +12,8 @@ cbuffer LightBuffer
 struct VertexOut
 {
     float4 pos : SV_Position;
-    float3 norm : NORMAL0;
-    float2 uv : TEXCOORD0;
+    float3 norm : NORMAL1;
+    float2 uv : TEXCOORD1;
 };
 
 float4 main(VertexOut input) : SV_TARGET

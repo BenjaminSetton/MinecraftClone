@@ -16,8 +16,8 @@ struct VertexIn
 struct VertexOut
 {
     float4 pos : SV_Position;
-    float3 norm : NORMAL0;
-    float2 uv : TEXCOORD0;
+    float3 norm : NORMAL1;
+    float2 uv : TEXCOORD1;
 };
 
 

@@ -22,7 +22,7 @@ void DefaultBlockShader::Render(ID3D11DeviceContext* context, unsigned int index
 	SetShaderParameters(context, WM, VM, PM, lightDir, lightCol, srv);
 
 	// Render the model
-	context->DrawIndexed(indexCount, 0, 0);
+	context->DrawIndexed(3, 0, 0);
 }
 
 void DefaultBlockShader::Shutdown()
@@ -118,17 +118,12 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 	assert(!FAILED(hr));
 
 	// Create a texture sampler state description.
+	samplerDesc = {};
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.MipLODBias = 0.0f;
-	samplerDesc.MaxAnisotropy = 1;
-	samplerDesc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-	samplerDesc.BorderColor[0] = 0;
-	samplerDesc.BorderColor[1] = 0;
-	samplerDesc.BorderColor[2] = 0;
-	samplerDesc.BorderColor[3] = 0;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 	samplerDesc.MinLOD = 0;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
@@ -148,7 +143,7 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 	vertexBufferDesc.StructureByteStride = 0;
 
 	// Give the subresource structure a pointer to the vertex data.
-	vertexBufferData.pSysMem = &verts;
+	vertexBufferData.pSysMem = verts;
 	vertexBufferData.SysMemPitch = 0;
 	vertexBufferData.SysMemSlicePitch = 0;
 
@@ -184,12 +179,12 @@ void DefaultBlockShader::CreateShaders(ID3D11Device* device, const WCHAR* vsFile
 
 	// Compile the vertex shader
 	hr = D3DCompileFromFile(vsFilename, nullptr, nullptr, "main", "vs_5_0",
-		D3DCOMPILE_ENABLE_STRICTNESS, 0, &VSBlob, nullptr);
+		D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG, 0, &VSBlob, nullptr);
 	assert(!FAILED(hr));
 
 	// Compile the pixel shader
 	hr = D3DCompileFromFile(psFilename, nullptr, nullptr, "main", "ps_5_0",
-		D3DCOMPILE_ENABLE_STRICTNESS, 0, &PSBlob, nullptr);
+		D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG, 0, &PSBlob, nullptr);
 	assert(!FAILED(hr));
 
 	// Create the shaders
@@ -211,7 +206,7 @@ void DefaultBlockShader::CreateShaders(ID3D11Device* device, const WCHAR* vsFile
 	inputElementDesc[1].SemanticIndex = 0;
 	inputElementDesc[1].Format = DXGI_FORMAT_R32G32B32_FLOAT;
 	inputElementDesc[1].InputSlot = 0;
-	inputElementDesc[1].AlignedByteOffset = 0;
+	inputElementDesc[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
 	inputElementDesc[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 	inputElementDesc[1].InstanceDataStepRate = 0;
 
@@ -219,7 +214,7 @@ void DefaultBlockShader::CreateShaders(ID3D11Device* device, const WCHAR* vsFile
 	inputElementDesc[2].SemanticIndex = 0;
 	inputElementDesc[2].Format = DXGI_FORMAT_R32G32_FLOAT;
 	inputElementDesc[2].InputSlot = 0;
-	inputElementDesc[2].AlignedByteOffset = 0;
+	inputElementDesc[2].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
 	inputElementDesc[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 	inputElementDesc[2].InstanceDataStepRate = 0;
 

@@ -16,10 +16,10 @@ struct BlockVertex
 
 static BlockVertex verts[24] =
 {
-	{ DirectX::XMFLOAT3(-1.0f, 1.0f, -1.0f), DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), DirectX::XMFLOAT2(0.0f, 1.0f) },   // TLF(0)
-	{ DirectX::XMFLOAT3(1.0f, 1.0f, -1.0f), DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),    DirectX::XMFLOAT2(1.0f, 1.0f) }, // TRF(1)
-	{ DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),     DirectX::XMFLOAT2(1.0f, 0.0f) }, // TRB(2)
-	{ DirectX::XMFLOAT3(-1.0f, 1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),    DirectX::XMFLOAT2(0.0f, 0.0f) }, // TLB(3)
+	{ DirectX::XMFLOAT3(-1.0f, 1.0f, -1.0f), DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),   DirectX::XMFLOAT2(1.0f, 0.0f) }, // TLF(0)
+	{ DirectX::XMFLOAT3(1.0f, 1.0f, -1.0f), DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),    DirectX::XMFLOAT2(0.0f, 0.0f) }, // TRF(1)
+	{ DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),     DirectX::XMFLOAT2(0.0f, 1.0f) }, // TRB(2)
+	{ DirectX::XMFLOAT3(-1.0f, 1.0f, 1.0f), DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),    DirectX::XMFLOAT2(1.0f, 1.0f) }, // TLB(3)
 
 	{ DirectX::XMFLOAT3(-1.0f, -1.0f, -1.0f), DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f), DirectX::XMFLOAT2(0.0f, 1.0f) }, // BLF(4)
 	{ DirectX::XMFLOAT3(1.0f, -1.0f, -1.0f), DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f),  DirectX::XMFLOAT2(1.0f, 1.0f) }, // BRF(5)
