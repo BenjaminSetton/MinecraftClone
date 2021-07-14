@@ -6,6 +6,7 @@
 std::chrono::steady_clock::time_point Clock::m_start = std::chrono::steady_clock::now();
 std::chrono::steady_clock::time_point Clock::m_lastSignal = std::chrono::steady_clock::time_point();
 float Clock::m_deltaTime = 0;
+bool Clock::m_initialized = false;
 
 
 Clock::Clock(){}
@@ -19,6 +20,14 @@ void Clock::Initialize()
 
 void Clock::Signal() 
 {
+	// A check to fix the initial deltaTime issue
+	if(!m_initialized)
+	{
+		m_initialized = true;
+		m_lastSignal = std::chrono::steady_clock::now();
+		return;
+	}
+
 	// Calculate delta time
 	m_deltaTime = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - m_lastSignal).count();
 

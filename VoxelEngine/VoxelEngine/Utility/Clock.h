@@ -37,6 +37,9 @@ private:
 
 	// The delta time between signals stored in seconds
 	static float m_deltaTime;
+
+	// A bool to check whether the clock has been initialized or not
+	static bool m_initialized;
 };
 
 #endif

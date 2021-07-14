@@ -22,7 +22,7 @@ void DefaultBlockShader::Render(ID3D11DeviceContext* context, unsigned int index
 	SetShaderParameters(context, WM, VM, PM, lightDir, lightCol, srv);
 
 	// Render the model
-	context->DrawIndexed(3, 0, 0);
+	context->DrawIndexed(indexCount, 0, 0);
 }
 
 void DefaultBlockShader::Shutdown()

@@ -8,6 +8,10 @@ Graphics::Graphics()
 {
 	m_D3D = nullptr;
 	m_debugCam = nullptr;
+	m_shader = nullptr;
+	m_textureManager = nullptr;
+
+	tempCubeRot = 0;
 }
 
 Graphics::Graphics(const Graphics&){}
@@ -69,7 +73,7 @@ void Graphics::Shutdown()
 	}
 }
 
-bool Graphics::Frame(const float& dt)
+bool Graphics::Frame(const float dt)
 {
 	m_D3D->BeginScene(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
 
@@ -77,9 +81,9 @@ bool Graphics::Frame(const float& dt)
 	m_debugCam->SetRotation({ 25.0f, 10.0f, 0.0f });
 	m_debugCam->ConstructMatrix();
 
-	static float rot = 0;
-	rot += 0.001f;
-	XMMATRIX wm = XMMatrixRotationY(rot);
+	tempCubeRot += 0.5f * dt;
+	std::cout << "tempCubeRot: " << tempCubeRot << "\n";
+	XMMATRIX wm = XMMatrixRotationY(tempCubeRot);
 
 	// Render models, calculate shadows, render UI, etc
 	m_shader->Render(m_D3D->GetDeviceContext(), 36, wm, m_debugCam->GetViewMatrix(), 

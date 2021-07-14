@@ -31,7 +31,7 @@ public:
 
 	void Shutdown();
 
-	bool Frame(const float& deltaTime);
+	bool Frame(const float deltaTime);
 
 private:
 
@@ -40,6 +40,8 @@ private:
 	DefaultBlockShader* m_shader;
 
 	TextureManager* m_textureManager;
+
+	float tempCubeRot = 0;
 };
 
 #endif
