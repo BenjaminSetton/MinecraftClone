@@ -433,11 +433,12 @@ ID3D11Device* D3D::GetDevice() { return m_device; }
 
 ID3D11DeviceContext* D3D::GetDeviceContext() { return m_deviceContext; }
 
-const XMMATRIX D3D::GetWorldMatrix() { return m_worldMatrix; }
+const XMMATRIX D3D::GetWorldMatrix() const { return m_worldMatrix; }
 void D3D::SetWorldMatrix(const DirectX::XMMATRIX wm) { m_worldMatrix = wm; }
 
-const XMMATRIX D3D::GetProjectionMatrix() { return m_projectionMatrix; }
-const XMMATRIX D3D::GetOrthoMatrix() { return m_orthoMatrix; }
+const XMMATRIX D3D::GetProjectionMatrix() const { return m_projectionMatrix; }
+const XMMATRIX D3D::GetOrthoMatrix() const { return m_orthoMatrix; }
+ID3D11RenderTargetView* D3D::GetRenderTargetView() const { return m_renderTargetView; }
 
 void D3D::GetVideoCardInfo(char* videoCardDescription, int& videoCardMemory)
 {

@@ -30,11 +30,12 @@ public:
 	ID3D11Device* GetDevice();
 	ID3D11DeviceContext* GetDeviceContext();
 
-	const DirectX::XMMATRIX GetWorldMatrix();
+	const DirectX::XMMATRIX GetWorldMatrix() const;
 	void SetWorldMatrix(const DirectX::XMMATRIX wm);
 
-	const DirectX::XMMATRIX GetProjectionMatrix();
-	const DirectX::XMMATRIX GetOrthoMatrix();
+	const DirectX::XMMATRIX GetProjectionMatrix() const;
+	const DirectX::XMMATRIX GetOrthoMatrix() const;
+	ID3D11RenderTargetView* GetRenderTargetView() const;
 
 	void GetVideoCardInfo(char*, int&);
 

@@ -10,6 +10,7 @@ Graphics::Graphics()
 	m_debugCam = nullptr;
 	m_shader = nullptr;
 	m_textureManager = nullptr;
+	m_imGuiLayer = nullptr;
 
 	tempCubeRot = 0;
 }
@@ -20,12 +21,12 @@ Graphics::~Graphics()
 {
 }
 
-bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND windowHandle)
+bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd)
 {
 	bool initResult;
 
 	m_D3D = new D3D;
-	initResult = m_D3D->Initialize(screenWidth, screenHeight, windowHandle, VSYNC_ENABLED, FULL_SCREEN, SCREEN_FAR, SCREEN_NEAR);
+	initResult = m_D3D->Initialize(screenWidth, screenHeight, hwnd, VSYNC_ENABLED, FULL_SCREEN, SCREEN_FAR, SCREEN_NEAR);
 	if (!initResult) return false;
 
 	m_debugCam = new Camera;
@@ -40,12 +41,23 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	// Create and initialize the texture manager
 	m_textureManager = new TextureManager;
 	m_textureManager->Init(m_D3D->GetDevice());
+	
+	// Create and initialize the ImGuiLayer
+	m_imGuiLayer = new ImGuiLayer;
+	m_imGuiLayer->Initialize(hwnd, m_D3D->GetDevice(), m_D3D->GetDeviceContext());
 
 	return true;
 }
 
 void Graphics::Shutdown()
 {
+	if(m_imGuiLayer)
+	{
+		m_imGuiLayer->Shutdown();
+		delete m_imGuiLayer;
+		m_imGuiLayer = nullptr;
+	}
+
 	if(m_textureManager)
 	{
 		m_textureManager->Shutdown();
@@ -75,14 +87,17 @@ void Graphics::Shutdown()
 
 bool Graphics::Frame(const float dt)
 {
+	// Begin the D3D scene
 	m_D3D->BeginScene(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
+
+	// Call the ImGui frame
+	m_imGuiLayer->Frame();
 
 	XMFLOAT3 cameraRot = m_debugCam->GetRotation();
 	m_debugCam->SetRotation({ 25.0f, 10.0f, 0.0f });
 	m_debugCam->ConstructMatrix();
 
 	tempCubeRot += 0.5f * dt;
-	std::cout << "tempCubeRot: " << tempCubeRot << "\n";
 	XMMATRIX wm = XMMatrixRotationY(tempCubeRot);
 
 	// Render models, calculate shadows, render UI, etc

@@ -6,6 +6,7 @@
 #include "Camera.h"
 #include "DefaultBlockShader.h"
 #include "../Core/TextureManager.h"
+#include "../Utility/ImGuiLayer.h"
 
 // idk why it makes me include this here..again
 #include <windows.h>
@@ -42,6 +43,8 @@ private:
 	TextureManager* m_textureManager;
 
 	float tempCubeRot = 0;
+
+	ImGuiLayer* m_imGuiLayer;
 };
 
 #endif
