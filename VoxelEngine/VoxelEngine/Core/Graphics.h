@@ -34,6 +34,8 @@ public:
 
 	bool Frame(const float deltaTime);
 
+	bool WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+
 private:
 
 	D3D* m_D3D;

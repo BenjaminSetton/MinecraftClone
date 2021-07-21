@@ -433,8 +433,9 @@ ID3D11Device* D3D::GetDevice() { return m_device; }
 
 ID3D11DeviceContext* D3D::GetDeviceContext() { return m_deviceContext; }
 
+IDXGISwapChain* D3D::GetSwapChain() { return m_swapChain; }
+
 const XMMATRIX D3D::GetWorldMatrix() const { return m_worldMatrix; }
-void D3D::SetWorldMatrix(const DirectX::XMMATRIX wm) { m_worldMatrix = wm; }
 
 const XMMATRIX D3D::GetProjectionMatrix() const { return m_projectionMatrix; }
 const XMMATRIX D3D::GetOrthoMatrix() const { return m_orthoMatrix; }
@@ -454,4 +455,31 @@ void D3D::TurnZBufferOff()
 {
 	m_deviceContext->OMSetDepthStencilState(m_depthDisabledStencilState, 1);
 	return;
+}
+
+void D3D::ClearDepthBuffer(float value)
+{
+	m_deviceContext->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, value, 0.0f);
+}
+
+bool D3D::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+	switch(msg)
+	{
+	case WM_SIZE:
+		if (m_device != NULL && wparam != SIZE_MINIMIZED)
+		{
+			if (m_renderTargetView) { m_renderTargetView->Release(); m_renderTargetView = NULL; }
+
+			m_swapChain->ResizeBuffers(0, (UINT)LOWORD(lparam), (UINT)HIWORD(lparam), DXGI_FORMAT_UNKNOWN, 0);
+
+			ID3D11Texture2D* pBackBuffer;
+			m_swapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
+			m_device->CreateRenderTargetView(pBackBuffer, NULL, &m_renderTargetView);
+			pBackBuffer->Release();
+		}
+		return 0;
+	}
+
+	return 0;
 }

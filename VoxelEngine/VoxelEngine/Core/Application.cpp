@@ -3,9 +3,10 @@
 #include "Application.h"
 
 // Windows procedure
-LRESULT CALLBACK WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-	switch (umessage)
+
+	switch (msg)
 	{
 		// Check if the window is being destroyed.
 	case WM_DESTROY:
@@ -24,7 +25,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT umessage, WPARAM wparam, LPARAM lparam)
 	// All other messages pass to the message handler in the system class.
 	default:
 	{
-		return ApplicationHandle->MessageHandler(hwnd, umessage, wparam, lparam);
+		return ApplicationHandle->MessageHandler(hwnd, msg, wparam, lparam);
 	}
 	}
 }
@@ -239,9 +240,11 @@ void Application::InitializeWindows(int& screenWidth, int& screenHeight)
 }
 
 
-LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam)
+LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-	switch (umsg)
+	if (m_Graphics && m_Graphics->WndProc(hwnd, msg, wparam, lparam)) return true;
+
+	switch (msg)
 	{
 		// Check if a key has been pressed on the keyboard.
 	case WM_KEYDOWN:
@@ -262,7 +265,7 @@ LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam
 	// Any other messages send to the default message handler as our application won't make use of them.
 	default:
 	{
-		return DefWindowProc(hwnd, umsg, wparam, lparam);
+		return DefWindowProc(hwnd, msg, wparam, lparam);
 	}
 	}
 }

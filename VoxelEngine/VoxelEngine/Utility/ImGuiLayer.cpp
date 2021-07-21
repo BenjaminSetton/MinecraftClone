@@ -72,3 +72,14 @@ void ImGuiLayer::Shutdown()
 	ImGui::DestroyContext();
 }
 
+// Forward declare the WndProc Handler from imgui.cpp
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+bool ImGuiLayer::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+	// Call the WndProc Handler from the Win32 Imgui implementation
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) return true;
+
+	return 0;
+}
+

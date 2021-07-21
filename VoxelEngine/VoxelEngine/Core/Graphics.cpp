@@ -90,8 +90,6 @@ bool Graphics::Frame(const float dt)
 	// Begin the D3D scene
 	m_D3D->BeginScene(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
 
-	// Call the ImGui frame
-	m_imGuiLayer->Frame();
 
 	XMFLOAT3 cameraRot = m_debugCam->GetRotation();
 	m_debugCam->SetRotation({ 25.0f, 10.0f, 0.0f });
@@ -103,9 +101,28 @@ bool Graphics::Frame(const float dt)
 	// Render models, calculate shadows, render UI, etc
 	m_shader->Render(m_D3D->GetDeviceContext(), 36, wm, m_debugCam->GetViewMatrix(), 
 		m_D3D->GetProjectionMatrix(), { 1.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, m_textureManager->GetTexture(std::string("SEAFLOOR_TEX")));
+	
+	// Call the ImGui frame
+	m_D3D->ClearDepthBuffer(1.0f); // Clear the depth buffer so GUI draws on top of everything
+	m_imGuiLayer->Frame();
+
 
 	// End the scene and present the swap chain
 	m_D3D->EndScene();
 
 	return true;
+}
+
+bool Graphics::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+	bool result;
+
+	// Call the ImGuiLayer WndProc
+	if (m_imGuiLayer->WndProc(hwnd, msg, wparam, lparam)) return true;
+
+	// Call the D3D WndProc
+	m_D3D->WndProc(hwnd, msg, wparam, lparam);
+
+	return 0;
+	
 }

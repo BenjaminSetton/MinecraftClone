@@ -29,9 +29,9 @@ public:
 
 	ID3D11Device* GetDevice();
 	ID3D11DeviceContext* GetDeviceContext();
+	IDXGISwapChain* GetSwapChain();
 
 	const DirectX::XMMATRIX GetWorldMatrix() const;
-	void SetWorldMatrix(const DirectX::XMMATRIX wm);
 
 	const DirectX::XMMATRIX GetProjectionMatrix() const;
 	const DirectX::XMMATRIX GetOrthoMatrix() const;
@@ -41,6 +41,10 @@ public:
 
 	void TurnZBufferOn();
 	void TurnZBufferOff();
+
+	void ClearDepthBuffer(float value);
+
+	bool WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 private:
 
