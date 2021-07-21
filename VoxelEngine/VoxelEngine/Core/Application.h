@@ -35,7 +35,7 @@ private:
 
 	bool Frame();
 
-	void InitializeWindows(int& screenWidth, int& screenHeight);
+	void InitializeWindows(UINT& screenWidth, UINT& screenHeight);
 
 	void ShutdownWindows();
 

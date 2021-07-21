@@ -121,8 +121,8 @@ bool Graphics::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	if (m_imGuiLayer->WndProc(hwnd, msg, wparam, lparam)) return true;
 
 	// Call the D3D WndProc
-	m_D3D->WndProc(hwnd, msg, wparam, lparam);
+	if (m_D3D->WndProc(hwnd, msg, wparam, lparam)) return true;
 
-	return 0;
+	return false;
 	
 }

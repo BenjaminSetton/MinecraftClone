@@ -80,6 +80,6 @@ bool ImGuiLayer::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	// Call the WndProc Handler from the Win32 Imgui implementation
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) return true;
 
-	return 0;
+	return false;
 }
 

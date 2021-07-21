@@ -28,12 +28,15 @@ bool D3D::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd,
 	D3D11_RASTERIZER_DESC defaultRasterDesc;
 	D3D11_RASTERIZER_DESC wireframeRasterDesc;
 	D3D11_VIEWPORT viewport;
-	float fieldOfView, screenAspect;
 	D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc;
 
 
 	// Store the vsync setting.
 	m_vsync_enabled = vsync;
+
+	// Store the other window / graphics settings that affect D3D devices or objects
+	m_screenNear = screenNear;
+	m_screenFar = screenFar;
 
 #pragma region _VIDEO_CARD
 
@@ -165,18 +168,6 @@ bool D3D::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd,
 		D3D11_SDK_VERSION, &swapChainDesc, &m_swapChain, &m_device, NULL, &m_deviceContext);
 	if (FAILED(result)){ return false; }
 
-	// Get the pointer to the back buffer.
-	result = m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBufferPtr);
-	if (FAILED(result)){ return false; }
-
-	// Create the render target view with the back buffer pointer.
-	result = m_device->CreateRenderTargetView(backBufferPtr, NULL, &m_renderTargetView);
-	if (FAILED(result)){ return false; }
-
-	// Release pointer to the back buffer as we no longer need it.
-	backBufferPtr->Release();
-	backBufferPtr = nullptr;
-
 	// Initialize the description of the depth buffer.
 	ZeroMemory(&depthBufferDesc, sizeof(depthBufferDesc));
 
@@ -240,9 +231,6 @@ bool D3D::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd,
 	result = m_device->CreateDepthStencilView(m_depthStencilBuffer, &depthStencilViewDesc, &m_depthStencilView);
 	if (FAILED(result)){ return false; }
 
-	// Bind the render target view and depth stencil buffer to the output render pipeline.
-	m_deviceContext->OMSetRenderTargets(1, &m_renderTargetView, m_depthStencilView);
-
 
 	// Setup the default raster description which will determine how and what polygons will be drawn.
 	defaultRasterDesc.AntialiasedLineEnable = false;
@@ -279,6 +267,10 @@ bool D3D::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd,
 	// Now set the default rasterizer state.
 	m_deviceContext->RSSetState(m_defaultRasterState);
 
+	CreateRenderTargetView();
+
+	// Bind the render target view and depth stencil buffer to the output render pipeline.
+	m_deviceContext->OMSetRenderTargets(1, &m_renderTargetView, m_depthStencilView);
 
 	// Setup the viewport for rendering.
 	viewport.Width = static_cast<float>(screenWidth);
@@ -291,19 +283,15 @@ bool D3D::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd,
 	// Create the viewport.
 	m_deviceContext->RSSetViewports(1, &viewport);
 
-
-	// Setup the projection matrix.
-	fieldOfView = (float)DirectX::XM_PIDIV4;
-	screenAspect = (float)screenWidth / (float)screenHeight;
-
 	// Create the projection matrix for 3D rendering.
-	m_projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, screenNear, screenFar);
+	m_projectionMatrix = XMMatrixPerspectiveFovLH(XM_PIDIV4, 
+		(float)screenWidth / screenHeight, screenNear, screenFar);
 
 	// Initialize the world matrix to the identity matrix.
-	m_worldMatrix = DirectX::XMMatrixIdentity();
+	m_worldMatrix = XMMatrixIdentity();
 
 	// Create an orthographic projection matrix for 2D rendering.
-	m_orthoMatrix = DirectX::XMMatrixOrthographicLH(static_cast<float>(screenWidth), static_cast<float>(screenHeight), screenNear, screenFar);
+	m_orthoMatrix = XMMatrixOrthographicLH(static_cast<float>(screenWidth), static_cast<float>(screenHeight), screenNear, screenFar);
 
 	// Clear the second depth stencil state before setting the parameters.
 	ZeroMemory(&depthDisabledStencilDesc, sizeof(depthDisabledStencilDesc));
@@ -411,6 +399,7 @@ void D3D::BeginScene(XMFLOAT4 clearToColor)
 	m_deviceContext->ClearRenderTargetView(m_renderTargetView, color);
 
 	// Clear the depth buffer.
+	// NOTE: Consider maybe clearing the stencil buffer as well?
 	m_deviceContext->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
@@ -469,17 +458,91 @@ bool D3D::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	case WM_SIZE:
 		if (m_device != NULL && wparam != SIZE_MINIMIZED)
 		{
-			if (m_renderTargetView) { m_renderTargetView->Release(); m_renderTargetView = NULL; }
-
-			m_swapChain->ResizeBuffers(0, (UINT)LOWORD(lparam), (UINT)HIWORD(lparam), DXGI_FORMAT_UNKNOWN, 0);
-
-			ID3D11Texture2D* pBackBuffer;
-			m_swapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
-			m_device->CreateRenderTargetView(pBackBuffer, NULL, &m_renderTargetView);
-			pBackBuffer->Release();
+			// Call OnResize with the lParam
+			OnResize(lparam);
 		}
-		return 0;
+		return true;
 	}
 
-	return 0;
+	return false;
+}
+
+void D3D::CreateRenderTargetView()
+{
+	HRESULT hr;
+	ID3D11Texture2D* backBufferPtr;
+
+	// Get the pointer to the back buffer.
+	hr = m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBufferPtr);
+	assert(!FAILED(hr));
+
+	// Create the render target view with the back buffer pointer.
+	hr = m_device->CreateRenderTargetView(backBufferPtr, NULL, &m_renderTargetView);
+	assert(!FAILED(hr));
+
+	// Release pointer to the back buffer as we no longer need it.
+	backBufferPtr->Release();
+	backBufferPtr = nullptr;
+}
+
+void D3D::OnResize(LPARAM lparam)
+{
+	// Calculate the new width and height of the window
+	UINT newWidth = LOWORD(lparam);
+	UINT newHeight = HIWORD(lparam);
+
+	// Clear the render targets
+	m_deviceContext->OMSetRenderTargets(0, 0, 0);
+	if (m_renderTargetView) { m_renderTargetView->Release(); m_renderTargetView = NULL; }
+
+	// Resize the swap chain buffers
+	HRESULT hr = m_swapChain->ResizeBuffers(0, newWidth, newHeight, DXGI_FORMAT_UNKNOWN, 0);
+	assert(!FAILED(hr));
+
+	CreateRenderTargetView();
+
+	// Set the newly-created render target
+	m_deviceContext->OMSetRenderTargets(1, &m_renderTargetView, NULL);
+
+	// Resize the projection matrix
+	m_projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(XM_PIDIV4, (float)newWidth / newHeight, m_screenNear, m_screenFar);
+
+	// Resize the viewport
+	D3D11_VIEWPORT viewport;
+	viewport.Width = static_cast<float>(newWidth);
+	viewport.Height = static_cast<float>(newHeight);
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	viewport.TopLeftX = 0.0f;
+	viewport.TopLeftY = 0.0f;
+	m_deviceContext->RSSetViewports(1, &viewport);
+}
+
+void D3D::OnResize(UINT width, UINT height)
+{
+	// Clear the render targets
+	m_deviceContext->OMSetRenderTargets(0, 0, 0);
+	if (m_renderTargetView) { m_renderTargetView->Release(); m_renderTargetView = NULL; }
+
+	// Resize the swap chain buffers
+	HRESULT hr = m_swapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
+	assert(!FAILED(hr));
+
+	CreateRenderTargetView();
+
+	// Set the newly-created render target
+	m_deviceContext->OMSetRenderTargets(1, &m_renderTargetView, NULL);
+
+	// Resize the projection matrix
+	m_projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(XM_PIDIV4, (float)width / height, m_screenNear, m_screenFar);
+
+	// Resize the viewport
+	D3D11_VIEWPORT viewport;
+	viewport.Width = static_cast<float>(width);
+	viewport.Height = static_cast<float>(height);
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	viewport.TopLeftX = 0.0f;
+	viewport.TopLeftY = 0.0f;
+	m_deviceContext->RSSetViewports(1, &viewport);
 }

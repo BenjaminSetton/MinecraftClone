@@ -66,7 +66,7 @@ Application::~Application()
 
 bool Application::Initialize() 
 {
-	int screenWidth, screenHeight;
+	UINT screenWidth, screenHeight;
 	bool result;
 
 	// Initialize the width and height of the screen to zero before sending the variables into the function.
@@ -162,7 +162,7 @@ bool Application::Frame()
 	return true;
 }
 
-void Application::InitializeWindows(int& screenWidth, int& screenHeight) 
+void Application::InitializeWindows(UINT& screenWidth, UINT& screenHeight) 
 {
 	int posX, posY;
 

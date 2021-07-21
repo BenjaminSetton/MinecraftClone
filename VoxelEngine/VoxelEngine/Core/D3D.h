@@ -48,9 +48,19 @@ public:
 
 private:
 
+	void CreateRenderTargetView();
+
+	void OnResize(LPARAM lparam);
+	void OnResize(UINT width, UINT height);
+
+private:
+
 	bool m_vsync_enabled;
 	int m_videoCardMemory;
 	char m_videoCardDescription[128];
+
+	float m_screenNear;
+	float m_screenFar;
 
 	IDXGISwapChain* m_swapChain;
 	ID3D11Device* m_device;
