@@ -30,7 +30,7 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	if (!initResult) return false;
 
 	m_debugCam = new Camera;
-	m_debugCam->SetPosition({-0.5f, 2.5f, -5.0f});
+	m_debugCam->SetPosition({-4.5f, 2.5f, -5.0f});
 	// We can temporarily call Render() here since camera's position and rotation isn't changing for now
 	m_debugCam->ConstructMatrix();
 
