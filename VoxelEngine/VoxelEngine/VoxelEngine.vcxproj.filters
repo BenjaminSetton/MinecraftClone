@@ -167,6 +167,9 @@
     <ClInclude Include="Core\ChunkManager.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="Utility\Utility.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\DefaultBlock_VS.hlsl">

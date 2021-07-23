@@ -1,6 +1,7 @@
 #include "../Misc/pch.h"
 
 #include "Graphics.h"
+#include "../Utility/Utility.h"
 
 using namespace DirectX;
 
@@ -85,27 +86,29 @@ void Graphics::Shutdown()
 
 bool Graphics::Frame(const float dt)
 {
-	// Begin the ImGui frame
-	m_imGuiLayer->BeginFrame();
+	{
+		VOXEL_PROFILE_FUNC();
 
-	// Begin the D3D scene
-	m_D3D->BeginScene(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
+		// Begin the ImGui frame
+		m_imGuiLayer->BeginFrame();
 
-
-	XMFLOAT3 cameraRot = m_debugCam->GetRotation();
-	m_debugCam->SetRotation({ 25.0f, 0.0f, 0.0f });
-	m_debugCam->ConstructMatrix();
-
-	// Render models, calculate shadows, render UI, etc
-	m_shader->Render(m_D3D->GetDeviceContext(), 36, m_D3D->GetWorldMatrix(), m_debugCam->GetViewMatrix(), 
-		m_D3D->GetProjectionMatrix(), { 1.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, m_textureManager->GetTexture(std::string("SEAFLOOR_TEX")));
-	
+		// Begin the D3D scene
+		m_D3D->BeginScene(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
 
 
-	// End the ImGui frame
-	m_D3D->ClearDepthBuffer(1.0f); // Clear the depth buffer so GUI draws on top of everything
+		XMFLOAT3 cameraRot = m_debugCam->GetRotation();
+		m_debugCam->SetRotation({ 25.0f, 0.0f, 0.0f });
+		m_debugCam->ConstructMatrix();
+
+		// Render models, calculate shadows, render UI, etc
+		m_shader->Render(m_D3D->GetDeviceContext(), 36, m_D3D->GetWorldMatrix(), m_debugCam->GetViewMatrix(),
+			m_D3D->GetProjectionMatrix(), { 1.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, m_textureManager->GetTexture(std::string("SEAFLOOR_TEX")));
+
+
+		// End the ImGui frame
+		m_D3D->ClearDepthBuffer(1.0f); // Clear the depth buffer so GUI draws on top of everything
+	}
 	m_imGuiLayer->EndFrame();
-
 
 	// End the scene and present the swap chain
 	m_D3D->EndScene();

@@ -68,8 +68,8 @@ void Chunk::InitializeBuffers()
 		{
 			for (int z = 0; z < CHUNK_SIZE; z++)
 			{
-				DirectX::XMFLOAT3 offset = { x, y, z };
-				BlockVertex 
+				DirectX::XMFLOAT3 offset = { static_cast<float>(x), static_cast<float>(y), static_cast<float>(z) };
+				//BlockVertex 
 			}
 		}
 	}

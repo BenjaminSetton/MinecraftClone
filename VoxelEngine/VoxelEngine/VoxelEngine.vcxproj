@@ -250,6 +250,7 @@
     <ClInclude Include="Utility\ImGuiLayer.h" />
     <ClInclude Include="Utility\Input.h" />
     <ClInclude Include="Utility\ScopeTimer.h" />
+    <ClInclude Include="Utility\Utility.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\DefaultBlock_PS.hlsl">
