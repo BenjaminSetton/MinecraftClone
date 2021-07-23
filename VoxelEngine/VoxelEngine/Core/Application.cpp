@@ -92,6 +92,7 @@ bool Application::Initialize()
 	m_Clock = new Clock;
 	if (!m_Clock) return false;
 
+
 	return true;
 }
 
@@ -155,7 +156,6 @@ bool Application::Frame()
 	// Store the frame's delta time in dt
 	float dt = m_Clock->GetDeltaTime(Clock::TimePrecision::SECONDS);
 	
-
 	// Process each frame in the graphics class
 	m_Graphics->Frame(dt);
 

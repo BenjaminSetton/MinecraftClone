@@ -73,6 +73,7 @@ class Block
 public:
 
 	Block();
+	Block(BlockType type);
 	Block(const Block&);
 	~Block();
 

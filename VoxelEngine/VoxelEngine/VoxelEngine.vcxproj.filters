@@ -90,6 +90,12 @@
     <ClCompile Include="..\imgui\imgui_impl_win32.cpp">
       <Filter>Utility\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="Core\Chunk.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\ChunkManager.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utility\Clock.h">
@@ -154,6 +160,12 @@
     </ClInclude>
     <ClInclude Include="..\imgui\imconfig.h">
       <Filter>Utility\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Chunk.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\ChunkManager.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

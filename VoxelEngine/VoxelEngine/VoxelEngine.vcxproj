@@ -206,6 +206,8 @@
     <ClCompile Include="Core\Application.cpp" />
     <ClCompile Include="Core\Block.cpp" />
     <ClCompile Include="Core\Camera.cpp" />
+    <ClCompile Include="Core\Chunk.cpp" />
+    <ClCompile Include="Core\ChunkManager.cpp" />
     <ClCompile Include="Core\D3D.cpp" />
     <ClCompile Include="Core\DefaultBlockShader.cpp" />
     <ClCompile Include="Core\Graphics.cpp" />
@@ -236,6 +238,8 @@
     <ClInclude Include="Core\Application.h" />
     <ClInclude Include="Core\Block.h" />
     <ClInclude Include="Core\Camera.h" />
+    <ClInclude Include="Core\Chunk.h" />
+    <ClInclude Include="Core\ChunkManager.h" />
     <ClInclude Include="Core\D3D.h" />
     <ClInclude Include="Core\DefaultBlockShader.h" />
     <ClInclude Include="Core\Graphics.h" />

@@ -8,6 +8,7 @@
 
 Block::Block(){ /* Constructor is not necessary */ }
 Block::Block(const Block&){ /* Copy constructor is not necessary */ }
+Block::Block(BlockType type) : m_type(type) {}
 Block::~Block(){ /* Destructor is not necessary */}
 
 void Block::SetType(const BlockType type) { m_type = type; }
