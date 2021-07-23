@@ -11,8 +11,6 @@ Graphics::Graphics()
 	m_shader = nullptr;
 	m_textureManager = nullptr;
 	m_imGuiLayer = nullptr;
-
-	tempCubeRot = 0;
 }
 
 Graphics::Graphics(const Graphics&){}
@@ -30,7 +28,7 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	if (!initResult) return false;
 
 	m_debugCam = new Camera;
-	m_debugCam->SetPosition({-4.5f, 2.5f, -5.0f});
+	m_debugCam->SetPosition({0.0f, 5.0f, -10.0f});
 	// We can temporarily call Render() here since camera's position and rotation isn't changing for now
 	m_debugCam->ConstructMatrix();
 
@@ -87,24 +85,26 @@ void Graphics::Shutdown()
 
 bool Graphics::Frame(const float dt)
 {
+	// Begin the ImGui frame
+	m_imGuiLayer->BeginFrame();
+
 	// Begin the D3D scene
 	m_D3D->BeginScene(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
 
 
 	XMFLOAT3 cameraRot = m_debugCam->GetRotation();
-	m_debugCam->SetRotation({ 25.0f, 10.0f, 0.0f });
+	m_debugCam->SetRotation({ 25.0f, 0.0f, 0.0f });
 	m_debugCam->ConstructMatrix();
 
-	tempCubeRot += 0.5f * dt;
-	XMMATRIX wm = XMMatrixRotationY(tempCubeRot);
-
 	// Render models, calculate shadows, render UI, etc
-	m_shader->Render(m_D3D->GetDeviceContext(), 36, wm, m_debugCam->GetViewMatrix(), 
+	m_shader->Render(m_D3D->GetDeviceContext(), 36, m_D3D->GetWorldMatrix(), m_debugCam->GetViewMatrix(), 
 		m_D3D->GetProjectionMatrix(), { 1.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, m_textureManager->GetTexture(std::string("SEAFLOOR_TEX")));
 	
-	// Call the ImGui frame
+
+
+	// End the ImGui frame
 	m_D3D->ClearDepthBuffer(1.0f); // Clear the depth buffer so GUI draws on top of everything
-	m_imGuiLayer->Frame();
+	m_imGuiLayer->EndFrame();
 
 
 	// End the scene and present the swap chain

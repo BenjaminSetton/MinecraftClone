@@ -16,7 +16,9 @@ public:
 
 	void Initialize(HWND hwnd, ID3D11Device* device, ID3D11DeviceContext* context);
 
-	void Frame();
+	void BeginFrame();
+
+	void EndFrame();
 
 	void Shutdown();
 

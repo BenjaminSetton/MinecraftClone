@@ -44,8 +44,6 @@ private:
 
 	TextureManager* m_textureManager;
 
-	float tempCubeRot = 0;
-
 	ImGuiLayer* m_imGuiLayer;
 };
 
