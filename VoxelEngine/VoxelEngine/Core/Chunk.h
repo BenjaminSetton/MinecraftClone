@@ -24,7 +24,9 @@ public:
 private:
 
 	// TODO: Think about generating a chunk based on a seed
-	void Initialize();
+	void InitializeChunk();
+
+	void InitializeBuffers();
 
 private:
 
@@ -33,6 +35,10 @@ private:
 
 	// Currently defines a 3D array of 16x16x16 blocks
 	Block* m_chunk[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
+
+	// D3D11 buffers
+	std::vector<BlockVertex>  m_chunkVertices;
+	std::vector<unsigned int> m_chunkIndicies;
 
 };
 

@@ -2,10 +2,13 @@
 
 #include "Chunk.h"
 
+using namespace DirectX;
+
 Chunk::Chunk()
 {
 	// Ensures that a chunk will ALWAYS generate it's corresponding blocks
-	Initialize();
+	InitializeChunk();
+	InitializeBuffers();
 }
 
 Chunk::~Chunk()
@@ -33,7 +36,7 @@ void Chunk::SetActive(const bool active) { m_active = active; }
 
 const bool Chunk::GetActive() { return m_active; }
 
-void Chunk::Initialize()
+void Chunk::InitializeChunk()
 {
 	m_active = true;
 	m_chunkID = 0; // TODO: Replace with an actual UUID
@@ -48,6 +51,25 @@ void Chunk::Initialize()
 			{
 				Block* newBlock = new Block(BlockType::Dirt);
 				m_chunk[x][y][z] = newBlock;
+			}
+		}
+	}
+}
+
+void Chunk::InitializeBuffers()
+{
+	unsigned int numBlocksPerChunk = pow(CHUNK_SIZE, 3);
+	m_chunkVertices.reserve(24 * numBlocksPerChunk);
+	m_chunkIndicies.reserve(36 * numBlocksPerChunk);
+
+	for (int x = 0; x < CHUNK_SIZE; x++)
+	{
+		for (int y = 0; y < CHUNK_SIZE; y++)
+		{
+			for (int z = 0; z < CHUNK_SIZE; z++)
+			{
+				DirectX::XMFLOAT3 offset = { x, y, z };
+				BlockVertex 
 			}
 		}
 	}

@@ -5,6 +5,7 @@
 
 #include "Chunk.h"
 
+
 // This singleton just manages chunks the most naive way possible.
 // This is a work in progress!!
 class ChunkManager
@@ -19,7 +20,6 @@ public:
 private:
 
 	static ChunkManager m_instance;
-
 	static std::vector<Chunk*> m_activeChunks;
 };
 

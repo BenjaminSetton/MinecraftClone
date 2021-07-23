@@ -67,7 +67,6 @@ enum class BlockType
 };
 
 
-// I will create a Block class definition here but I am not yet going to use it
 class Block
 {
 public:
