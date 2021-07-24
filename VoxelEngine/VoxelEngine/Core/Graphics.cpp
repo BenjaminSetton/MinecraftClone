@@ -22,6 +22,13 @@ Graphics::~Graphics()
 
 bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd)
 {
+	VX_LOG_ERROR("Testing error msg");
+	VX_LOG_WARN("Testing warn msg");
+	VX_LOG_PRINT("Testing print msg");
+
+	VX_PROFILE_SCOPE();
+
+
 	bool initResult;
 
 	m_D3D = new D3D;
@@ -86,28 +93,26 @@ void Graphics::Shutdown()
 
 bool Graphics::Frame(const float dt)
 {
-	{
-		VOXEL_PROFILE_FUNC();
-
-		// Begin the ImGui frame
-		m_imGuiLayer->BeginFrame();
-
-		// Begin the D3D scene
-		m_D3D->BeginScene(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
 
 
-		XMFLOAT3 cameraRot = m_debugCam->GetRotation();
-		m_debugCam->SetRotation({ 25.0f, 0.0f, 0.0f });
-		m_debugCam->ConstructMatrix();
+	// Begin the ImGui frame
+	m_imGuiLayer->BeginFrame();
 
-		// Render models, calculate shadows, render UI, etc
-		m_shader->Render(m_D3D->GetDeviceContext(), 36, m_D3D->GetWorldMatrix(), m_debugCam->GetViewMatrix(),
-			m_D3D->GetProjectionMatrix(), { 1.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, m_textureManager->GetTexture(std::string("SEAFLOOR_TEX")));
+	// Begin the D3D scene
+	m_D3D->BeginScene(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
+
+	XMFLOAT3 cameraRot = m_debugCam->GetRotation();
+	m_debugCam->SetRotation({ 25.0f, 0.0f, 0.0f });
+	m_debugCam->ConstructMatrix();
+
+	// Render models, calculate shadows, render UI, etc
+	m_shader->Render(m_D3D->GetDeviceContext(), 36, m_D3D->GetWorldMatrix(), m_debugCam->GetViewMatrix(),
+		m_D3D->GetProjectionMatrix(), { 1.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, m_textureManager->GetTexture(std::string("SEAFLOOR_TEX")));
 
 
-		// End the ImGui frame
-		m_D3D->ClearDepthBuffer(1.0f); // Clear the depth buffer so GUI draws on top of everything
-	}
+	// End the ImGui frame
+	m_D3D->ClearDepthBuffer(1.0f); // Clear the depth buffer so GUI draws on top of everything
+	
 	m_imGuiLayer->EndFrame();
 
 	// End the scene and present the swap chain
