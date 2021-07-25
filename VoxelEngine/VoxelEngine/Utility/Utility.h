@@ -37,7 +37,14 @@ VARNAME(log) << msg;\
 VARNAME(log).SetConsoleColors(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);\
 VARNAME(log).End();
 
-#define VX_LOG_PRINT(msg) \
+#define VX_LOG_INFO(msg) \
+Log VARNAME(log);\
+VARNAME(log).SetConsoleColors(FOREGROUND_GREEN);\
+VARNAME(log) << msg;\
+VARNAME(log).SetConsoleColors(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);\
+VARNAME(log).End();
+
+#define VX_LOG(msg) \
 Log VARNAME(log);\
 VARNAME(log) << msg;\
 VARNAME(log).End();
@@ -60,7 +67,8 @@ VARNAME(log).End();
 
 #define VX_LOG_ERROR(msg)
 #define VX_LOG_WARN(msg)
-#define VX_LOG_PRINT(msg);
+#define VX_LOG_INFO(msg);
+#define VX_LOG(msg);
 
 #endif
 

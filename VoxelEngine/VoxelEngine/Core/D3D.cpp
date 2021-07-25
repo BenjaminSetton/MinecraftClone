@@ -1,6 +1,7 @@
 #include "../Misc/pch.h"
 
 #include "D3D.h"
+#include "../Utility/Utility.h";
 
 using namespace DirectX;
 
@@ -487,6 +488,7 @@ void D3D::CreateRenderTargetView()
 
 void D3D::OnResize(LPARAM lparam)
 {
+
 	// Calculate the new width and height of the window
 	UINT newWidth = LOWORD(lparam);
 	UINT newHeight = HIWORD(lparam);
@@ -511,35 +513,6 @@ void D3D::OnResize(LPARAM lparam)
 	D3D11_VIEWPORT viewport;
 	viewport.Width = static_cast<float>(newWidth);
 	viewport.Height = static_cast<float>(newHeight);
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
-	viewport.TopLeftX = 0.0f;
-	viewport.TopLeftY = 0.0f;
-	m_deviceContext->RSSetViewports(1, &viewport);
-}
-
-void D3D::OnResize(UINT width, UINT height)
-{
-	// Clear the render targets
-	m_deviceContext->OMSetRenderTargets(0, 0, 0);
-	if (m_renderTargetView) { m_renderTargetView->Release(); m_renderTargetView = NULL; }
-
-	// Resize the swap chain buffers
-	HRESULT hr = m_swapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
-	assert(!FAILED(hr));
-
-	CreateRenderTargetView();
-
-	// Set the newly-created render target
-	m_deviceContext->OMSetRenderTargets(1, &m_renderTargetView, NULL);
-
-	// Resize the projection matrix
-	m_projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(XM_PIDIV4, (float)width / height, m_screenNear, m_screenFar);
-
-	// Resize the viewport
-	D3D11_VIEWPORT viewport;
-	viewport.Width = static_cast<float>(width);
-	viewport.Height = static_cast<float>(height);
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
 	viewport.TopLeftX = 0.0f;

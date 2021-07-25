@@ -51,7 +51,6 @@ private:
 	void CreateRenderTargetView();
 
 	void OnResize(LPARAM lparam);
-	void OnResize(UINT width, UINT height);
 
 private:
 

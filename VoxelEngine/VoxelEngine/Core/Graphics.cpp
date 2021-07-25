@@ -22,11 +22,9 @@ Graphics::~Graphics()
 
 bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd)
 {
-	VX_LOG_ERROR("Testing error msg");
-	VX_LOG_WARN("Testing warn msg");
-	VX_LOG_PRINT("Testing print msg");
-
-	VX_PROFILE_SCOPE();
+	VX_LOG_ERROR("error");
+	VX_LOG_WARN("warn");
+	VX_LOG_INFO("info");
 
 
 	bool initResult;
@@ -93,8 +91,6 @@ void Graphics::Shutdown()
 
 bool Graphics::Frame(const float dt)
 {
-
-
 	// Begin the ImGui frame
 	m_imGuiLayer->BeginFrame();
 
