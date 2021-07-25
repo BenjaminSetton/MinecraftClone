@@ -14,12 +14,16 @@ public:
 	~Chunk();
 
 
-	const uint32_t GetChunkID();
+	const uint32_t GetID();
 
 	const Block* GetBlock(uint8_t x, uint8_t y, uint8_t z);
 
 	void SetActive(const bool active);
 	const bool GetActive();
+
+	const DirectX::XMFLOAT3 GetPosition();
+
+	const DirectX::XMFLOAT3* GetBlockPositions();
 
 private:
 
@@ -31,14 +35,17 @@ private:
 private:
 
 	bool m_active;
-	uint32_t m_chunkID;
 
+	// TODO: Actually use this :)
+	uint32_t m_id;
+
+	DirectX::XMFLOAT3 m_pos;
+	
 	// Currently defines a 3D array of 16x16x16 blocks
 	Block* m_chunk[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 
-	// D3D11 buffers
-	std::vector<BlockVertex>  m_chunkVertices;
-	std::vector<unsigned int> m_chunkIndicies;
+	// Used for D3D11 instance buffer
+	DirectX::XMFLOAT3 m_blockPositions[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
 
 };
 

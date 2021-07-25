@@ -4,7 +4,7 @@
 
 using namespace DirectX;
 
-Chunk::Chunk()
+Chunk::Chunk() : m_active(true), m_id(0), m_pos(XMFLOAT3(0, 0, 0))
 {
 	// Ensures that a chunk will ALWAYS generate it's corresponding blocks
 	InitializeChunk();
@@ -13,8 +13,6 @@ Chunk::Chunk()
 
 Chunk::~Chunk()
 {
-	m_active = false;
-	m_chunkID = -1;
 	for (int x = 0; x < CHUNK_SIZE; x++)
 	{
 		for (int y = 0; y < CHUNK_SIZE; y++)
@@ -28,7 +26,7 @@ Chunk::~Chunk()
 	}
 }
 
-const uint32_t Chunk::GetChunkID() { return m_chunkID; }
+const uint32_t Chunk::GetID() { return m_id; }
 
 const Block* Chunk::GetBlock(uint8_t x, uint8_t y, uint8_t z) { return m_chunk[x][y][z]; }
 
@@ -36,10 +34,15 @@ void Chunk::SetActive(const bool active) { m_active = active; }
 
 const bool Chunk::GetActive() { return m_active; }
 
+const DirectX::XMFLOAT3 Chunk::GetPosition() { return m_pos; }
+
+const DirectX::XMFLOAT3* Chunk::GetBlockPositions() { return &m_blockPositions[0]; }
+
 void Chunk::InitializeChunk()
 {
 	m_active = true;
-	m_chunkID = 0; // TODO: Replace with an actual UUID
+	//m_id = 0; // TODO: Replace with an actual UUID
+	//m_pos = XMFLOAT3(0, 0, 0) // TODO: Relate the chunk ID with it's position
 
 	// Populate the chunk array
 	// For now we'll just initialize all blocks to "DIRT" blocks
@@ -58,18 +61,21 @@ void Chunk::InitializeChunk()
 
 void Chunk::InitializeBuffers()
 {
-	unsigned int numBlocksPerChunk = pow(CHUNK_SIZE, 3);
-	m_chunkVertices.reserve(24 * numBlocksPerChunk);
-	m_chunkIndicies.reserve(36 * numBlocksPerChunk);
-
+	uint16_t index = 0;
 	for (int x = 0; x < CHUNK_SIZE; x++)
 	{
 		for (int y = 0; y < CHUNK_SIZE; y++)
 		{
 			for (int z = 0; z < CHUNK_SIZE; z++)
 			{
-				DirectX::XMFLOAT3 offset = { static_cast<float>(x), static_cast<float>(y), static_cast<float>(z) };
-				//BlockVertex 
+				XMFLOAT3 blockPos = 
+				{ static_cast<float>(x) + m_pos.x, 
+				  static_cast<float>(y) + m_pos.y, 
+				  static_cast<float>(z) + m_pos.z
+				};
+
+				m_blockPositions[index++] = blockPos;
+
 			}
 		}
 	}

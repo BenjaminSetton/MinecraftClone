@@ -4,13 +4,6 @@
 
 std::map<std::string, ID3D11ShaderResourceView*> TextureManager::m_textures = std::map<std::string, ID3D11ShaderResourceView*>();
 
-// The rule of 3 methods are not necessary here
-TextureManager::TextureManager(){}
-
-TextureManager::TextureManager(const TextureManager& texManager){}
-
-TextureManager::~TextureManager(){}
-
 void TextureManager::Init(ID3D11Device* device)
 {
 	HRESULT hr;

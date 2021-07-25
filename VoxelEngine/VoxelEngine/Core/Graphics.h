@@ -25,7 +25,7 @@ public:
 
 	// Graphics class rule of 3
 	Graphics();
-	Graphics(const Graphics&);
+	Graphics(const Graphics&) = default;
 	~Graphics();
 
 	bool Initialize(const int& screenWidth, const int& screenHeight, HWND windowHandle);

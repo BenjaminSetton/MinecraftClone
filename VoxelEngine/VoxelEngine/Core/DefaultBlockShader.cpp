@@ -1,7 +1,8 @@
 #include "../Misc/pch.h"
 #include "DefaultBlockShader.h"
 
-#include "Block.h"
+#include "Chunk.h"
+#include "../Utility/Utility.h"
 
 using namespace DirectX;
 
@@ -22,7 +23,7 @@ void DefaultBlockShader::Render(ID3D11DeviceContext* context, unsigned int index
 	SetShaderParameters(context, WM, VM, PM, lightDir, lightCol, srv);
 
 	// Render the model
-	context->DrawIndexed(indexCount, 0, 0);
+	context->DrawIndexedInstanced(36, pow(CHUNK_SIZE, 3), 0, 0, 0);
 }
 
 void DefaultBlockShader::Shutdown()
@@ -84,13 +85,19 @@ void DefaultBlockShader::Shutdown()
 
 void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 {
+	// MEGA TEMPORARY
+	Chunk* tempChunk = new Chunk();
+
+
 	HRESULT hr;
 	D3D11_BUFFER_DESC matrixBufferDesc;
 	D3D11_BUFFER_DESC lightBufferDesc;
 	D3D11_BUFFER_DESC vertexBufferDesc;
 	D3D11_BUFFER_DESC indexBufferDesc;
+	D3D11_BUFFER_DESC instancePosBufferDesc;
 	D3D11_SUBRESOURCE_DATA vertexBufferData;
 	D3D11_SUBRESOURCE_DATA indexBufferData;
+	D3D11_SUBRESOURCE_DATA instancePosBufferData;
 	D3D11_SAMPLER_DESC samplerDesc;
 
 	// Setup the description of the matrix dynamic constant buffer that is in the vertex shader.
@@ -103,7 +110,7 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 
 	// Create the matrix constant buffer pointer so we can access the vertex shader constant buffer from within this class.
 	hr = device->CreateBuffer(&matrixBufferDesc, NULL, &m_matrixBuffer);
-	assert(!FAILED(hr));
+	VX_ASSERT(!FAILED(hr));
 
 	// Setup the description of the light dynamic constant buffer that is in the pixel shader.
 	lightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -115,7 +122,7 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 
 	// Create the matrix constant buffer pointer so we can access the vertex shader constant buffer from within this class.
 	hr = device->CreateBuffer(&lightBufferDesc, NULL, &m_lightBuffer);
-	assert(!FAILED(hr));
+	VX_ASSERT(!FAILED(hr));
 
 	// Create a texture sampler state description.
 	samplerDesc = {};
@@ -129,44 +136,56 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 
 	// Create the texture sampler state.
 	hr = device->CreateSamplerState(&samplerDesc, &m_sampler);
-	assert(!FAILED(hr));
+	VX_ASSERT(!FAILED(hr));
 
 
 	// Create the vertex and index buffers
-
-	// Set up the description of the static vertex buffer.
-	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 	vertexBufferDesc.ByteWidth = sizeof(BlockVertex) * 24;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.MiscFlags = 0;
 	vertexBufferDesc.StructureByteStride = 0;
 
-	// Give the subresource structure a pointer to the vertex data.
 	vertexBufferData.pSysMem = verts;
 	vertexBufferData.SysMemPitch = 0;
 	vertexBufferData.SysMemSlicePitch = 0;
 
 	// Now create the vertex buffer.
 	hr = device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &m_vertexBuffer);
-	assert(!FAILED(hr));
+	VX_ASSERT(!FAILED(hr));
 
-	// Set up the description of the static index buffer.
-	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+
+	indexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 	indexBufferDesc.ByteWidth = sizeof(unsigned int) * 36;
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDesc.CPUAccessFlags = 0;
 	indexBufferDesc.MiscFlags = 0;
 	indexBufferDesc.StructureByteStride = 0;
 
-	// Give the subresource structure a pointer to the index data.
 	indexBufferData.pSysMem = &indicies;
 	indexBufferData.SysMemPitch = 0;
 	indexBufferData.SysMemSlicePitch = 0;
 
 	// Create the index buffer.
 	hr = device->CreateBuffer(&indexBufferDesc, &indexBufferData, &m_indexBuffer);
-	assert(!FAILED(hr));
+	VX_ASSERT(!FAILED(hr));
+
+
+	instancePosBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	instancePosBufferDesc.ByteWidth = sizeof(XMFLOAT3) * pow(CHUNK_SIZE, 3);
+	instancePosBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	instancePosBufferDesc.CPUAccessFlags = 0;
+	instancePosBufferDesc.MiscFlags = 0;
+	instancePosBufferDesc.StructureByteStride = 0;
+
+	instancePosBufferData.pSysMem = tempChunk->GetBlockPositions();
+	instancePosBufferData.SysMemPitch = 0;
+	instancePosBufferData.SysMemSlicePitch = 0;
+
+	// Create the instance position buffer
+	hr = device->CreateBuffer(&instancePosBufferDesc, &instancePosBufferData, &m_instancePosBuffer);
+	VX_ASSERT(!FAILED(hr));
 	
 }
 
@@ -175,53 +194,38 @@ void DefaultBlockShader::CreateShaders(ID3D11Device* device, const WCHAR* vsFile
 	HRESULT hr;
 	ID3D10Blob* VSBlob;
 	ID3D10Blob* PSBlob;
-	D3D11_INPUT_ELEMENT_DESC inputElementDesc[3];
 
 	// Compile the vertex shader
 	hr = D3DCompileFromFile(vsFilename, nullptr, nullptr, "main", "vs_5_0",
 		D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG, 0, &VSBlob, nullptr);
-	assert(!FAILED(hr));
+	VX_ASSERT(!FAILED(hr));
 
 	// Compile the pixel shader
 	hr = D3DCompileFromFile(psFilename, nullptr, nullptr, "main", "ps_5_0",
 		D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG, 0, &PSBlob, nullptr);
-	assert(!FAILED(hr));
+	VX_ASSERT(!FAILED(hr));
 
 	// Create the shaders
 	hr = device->CreateVertexShader(VSBlob->GetBufferPointer(), VSBlob->GetBufferSize(), nullptr, &m_vertexShader);
-	assert(!FAILED(hr));
+	VX_ASSERT(!FAILED(hr));
 	hr = device->CreatePixelShader(PSBlob->GetBufferPointer(), PSBlob->GetBufferSize(), nullptr, &m_pixelShader);
-	assert(!FAILED(hr));
+	VX_ASSERT(!FAILED(hr));
 
 	// Create the input element description
-	inputElementDesc[0].SemanticName = "POSITION";
-	inputElementDesc[0].SemanticIndex = 0;
-	inputElementDesc[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	inputElementDesc[0].InputSlot = 0;
-	inputElementDesc[0].AlignedByteOffset = 0;
-	inputElementDesc[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-	inputElementDesc[0].InstanceDataStepRate = 0;
+	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 
-	inputElementDesc[1].SemanticName = "NORMAL";
-	inputElementDesc[1].SemanticIndex = 0;
-	inputElementDesc[1].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	inputElementDesc[1].InputSlot = 0;
-	inputElementDesc[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
-	inputElementDesc[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-	inputElementDesc[1].InstanceDataStepRate = 0;
-
-	inputElementDesc[2].SemanticName = "TEXCOORD";
-	inputElementDesc[2].SemanticIndex = 0;
-	inputElementDesc[2].Format = DXGI_FORMAT_R32G32_FLOAT;
-	inputElementDesc[2].InputSlot = 0;
-	inputElementDesc[2].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
-	inputElementDesc[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-	inputElementDesc[2].InstanceDataStepRate = 0;
+		// Per-instance data
+		{ "POS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
+	};
 
 	// Create the vertex input layout.
-	hr = device->CreateInputLayout(inputElementDesc, 3, VSBlob->GetBufferPointer(),
+	hr = device->CreateInputLayout(inputElementDesc, ARRAYSIZE(inputElementDesc), VSBlob->GetBufferPointer(),
 		VSBlob->GetBufferSize(), &m_inputLayout);
-	assert(!FAILED(hr));
+	VX_ASSERT(!FAILED(hr));
 
 	// Release the blobs as they are not needed anymore
 	VSBlob->Release();
@@ -238,8 +242,6 @@ void DefaultBlockShader::SetShaderParameters(ID3D11DeviceContext* context, Direc
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	MatrixBuffer* matrixBufferPtr;
 	LightBuffer* lightBufferPtr; 
-	unsigned int stride = sizeof(BlockVertex);
-	unsigned int offset = 0;
 
 	// Transpose the matrices to prepare them for the shader.
 	WM = XMMatrixTranspose(WM);
@@ -249,7 +251,7 @@ void DefaultBlockShader::SetShaderParameters(ID3D11DeviceContext* context, Direc
 
 	// Lock the matrix constant buffer so it can be written to.
 	hr = context->Map(m_matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	assert(!FAILED(hr));
+	VX_ASSERT(!FAILED(hr));
 	// Get a pointer to the data in the constant buffer.
 	matrixBufferPtr = (MatrixBuffer*)mappedResource.pData;
 	// Copy the matrices into the constant buffer.
@@ -261,7 +263,7 @@ void DefaultBlockShader::SetShaderParameters(ID3D11DeviceContext* context, Direc
 
 	// Lock the matrix constant buffer so it can be written to.
 	hr = context->Map(m_lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	assert(!FAILED(hr));
+	VX_ASSERT(!FAILED(hr));
 	// Get a pointer to the data in the constant buffer.
 	lightBufferPtr = (LightBuffer*)mappedResource.pData;
 	// Copy the matrices into the constant buffer.
@@ -291,7 +293,10 @@ void DefaultBlockShader::SetShaderParameters(ID3D11DeviceContext* context, Direc
 	context->PSSetSamplers(0, 1, &m_sampler);
 
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
-	context->IASetVertexBuffers(0, 1, &m_vertexBuffer, &stride, &offset);
+	ID3D11Buffer* buffers[] = { m_vertexBuffer, m_instancePosBuffer };
+	unsigned int stride[] = { sizeof(BlockVertex), sizeof(XMFLOAT3) };
+	unsigned int offset[] = { 0, 0 };
+	context->IASetVertexBuffers(0, ARRAYSIZE(buffers), buffers, stride, offset);
 
 	// Set the index buffer to active in the input assembler so it can be rendered.
 	context->IASetIndexBuffer(m_indexBuffer, DXGI_FORMAT_R32_UINT, 0);

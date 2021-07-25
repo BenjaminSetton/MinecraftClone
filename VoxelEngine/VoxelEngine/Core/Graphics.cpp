@@ -14,18 +14,12 @@ Graphics::Graphics()
 	m_imGuiLayer = nullptr;
 }
 
-Graphics::Graphics(const Graphics&){}
-
 Graphics::~Graphics()
 {
 }
 
 bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd)
 {
-	VX_LOG_ERROR("error");
-	VX_LOG_WARN("warn");
-	VX_LOG_INFO("info");
-
 
 	bool initResult;
 

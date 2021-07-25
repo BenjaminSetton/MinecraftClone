@@ -9,9 +9,9 @@ class TextureManager
 {
 public:
 
-	TextureManager();
-	TextureManager(const TextureManager& texManager);
-	~TextureManager();
+	TextureManager() = default;
+	TextureManager(const TextureManager& texManager) = default;
+	~TextureManager() = default;
 
 	static void Init(ID3D11Device* device);
 
