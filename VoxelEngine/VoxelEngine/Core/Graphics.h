@@ -23,10 +23,9 @@ class Graphics
 {
 public:
 
-	// Graphics class rule of 3
-	Graphics();
+	Graphics() = default;
 	Graphics(const Graphics&) = default;
-	~Graphics();
+	~Graphics() = default;
 
 	bool Initialize(const int& screenWidth, const int& screenHeight, HWND windowHandle);
 
@@ -38,13 +37,13 @@ public:
 
 private:
 
-	D3D* m_D3D;
-	Camera* m_debugCam;
-	DefaultBlockShader* m_shader;
+	D3D* m_D3D = nullptr;
+	Camera* m_debugCam = nullptr;
+	DefaultBlockShader* m_shader = nullptr;
 
-	TextureManager* m_textureManager;
+	TextureManager* m_textureManager = nullptr;
 
-	ImGuiLayer* m_imGuiLayer;
+	ImGuiLayer* m_imGuiLayer = nullptr;
 };
 
 #endif

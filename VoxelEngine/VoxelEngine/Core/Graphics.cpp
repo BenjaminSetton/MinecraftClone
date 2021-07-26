@@ -5,19 +5,6 @@
 
 using namespace DirectX;
 
-Graphics::Graphics()
-{
-	m_D3D = nullptr;
-	m_debugCam = nullptr;
-	m_shader = nullptr;
-	m_textureManager = nullptr;
-	m_imGuiLayer = nullptr;
-}
-
-Graphics::~Graphics()
-{
-}
-
 bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd)
 {
 
@@ -95,7 +82,7 @@ bool Graphics::Frame(const float dt)
 	XMFLOAT3 camRotF3 = m_debugCam->GetRotation();
 	float camRot[] = { camRotF3.x, camRotF3.y, camRotF3.z };
 	ImGui::Begin("Camera Debug");
-	ImGui::SliderFloat3("Camera Pos", camPos, -10.0f, 10, "%2.2f", 1);
+	ImGui::SliderFloat3("Camera Pos", camPos, -20.0f, 20, "%2.2f", 1);
 	ImGui::SliderFloat3("Camera Rot", camRot, -180.0f, 180.0f, "%2.2f", 1);
 	ImGui::End();
 	m_debugCam->SetPosition({ camPos[0], camPos[1], camPos[2] });
