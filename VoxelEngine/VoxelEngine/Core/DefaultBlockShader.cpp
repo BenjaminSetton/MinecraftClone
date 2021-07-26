@@ -23,7 +23,7 @@ void DefaultBlockShader::Render(ID3D11DeviceContext* context, unsigned int index
 	SetShaderParameters(context, WM, VM, PM, lightDir, lightCol, srv);
 
 	// Render the model
-	context->DrawIndexedInstanced(36, 2/*pow(CHUNK_SIZE, 3)*/, 0, 0, 0);
+	context->DrawIndexedInstanced(36, pow(CHUNK_SIZE, 3), 0, 0, 0);
 }
 
 void DefaultBlockShader::Shutdown()
