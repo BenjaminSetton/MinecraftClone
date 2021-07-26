@@ -70,7 +70,7 @@ void Chunk::InitializeBuffers()
 			{
 				XMFLOAT3 blockPos = 
 				{ static_cast<float>(x) + m_pos.x, 
-				  static_cast<float>(y) + m_pos.y, 
+				  static_cast<float>(-y) + m_pos.y, 
 				  static_cast<float>(z) + m_pos.z
 				};
 
