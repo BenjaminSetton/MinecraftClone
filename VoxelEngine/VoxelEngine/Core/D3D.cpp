@@ -509,11 +509,13 @@ void D3D::CreateDepthStencilView(UINT width, UINT height)
 void D3D::OnResize(LPARAM lparam)
 {
 
-	// Calculate the new width and height of the window
+
 	UINT newWidth = LOWORD(lparam);
 	UINT newHeight = HIWORD(lparam);
 
-	// Resize the swap chain buffers
+	// Release all outstanding references to the back buffer before calling ResizeBuffers
+	if (m_renderTargetView) { m_renderTargetView->Release(); m_renderTargetView = NULL; }
+
 	HRESULT hr = m_swapChain->ResizeBuffers(0, newWidth, newHeight, DXGI_FORMAT_UNKNOWN, 0);
 	VX_ASSERT(!FAILED(hr));
 
