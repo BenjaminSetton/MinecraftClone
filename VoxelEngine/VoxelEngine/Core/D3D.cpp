@@ -5,10 +5,6 @@
 
 using namespace DirectX;
 
-D3D::D3D(){}
-D3D::D3D(const D3D&){}
-D3D::~D3D(){}
-
 bool D3D::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd, const bool& vsync,
 					 const bool& fullscreen, const float& screenFar, const float& screenNear)
 {
@@ -508,8 +504,6 @@ void D3D::CreateDepthStencilView(UINT width, UINT height)
 
 void D3D::OnResize(LPARAM lparam)
 {
-
-
 	UINT newWidth = LOWORD(lparam);
 	UINT newHeight = HIWORD(lparam);
 
@@ -523,7 +517,7 @@ void D3D::OnResize(LPARAM lparam)
 	CreateRenderTargetView();
 
 	// Resize the projection matrix
-	m_projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(XM_PIDIV4, (float)newWidth / newHeight, m_screenNear, m_screenFar);
+	m_projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(XM_PIDIV4, (float)16.0f / 9.0f, m_screenNear, m_screenFar);
 
 	// Resize the viewport
 	D3D11_VIEWPORT viewport;

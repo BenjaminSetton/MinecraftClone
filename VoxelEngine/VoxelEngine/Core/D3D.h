@@ -16,9 +16,9 @@ class D3D
 {
 public:
 
-	D3D();
-	D3D(const D3D&);
-	~D3D();
+	D3D() = default;
+	D3D(const D3D&) = default;
+	~D3D() = default;
 
 	bool Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd, const bool& vsync, 
 					const bool& fullscreen, const float& screenFar, const float& screenNear);
@@ -63,18 +63,18 @@ private:
 	float m_screenNear;
 	float m_screenFar;
 
-	IDXGISwapChain* m_swapChain;
-	ID3D11Device* m_device;
-	ID3D11DeviceContext* m_deviceContext;
+	IDXGISwapChain* m_swapChain = nullptr;
+	ID3D11Device* m_device = nullptr;
+	ID3D11DeviceContext* m_deviceContext = nullptr;
 
-	ID3D11RenderTargetView* m_renderTargetView;
-	ID3D11Texture2D* m_depthStencilBuffer;
+	ID3D11RenderTargetView* m_renderTargetView = nullptr;
+	ID3D11Texture2D* m_depthStencilBuffer = nullptr;
 
-	ID3D11DepthStencilState* m_depthStencilState;
-	ID3D11DepthStencilState* m_depthDisabledStencilState;
-	ID3D11DepthStencilView* m_depthStencilView;
-	ID3D11RasterizerState* m_defaultRasterState;
-	ID3D11RasterizerState* m_wireframeRasterState;
+	ID3D11DepthStencilState* m_depthStencilState = nullptr;
+	ID3D11DepthStencilState* m_depthDisabledStencilState = nullptr;
+	ID3D11DepthStencilView* m_depthStencilView = nullptr;
+	ID3D11RasterizerState* m_defaultRasterState = nullptr;
+	ID3D11RasterizerState* m_wireframeRasterState = nullptr;
 
 	DirectX::XMMATRIX m_projectionMatrix;
 	DirectX::XMMATRIX m_worldMatrix;
