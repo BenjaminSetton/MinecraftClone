@@ -23,7 +23,7 @@ void DefaultBlockShader::Render(ID3D11DeviceContext* context, unsigned int index
 	SetShaderParameters(context, WM, VM, PM, lightDir, lightCol, srv);
 
 	// Render the model
-	context->DrawIndexedInstanced(36, pow(CHUNK_SIZE, 3), 0, 0, 0);
+	context->DrawIndexedInstanced(36, 2/*pow(CHUNK_SIZE, 3)*/, 0, 0, 0);
 }
 
 void DefaultBlockShader::Shutdown()
@@ -90,17 +90,8 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 
 
 	HRESULT hr;
-	D3D11_BUFFER_DESC matrixBufferDesc;
-	D3D11_BUFFER_DESC lightBufferDesc;
-	D3D11_BUFFER_DESC vertexBufferDesc;
-	D3D11_BUFFER_DESC indexBufferDesc;
-	D3D11_BUFFER_DESC instancePosBufferDesc;
-	D3D11_SUBRESOURCE_DATA vertexBufferData;
-	D3D11_SUBRESOURCE_DATA indexBufferData;
-	D3D11_SUBRESOURCE_DATA instancePosBufferData;
-	D3D11_SAMPLER_DESC samplerDesc;
-
 	// Setup the description of the matrix dynamic constant buffer that is in the vertex shader.
+	D3D11_BUFFER_DESC matrixBufferDesc;
 	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	matrixBufferDesc.ByteWidth = sizeof(MatrixBuffer);
 	matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -113,6 +104,7 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 	VX_ASSERT(!FAILED(hr));
 
 	// Setup the description of the light dynamic constant buffer that is in the pixel shader.
+	D3D11_BUFFER_DESC lightBufferDesc;
 	lightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	lightBufferDesc.ByteWidth = sizeof(LightBuffer);
 	lightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -125,7 +117,7 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 	VX_ASSERT(!FAILED(hr));
 
 	// Create a texture sampler state description.
-	samplerDesc = {};
+	D3D11_SAMPLER_DESC samplerDesc = {};
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -140,6 +132,7 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 
 
 	// Create the vertex and index buffers
+	D3D11_BUFFER_DESC vertexBufferDesc;
 	vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 	vertexBufferDesc.ByteWidth = sizeof(BlockVertex) * 24;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -147,6 +140,7 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 	vertexBufferDesc.MiscFlags = 0;
 	vertexBufferDesc.StructureByteStride = 0;
 
+	D3D11_SUBRESOURCE_DATA vertexBufferData;
 	vertexBufferData.pSysMem = verts;
 	vertexBufferData.SysMemPitch = 0;
 	vertexBufferData.SysMemSlicePitch = 0;
@@ -156,6 +150,7 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 	VX_ASSERT(!FAILED(hr));
 
 
+	D3D11_BUFFER_DESC indexBufferDesc;
 	indexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
 	indexBufferDesc.ByteWidth = sizeof(unsigned int) * 36;
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
@@ -163,6 +158,7 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 	indexBufferDesc.MiscFlags = 0;
 	indexBufferDesc.StructureByteStride = 0;
 
+	D3D11_SUBRESOURCE_DATA indexBufferData;
 	indexBufferData.pSysMem = &indicies;
 	indexBufferData.SysMemPitch = 0;
 	indexBufferData.SysMemSlicePitch = 0;
@@ -172,6 +168,7 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 	VX_ASSERT(!FAILED(hr));
 
 
+	D3D11_BUFFER_DESC instancePosBufferDesc;
 	instancePosBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	instancePosBufferDesc.ByteWidth = sizeof(XMFLOAT3) * pow(CHUNK_SIZE, 3);
 	instancePosBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -179,6 +176,7 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 	instancePosBufferDesc.MiscFlags = 0;
 	instancePosBufferDesc.StructureByteStride = 0;
 
+	D3D11_SUBRESOURCE_DATA instancePosBufferData;
 	instancePosBufferData.pSysMem = tempChunk->GetBlockPositions();
 	instancePosBufferData.SysMemPitch = 0;
 	instancePosBufferData.SysMemSlicePitch = 0;

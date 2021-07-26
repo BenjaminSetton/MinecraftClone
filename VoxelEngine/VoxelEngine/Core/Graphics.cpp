@@ -28,8 +28,9 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	if (!initResult) return false;
 
 	m_debugCam = new Camera;
-	m_debugCam->SetPosition({0.0f, 5.0f, -10.0f});
+	m_debugCam->SetPosition({-4.0f, 1.65f, -5.0f});
 	// We can temporarily call Render() here since camera's position and rotation isn't changing for now
+	m_debugCam->SetRotation({ 0.0f, 0.0f, 0.0f });
 	m_debugCam->ConstructMatrix();
 
 	// Create the shader class object
@@ -88,12 +89,21 @@ bool Graphics::Frame(const float dt)
 	// Begin the ImGui frame
 	m_imGuiLayer->BeginFrame();
 
+	// Expose the camera stats to ImGui
+	XMFLOAT3 camPosF3 = m_debugCam->GetPosition();
+	float camPos[] = { camPosF3.x, camPosF3.y, camPosF3.z };
+	XMFLOAT3 camRotF3 = m_debugCam->GetRotation();
+	float camRot[] = { camRotF3.x, camRotF3.y, camRotF3.z };
+	ImGui::Begin("Camera Debug");
+	ImGui::SliderFloat3("Camera Pos", camPos, -10.0f, 10, "%2.2f", 1);
+	ImGui::SliderFloat3("Camera Rot", camRot, -180.0f, 180.0f, "%2.2f", 1);
+	ImGui::End();
+	m_debugCam->SetPosition({ camPos[0], camPos[1], camPos[2] });
+	m_debugCam->SetRotation({ camRot[0], camRot[1], camRot[2] });
+	m_debugCam->ConstructMatrix();
+
 	// Begin the D3D scene
 	m_D3D->BeginScene(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
-
-	XMFLOAT3 cameraRot = m_debugCam->GetRotation();
-	m_debugCam->SetRotation({ 25.0f, 0.0f, 0.0f });
-	m_debugCam->ConstructMatrix();
 
 	// Render models, calculate shadows, render UI, etc
 	m_shader->Render(m_D3D->GetDeviceContext(), 36, m_D3D->GetWorldMatrix(), m_debugCam->GetViewMatrix(),
@@ -102,7 +112,6 @@ bool Graphics::Frame(const float dt)
 
 	// End the ImGui frame
 	m_D3D->ClearDepthBuffer(1.0f); // Clear the depth buffer so GUI draws on top of everything
-	
 	m_imGuiLayer->EndFrame();
 
 	// End the scene and present the swap chain

@@ -16,7 +16,7 @@ public:
 
 	const uint32_t GetID();
 
-	const Block* GetBlock(uint8_t x, uint8_t y, uint8_t z);
+	const Block* GetBlock(unsigned int x, unsigned int y, unsigned int z);
 
 	void SetActive(const bool active);
 	const bool GetActive();

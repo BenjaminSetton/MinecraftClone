@@ -4,7 +4,7 @@
 
 using namespace DirectX;
 
-Chunk::Chunk() : m_active(true), m_id(0), m_pos(XMFLOAT3(0, 0, 0))
+Chunk::Chunk() : m_active(true), m_id(0), m_pos(XMFLOAT3(-5.0f, 0, 0))
 {
 	// Ensures that a chunk will ALWAYS generate it's corresponding blocks
 	InitializeChunk();
@@ -28,7 +28,7 @@ Chunk::~Chunk()
 
 const uint32_t Chunk::GetID() { return m_id; }
 
-const Block* Chunk::GetBlock(uint8_t x, uint8_t y, uint8_t z) { return m_chunk[x][y][z]; }
+const Block* Chunk::GetBlock(unsigned int x, unsigned int y, unsigned int z) { return m_chunk[x][y][z]; }
 
 void Chunk::SetActive(const bool active) { m_active = active; }
 
@@ -74,6 +74,7 @@ void Chunk::InitializeBuffers()
 				  static_cast<float>(z) + m_pos.z
 				};
 
+				// It would be good to only render blocks that are not occluded
 				m_blockPositions[index++] = blockPos;
 
 			}

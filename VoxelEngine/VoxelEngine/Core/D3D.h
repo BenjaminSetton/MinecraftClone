@@ -50,6 +50,8 @@ private:
 
 	void CreateRenderTargetView();
 
+	void CreateDepthStencilView(UINT width, UINT height);
+
 	void OnResize(LPARAM lparam);
 
 private:
