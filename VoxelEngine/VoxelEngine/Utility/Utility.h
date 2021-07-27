@@ -13,6 +13,8 @@
 #define CONCAT(a, b) CONCAT_(a, b)
 #define VARNAME(var) CONCAT(var, __LINE__)
 
+#define BIT(x) (1 << x)
+
 // Assert defines
 #define VX_ASSERT(cond) assert(cond)
 #define VX_ASSERT_MSG(cond, msg) assert(cond && "msg")
@@ -55,6 +57,8 @@ VARNAME(log).End();
 #define CONCAT_(a, b)
 #define CONCAT(a, b)
 #define VARNAME(var)
+
+#define BIT(x)
 
 // Assert defines
 #define VX_ASSERT(cond)

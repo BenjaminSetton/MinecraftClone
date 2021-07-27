@@ -99,6 +99,9 @@
     <ClCompile Include="Utility\Log.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
+    <ClCompile Include="Core\Event.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utility\Clock.h">
@@ -175,6 +178,9 @@
     </ClInclude>
     <ClInclude Include="Utility\Log.h">
       <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Event.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
