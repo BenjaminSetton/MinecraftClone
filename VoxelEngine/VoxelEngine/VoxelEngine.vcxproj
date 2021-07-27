@@ -214,7 +214,7 @@
     <ClCompile Include="Core\ChunkManager.cpp" />
     <ClCompile Include="Core\D3D.cpp" />
     <ClCompile Include="Core\DefaultBlockShader.cpp" />
-    <ClCompile Include="Core\Event.cpp" />
+    <ClCompile Include="Core\Events\Event.cpp" />
     <ClCompile Include="Core\Graphics.cpp" />
     <ClCompile Include="Core\main.cpp" />
     <ClCompile Include="Core\TextureManager.cpp" />
@@ -248,7 +248,7 @@
     <ClInclude Include="Core\ChunkManager.h" />
     <ClInclude Include="Core\D3D.h" />
     <ClInclude Include="Core\DefaultBlockShader.h" />
-    <ClInclude Include="Core\Event.h" />
+    <ClInclude Include="Core\Events\Event.h" />
     <ClInclude Include="Core\Graphics.h" />
     <ClInclude Include="Core\TextureManager.h" />
     <ClInclude Include="Misc\pch.h" />

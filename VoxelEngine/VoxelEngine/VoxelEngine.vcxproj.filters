@@ -28,6 +28,9 @@
     <Filter Include="Utility\ImGui">
       <UniqueIdentifier>{3346e9bb-48f0-4656-bad3-c13ce6582b2f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\Events">
+      <UniqueIdentifier>{556a61d8-22a9-4ae2-b1e0-1a1562b3d125}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Utility\Clock.cpp">
@@ -99,8 +102,8 @@
     <ClCompile Include="Utility\Log.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Event.cpp">
-      <Filter>Core</Filter>
+    <ClCompile Include="Core\Events\Event.cpp">
+      <Filter>Core\Events</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -179,8 +182,8 @@
     <ClInclude Include="Utility\Log.h">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Event.h">
-      <Filter>Core</Filter>
+    <ClInclude Include="Core\Events\Event.h">
+      <Filter>Core\Events</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
