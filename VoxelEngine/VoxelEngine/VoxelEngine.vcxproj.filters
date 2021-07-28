@@ -185,6 +185,12 @@
     <ClInclude Include="Core\Events\Event.h">
       <Filter>Core\Events</Filter>
     </ClInclude>
+    <ClInclude Include="Core\Events\KeyCodes.h">
+      <Filter>Core\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Events\IEvent.h">
+      <Filter>Core\Events</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\DefaultBlock_VS.hlsl">
