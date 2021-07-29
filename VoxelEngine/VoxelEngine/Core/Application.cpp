@@ -1,6 +1,7 @@
 #include "../Misc/pch.h"
 
 #include "Application.h"
+#include "ApplicationHandle.h"
 
 // Windows procedure
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -250,7 +251,13 @@ LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT msg, WPARAM wparam,
 	case WM_KEYDOWN:
 	{
 		// If a key is pressed send it to the input object so it can record that state.
-		m_Input->KeyDown(static_cast<unsigned int>(wparam));
+		//m_Input->KeyDown(static_cast<unsigned int>(wparam));
+		KeyboardEvent event;
+		event.key = static_cast<unsigned int>(wparam);
+		event.isPressed = true;
+
+		Broadcast(event);
+
 		return 0;
 	}
 
@@ -258,7 +265,14 @@ LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT msg, WPARAM wparam,
 	case WM_KEYUP:
 	{
 		// If a key is released then send it to the input object so it can unset the state for that key.
-		m_Input->KeyUp(static_cast<unsigned int>(wparam));
+		//m_Input->KeyUp(static_cast<unsigned int>(wparam));
+
+		KeyboardEvent event;
+		event.key = static_cast<unsigned int>(wparam);
+		event.isPressed = false;
+
+		Broadcast(event);
+
 		return 0;
 	}
 
@@ -268,6 +282,7 @@ LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT msg, WPARAM wparam,
 		return DefWindowProc(hwnd, msg, wparam, lparam);
 	}
 	}
+
 }
 
 void Application::ShutdownWindows()

@@ -1,53 +1,22 @@
 #ifndef _EVENT_H
 #define _EVENT_H
 
-// Event data classes
-class KeyboardEvent : public Event
-{
-public:
-	// Rule of three + overloaded constructor
-	KeyboardEvent() = default;
-	KeyboardEvent(const EventType eventType);
-	KeyboardEvent(const KeyboardEvent& other) = default;
-	~KeyboardEvent() = default;
-
-	// Event functions
-	virtual const EventCategory GetCategory() const override;
-
-	// Keyboard data
-	unsigned int m_key;
-	bool m_isPressed;
-};
-
-class MouseEvent : public Event
-{
-public:
-	// Rule of three + overloaded constructor
-	MouseEvent() = default;
-	MouseEvent(const EventType eventType);
-	MouseEvent(const MouseEvent & other) = default;
-	~MouseEvent() = default;
-
-	// Event functions
-	virtual const EventCategory GetCategory() const override;
-
-	// Mouse data
-	float m_x, m_y;
-};
+#include "../../Utility/Utility.h"
 
 // Event type enumerations
 enum class EventType
 {
-	None = 0,
-	KeyboardKeyDown, KeyboardKeyUp,
-	MouseButtonDown, MouseButtonUp
+	NONE = 0,
+	KEYBOARD_KEY_DOWN, KEYBOARD_KEY_UP,
+	MOUSE_BUTTON_DOWN, MOUSE_BUTTON_UP
 };
 
-enum EventCategory
+enum class EventCategory
 {
-	Keyboard = 0,
-	Mouse,
-	Application,
+	UNDEFINED		= BIT(0),
+	KEYBOARD		= BIT(1),
+	MOUSE			= BIT(2),
+	APPLICATION		= BIT(3),
 };
 
 class Event
@@ -67,5 +36,41 @@ protected:
 	EventType m_type;
 
 };
+
+// Event data classes
+class KeyboardEvent : public Event
+{
+public:
+	// Rule of three + overloaded constructor
+	KeyboardEvent() = default;
+	KeyboardEvent(const EventType eventType);
+	KeyboardEvent(const KeyboardEvent& other) = default;
+	~KeyboardEvent() = default;
+
+	// Event functions
+	virtual const EventCategory GetCategory() const override;
+
+	// Keyboard data
+	unsigned int key;
+	bool isPressed;
+};
+
+class MouseEvent : public Event
+{
+public:
+	// Rule of three + overloaded constructor
+	MouseEvent() = default;
+	MouseEvent(const EventType eventType);
+	MouseEvent(const MouseEvent & other) = default;
+	~MouseEvent() = default;
+
+	// Event functions
+	virtual const EventCategory GetCategory() const override;
+
+	// Mouse data
+	float x, y;
+	bool LMBDown, MMBDown, RMBDown;
+};
+
 
 #endif

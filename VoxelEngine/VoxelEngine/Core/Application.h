@@ -14,8 +14,9 @@
 #include "../Utility/Input.h"
 #include "Graphics.h"
 #include "../Utility/Clock.h"
+#include "./Events/IEvent.h";
 
-class Application
+class Application : public EventSubject
 {
 public:
 
@@ -48,8 +49,5 @@ private:
 	Graphics* m_Graphics;
 	Clock* m_Clock;
 };
-
-// Static application handle pointer
-static Application* ApplicationHandle = nullptr;
 
 #endif

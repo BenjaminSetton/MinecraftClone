@@ -1,12 +1,11 @@
-#include "../Misc/pch.h""
+#include "../Misc/pch.h"
 
 #include "Input.h"
 
 std::bitset<256> Input::m_keys = std::bitset<256>(false);
 
-Input::Input(){}
+Input::Input() : EventObserver(EventCategory::KEYBOARD) {}
 Input::~Input(){}
-Input::Input(const Input&){}
 
 
 void Input::KeyUp(unsigned int key)
@@ -20,4 +19,17 @@ void Input::KeyDown(unsigned int key)
 bool Input::IsKeyDown(unsigned int key)
 {
 	return m_keys[key];
+}
+
+void Input::OnEvent(const Event& event)
+{
+	EventCategory category = event.GetCategory();
+	VX_ASSERT(category == EventCategory::KEYBOARD);
+
+	KeyboardEvent keyData = (KeyboardEvent&)event;
+	
+	if (keyData.isPressed) KeyDown(keyData.key);
+	else KeyUp(keyData.key);
+
+	VX_LOG_INFO("OnEvent is called");
 }
