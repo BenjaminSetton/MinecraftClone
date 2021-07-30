@@ -1,10 +1,14 @@
 #include "../Misc/pch.h"
 
 #include "Input.h"
+#include "../Core/ApplicationHandle.h"
 
 std::bitset<256> Input::m_keys = std::bitset<256>(false);
 
-Input::Input() : EventObserver(EventCategory::KEYBOARD) {}
+Input::Input() : EventObserver(EventCategory::KEYBOARD) 
+{
+	ApplicationHandle->Subscribe(this);
+}
 Input::~Input(){}
 
 

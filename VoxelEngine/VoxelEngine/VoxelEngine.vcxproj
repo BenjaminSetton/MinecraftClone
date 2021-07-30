@@ -214,10 +214,6 @@
     <ClCompile Include="Core\ChunkManager.cpp" />
     <ClCompile Include="Core\D3D.cpp" />
     <ClCompile Include="Core\DefaultBlockShader.cpp" />
-    <ClCompile Include="Core\Events\Event.cpp">
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../../Misc/pch.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../../Misc/pch.h</PrecompiledHeaderFile>
-    </ClCompile>
     <ClCompile Include="Core\Graphics.cpp" />
     <ClCompile Include="Core\main.cpp" />
     <ClCompile Include="Core\TextureManager.cpp" />
@@ -255,6 +251,7 @@
     <ClInclude Include="Core\Events\Event.h" />
     <ClInclude Include="Core\Events\IEvent.h" />
     <ClInclude Include="Core\Events\KeyCodes.h" />
+    <ClInclude Include="Core\Events\MouseEvent.h" />
     <ClInclude Include="Core\Graphics.h" />
     <ClInclude Include="Core\TextureManager.h" />
     <ClInclude Include="Misc\pch.h" />

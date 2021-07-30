@@ -102,9 +102,6 @@
     <ClCompile Include="Utility\Log.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Events\Event.cpp">
-      <Filter>Core\Events</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utility\Clock.h">
@@ -193,6 +190,9 @@
     </ClInclude>
     <ClInclude Include="Core\ApplicationHandle.h">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Events\MouseEvent.h">
+      <Filter>Core\Events</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

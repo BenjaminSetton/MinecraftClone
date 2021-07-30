@@ -7,10 +7,11 @@
 enum class EventType
 {
 	NONE = 0,
-	KEYBOARD_KEY_DOWN, KEYBOARD_KEY_UP,
-	MOUSE_BUTTON_DOWN, MOUSE_BUTTON_UP
+	KEYBOARD_KEY_DOWN_T, KEYBOARD_KEY_UP_T,
+	MOUSE_BUTTON_DOWN_T, MOUSE_BUTTON_UP_T, MOUSE_MOVED_T, MOUSE_SCROLLED_T
 };
 
+// Event category enumerations
 enum class EventCategory
 {
 	UNDEFINED		= BIT(0),
@@ -24,16 +25,11 @@ class Event
 public:
 
 	Event() = default;
-	Event(const EventType eventType);
 	Event(const Event& other) = default;
 	~Event() = default;
 
-	const EventType GetType() const;
+	virtual const EventType GetType() const = 0;
 	virtual const EventCategory GetCategory() const = 0;
-
-protected:
-
-	EventType m_type;
 
 };
 
@@ -43,33 +39,16 @@ class KeyboardEvent : public Event
 public:
 	// Rule of three + overloaded constructor
 	KeyboardEvent() = default;
-	KeyboardEvent(const EventType eventType);
+	KeyboardEvent(const EventType eventType) : Event(eventType) {}
 	KeyboardEvent(const KeyboardEvent& other) = default;
 	~KeyboardEvent() = default;
 
 	// Event functions
-	virtual const EventCategory GetCategory() const override;
+	virtual const EventCategory GetCategory() const override { return EventCategory::KEYBOARD; }
 
 	// Keyboard data
 	unsigned int key;
 	bool isPressed;
-};
-
-class MouseEvent : public Event
-{
-public:
-	// Rule of three + overloaded constructor
-	MouseEvent() = default;
-	MouseEvent(const EventType eventType);
-	MouseEvent(const MouseEvent & other) = default;
-	~MouseEvent() = default;
-
-	// Event functions
-	virtual const EventCategory GetCategory() const override;
-
-	// Mouse data
-	float x, y;
-	bool LMBDown, MMBDown, RMBDown;
 };
 
 

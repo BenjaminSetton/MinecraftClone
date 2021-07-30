@@ -3,7 +3,6 @@
 
 #include <vector>
 #include "Event.h"
-#include "../ApplicationHandle.h"
 
 // Observer receives messages from Subject through OnEvent()
 class EventObserver
@@ -11,19 +10,19 @@ class EventObserver
 public:
 
 
-	EventObserver(const EventCategory categories) : m_subscribedCategories(static_cast<uint16_t>(categories)) 
-	{
-		ApplicationHandle->Subscribe(this);
-	}
+	EventObserver(const EventCategory categories) : m_subscribedCategories(static_cast<uint16_t>(categories)) {}
 
 
 	const uint16_t GetSubscribedCategories() const { return m_subscribedCategories; }
+	
+	const bool IsSubscribedToCategory(EventCategory& cat) { return m_subscribedCategories & static_cast<uint16_t>(cat); }
 
 	virtual void OnEvent(const Event& event) = 0;
 
 private:
 
 	uint16_t m_subscribedCategories = 0;
+
 };
 
 // Subject holds references to all observers and is able to broadcast messages
@@ -51,13 +50,14 @@ public:
 		EventCategory eventCat = event.GetCategory();
 		for(auto& obs : observerList)
 		{
-			if (obs->GetSubscribedCategories() & static_cast<uint16_t>(eventCat)) obs->OnEvent(event);
+			if (obs->IsSubscribedToCategory(eventCat)) obs->OnEvent(event);
 		}
 	}
 
 protected:
 
 	std::vector<EventObserver*> observerList;
+
 
 };
 
