@@ -6,9 +6,7 @@
 // Windows procedure
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-	Application* app = dynamic_cast<Application*>(GlobalSubject);
-	if(app) app->MessageHandler(hwnd, msg, wparam, lparam);
-	return 0;
+	return ApplicationHandle->MessageHandler(hwnd, msg, wparam, lparam);
 }
 
 Application::Application() : EventSubject()
@@ -54,14 +52,14 @@ bool Application::Initialize()
 	screenWidth = 0;
 	screenHeight = 0;
 
-	GlobalSubject = this;
+	ApplicationHandle = this;
 
 	// Initialize the windows api.
 	InitializeWindows(screenWidth, screenHeight);
 
 	// Create the input object.  This object will be used to handle reading the keyboard input from the user.
 	m_Input = new Input;
-	if (!m_Input) { return false; }
+	Subscribe(m_Input);
 
 	// Create the graphics object.  This object will handle rendering all the graphics for this application.
 	m_Graphics = new Graphics;
