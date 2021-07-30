@@ -9,9 +9,7 @@ class EventObserver
 {
 public:
 
-
 	EventObserver(const EventCategory categories) : m_subscribedCategories(static_cast<uint16_t>(categories)) {}
-
 
 	const uint16_t GetSubscribedCategories() const { return m_subscribedCategories; }
 	

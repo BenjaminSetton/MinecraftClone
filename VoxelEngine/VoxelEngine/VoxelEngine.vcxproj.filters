@@ -188,9 +188,6 @@
     <ClInclude Include="Core\Events\IEvent.h">
       <Filter>Core\Events</Filter>
     </ClInclude>
-    <ClInclude Include="Core\ApplicationHandle.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="Core\Events\MouseEvent.h">
       <Filter>Core\Events</Filter>
     </ClInclude>

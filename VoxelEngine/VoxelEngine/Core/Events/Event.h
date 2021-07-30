@@ -14,10 +14,9 @@ enum class EventType
 // Event category enumerations
 enum class EventCategory
 {
-	UNDEFINED		= BIT(0),
-	KEYBOARD		= BIT(1),
-	MOUSE			= BIT(2),
-	APPLICATION		= BIT(3),
+	KEYBOARD		= BIT(0),
+	MOUSE			= BIT(1),
+	APPLICATION		= BIT(2),
 };
 
 class Event
@@ -31,24 +30,6 @@ public:
 	virtual const EventType GetType() const = 0;
 	virtual const EventCategory GetCategory() const = 0;
 
-};
-
-// Event data classes
-class KeyboardEvent : public Event
-{
-public:
-	// Rule of three + overloaded constructor
-	KeyboardEvent() = default;
-	KeyboardEvent(const EventType eventType) : Event(eventType) {}
-	KeyboardEvent(const KeyboardEvent& other) = default;
-	~KeyboardEvent() = default;
-
-	// Event functions
-	virtual const EventCategory GetCategory() const override { return EventCategory::KEYBOARD; }
-
-	// Keyboard data
-	unsigned int key;
-	bool isPressed;
 };
 
 

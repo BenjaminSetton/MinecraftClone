@@ -1,34 +1,12 @@
 #include "../Misc/pch.h"
 
 #include "Application.h"
-#include "ApplicationHandle.h"
+#include "./Events/KeyCodes.h"
 
 // Windows procedure
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-
-	switch (msg)
-	{
-		// Check if the window is being destroyed.
-	case WM_DESTROY:
-	{
-		PostQuitMessage(0);
-		return 0;
-	}
-
-	// Check if the window is being closed.
-	case WM_CLOSE:
-	{
-		PostQuitMessage(0);
-		return 0;
-	}
-
-	// All other messages pass to the message handler in the system class.
-	default:
-	{
-		return ApplicationHandle->MessageHandler(hwnd, msg, wparam, lparam);
-	}
-	}
+	return ApplicationHandle->MessageHandler(hwnd, msg, wparam, lparam);
 }
 
 Application::Application()
@@ -247,32 +225,31 @@ LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT msg, WPARAM wparam,
 
 	switch (msg)
 	{
-		// Check if a key has been pressed on the keyboard.
-	case WM_KEYDOWN:
+	case WM_DESTROY:
 	{
-		// If a key is pressed send it to the input object so it can record that state.
-		//m_Input->KeyDown(static_cast<unsigned int>(wparam));
-		KeyboardEvent event;
-		event.key = static_cast<unsigned int>(wparam);
-		event.isPressed = true;
-
-		Broadcast(event);
-
+		PostQuitMessage(0);
 		return 0;
 	}
+	case WM_CLOSE:
+	{
+		PostQuitMessage(0);
+		return 0;
+	}
+	case WM_KEYDOWN:
+	{
 
-	// Check if a key has been released on the keyboard.
+		KeyboardDownEvent keyDownEvent = KeyboardDownEvent(static_cast<uint16_t>(wparam));
+		Broadcast(keyDownEvent);
+		return 0;
+	}
 	case WM_KEYUP:
 	{
-		// If a key is released then send it to the input object so it can unset the state for that key.
-		//m_Input->KeyUp(static_cast<unsigned int>(wparam));
-
-		KeyboardEvent event;
-		event.key = static_cast<unsigned int>(wparam);
-		event.isPressed = false;
-
-		Broadcast(event);
-
+		KeyboardUpEvent keyDownEvent = KeyboardUpEvent(static_cast<uint16_t>(wparam));
+		Broadcast(keyDownEvent);
+		return 0;
+	}
+	case WM_MOUSEMOVE:
+	{
 		return 0;
 	}
 

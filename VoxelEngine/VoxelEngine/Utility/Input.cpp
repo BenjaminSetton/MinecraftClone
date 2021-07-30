@@ -5,10 +5,7 @@
 
 std::bitset<256> Input::m_keys = std::bitset<256>(false);
 
-Input::Input() : EventObserver(EventCategory::KEYBOARD) 
-{
-	ApplicationHandle->Subscribe(this);
-}
+Input::Input() : EventObserver(EventCategory::KEYBOARD){}
 Input::~Input(){}
 
 
@@ -27,13 +24,6 @@ bool Input::IsKeyDown(unsigned int key)
 
 void Input::OnEvent(const Event& event)
 {
-	EventCategory category = event.GetCategory();
-	VX_ASSERT(category == EventCategory::KEYBOARD);
-
-	KeyboardEvent keyData = (KeyboardEvent&)event;
-	
-	if (keyData.isPressed) KeyDown(keyData.key);
-	else KeyUp(keyData.key);
 
 	VX_LOG_INFO("OnEvent is called");
 }

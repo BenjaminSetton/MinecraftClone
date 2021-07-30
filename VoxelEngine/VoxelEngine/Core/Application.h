@@ -15,6 +15,8 @@
 #include "Graphics.h"
 #include "../Utility/Clock.h"
 #include "./Events/IEvent.h";
+#include "./Events/KeyboardEvent.h"
+#include "./Events/MouseEvent.h"
 
 class Application : public EventSubject
 {
@@ -49,5 +51,8 @@ private:
 	Graphics* m_Graphics;
 	Clock* m_Clock;
 };
+
+// Static application handle pointer
+static Application* ApplicationHandle = nullptr;
 
 #endif
