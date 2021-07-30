@@ -9,11 +9,11 @@ class EventObserver
 {
 public:
 
-	EventObserver(const EventCategory categories) : m_subscribedCategories(static_cast<uint16_t>(categories)) {}
+	EventObserver(const EventCategory categories);
 
-	const uint16_t GetSubscribedCategories() const { return m_subscribedCategories; }
+	const uint16_t GetSubscribedCategories() const;
 	
-	const bool IsSubscribedToCategory(EventCategory& cat) { return m_subscribedCategories & static_cast<uint16_t>(cat); }
+	const bool IsSubscribedToCategory(EventCategory& cat);
 
 	virtual void OnEvent(const Event& event) = 0;
 
@@ -28,35 +28,22 @@ class EventSubject
 {
 public:
 
-	virtual void Subscribe(EventObserver* observer) { observerList.push_back(observer); }
-	virtual void Unsubscribe(EventObserver* observer) 
-	{
-		for(uint16_t i = 0; i < observerList.size(); i++)
-		{
-			EventObserver* currObs = observerList[i];
-			if(currObs == observer)
-			{
-				observerList.erase(observerList.begin() + i);
-				return;
-			}
-		}
-	}
+	EventSubject();
+
+	~EventSubject();
+
+	virtual void Subscribe(EventObserver* observer);
+	virtual void Unsubscribe(EventObserver* observer);
 
 	// This will only broadcast to observers who are subscribed to the event categories
-	virtual void Broadcast(const Event& event)
-	{
-		EventCategory eventCat = event.GetCategory();
-		for(auto& obs : observerList)
-		{
-			if (obs->IsSubscribedToCategory(eventCat)) obs->OnEvent(event);
-		}
-	}
+	virtual void Broadcast(const Event& event);
 
 protected:
 
 	std::vector<EventObserver*> observerList;
 
-
 };
+
+static EventSubject* GlobalSubject = nullptr;
 
 #endif

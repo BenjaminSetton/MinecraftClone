@@ -1,7 +1,6 @@
 #include "../Misc/pch.h"
 
 #include "Input.h"
-#include "../Core/ApplicationHandle.h"
 
 std::bitset<256> Input::m_keys = std::bitset<256>(false);
 
@@ -24,6 +23,5 @@ bool Input::IsKeyDown(unsigned int key)
 
 void Input::OnEvent(const Event& event)
 {
-
 	VX_LOG_INFO("OnEvent is called");
 }

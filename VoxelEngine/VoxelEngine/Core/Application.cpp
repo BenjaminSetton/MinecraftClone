@@ -6,10 +6,12 @@
 // Windows procedure
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-	return ApplicationHandle->MessageHandler(hwnd, msg, wparam, lparam);
+	Application* app = static_cast<Application*>(GlobalSubject);
+
+	return app->MessageHandler(hwnd, msg, wparam, lparam);
 }
 
-Application::Application()
+Application::Application() : EventSubject()
 {
 	m_Input = nullptr;
 	m_Graphics = nullptr;
@@ -70,7 +72,6 @@ bool Application::Initialize()
 	// Create the clock object
 	m_Clock = new Clock;
 	if (!m_Clock) return false;
-
 
 	return true;
 }
@@ -144,9 +145,6 @@ bool Application::Frame()
 void Application::InitializeWindows(UINT& screenWidth, UINT& screenHeight) 
 {
 	int posX, posY;
-
-	// Get an external pointer to this object.	
-	ApplicationHandle = this;
 
 	// Get the instance of this application.
 	m_hinstance = GetModuleHandle(NULL);
@@ -237,7 +235,6 @@ LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT msg, WPARAM wparam,
 	}
 	case WM_KEYDOWN:
 	{
-
 		KeyboardDownEvent keyDownEvent = KeyboardDownEvent(static_cast<uint16_t>(wparam));
 		Broadcast(keyDownEvent);
 		return 0;
