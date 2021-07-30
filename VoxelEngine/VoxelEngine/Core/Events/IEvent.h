@@ -44,6 +44,6 @@ protected:
 
 };
 
-static EventSubject* GlobalSubject = nullptr;
+extern EventSubject* GlobalSubject = nullptr;
 
 #endif

@@ -6,9 +6,9 @@
 // Windows procedure
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-	Application* app = static_cast<Application*>(GlobalSubject);
-
-	return app->MessageHandler(hwnd, msg, wparam, lparam);
+	Application* app = dynamic_cast<Application*>(GlobalSubject);
+	if(app) app->MessageHandler(hwnd, msg, wparam, lparam);
+	return 0;
 }
 
 Application::Application() : EventSubject()
@@ -53,6 +53,8 @@ bool Application::Initialize()
 	// Initialize the width and height of the screen to zero before sending the variables into the function.
 	screenWidth = 0;
 	screenHeight = 0;
+
+	GlobalSubject = this;
 
 	// Initialize the windows api.
 	InitializeWindows(screenWidth, screenHeight);
