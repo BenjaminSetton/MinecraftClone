@@ -250,6 +250,7 @@
     <ClInclude Include="Core\DefaultBlockShader.h" />
     <ClInclude Include="Core\Events\Event.h" />
     <ClInclude Include="Core\Events\IEvent.h" />
+    <ClInclude Include="Core\Events\KeyboardEvent.h" />
     <ClInclude Include="Core\Events\KeyCodes.h" />
     <ClInclude Include="Core\Events\MouseEvent.h" />
     <ClInclude Include="Core\Graphics.h" />

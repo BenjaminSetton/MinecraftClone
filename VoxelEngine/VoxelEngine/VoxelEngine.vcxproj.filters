@@ -194,6 +194,9 @@
     <ClInclude Include="Core\Events\MouseEvent.h">
       <Filter>Core\Events</Filter>
     </ClInclude>
+    <ClInclude Include="Core\Events\KeyboardEvent.h">
+      <Filter>Core\Events</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\DefaultBlock_VS.hlsl">
