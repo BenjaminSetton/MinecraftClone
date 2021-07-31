@@ -235,18 +235,44 @@ LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT msg, WPARAM wparam,
 	}
 	case WM_KEYDOWN:
 	{
-		KeyboardDownEvent keyDownEvent = KeyboardDownEvent(static_cast<uint16_t>(wparam));
-		Broadcast(keyDownEvent);
+		KeyboardDownEvent keyDown = KeyboardDownEvent(static_cast<uint16_t>(wparam));
+		Broadcast(keyDown);
 		return 0;
 	}
 	case WM_KEYUP:
 	{
-		KeyboardUpEvent keyDownEvent = KeyboardUpEvent(static_cast<uint16_t>(wparam));
-		Broadcast(keyDownEvent);
+		KeyboardUpEvent keyUp = KeyboardUpEvent(static_cast<uint16_t>(wparam));
+		Broadcast(keyUp);
 		return 0;
 	}
 	case WM_MOUSEMOVE:
 	{
+		MouseMovedEvent mouseMoved = MouseMovedEvent(LOWORD(lparam), HIWORD(lparam));
+		Broadcast(mouseMoved);
+		return 0;
+	}
+	case WM_LBUTTONDOWN:
+	{
+		MouseButtonDownEvent lmbDown = MouseButtonDownEvent(MK_LBUTTON);
+		Broadcast(lmbDown);
+		return 0;
+	}
+	case WM_LBUTTONUP:
+	{
+		MouseButtonUpEvent lmbUp = MouseButtonUpEvent(MK_LBUTTON);
+		Broadcast(lmbUp);
+		return 0;
+	}
+	case WM_RBUTTONDOWN:
+	{
+		MouseButtonDownEvent rmbDown = MouseButtonDownEvent(MK_RBUTTON);
+		Broadcast(rmbDown);
+		return 0;
+	}
+	case WM_RBUTTONUP:
+	{
+		MouseButtonUpEvent rmbUp = MouseButtonUpEvent(MK_RBUTTON);
+		Broadcast(rmbUp);
 		return 0;
 	}
 

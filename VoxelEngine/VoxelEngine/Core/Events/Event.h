@@ -12,12 +12,13 @@ enum class EventType
 };
 
 // Event category enumerations
-enum class EventCategory
+enum EventCategory
 {
-	KEYBOARD		= BIT(0),
-	MOUSE			= BIT(1),
-	APPLICATION		= BIT(2),
+	KEYBOARD = BIT(0),
+	MOUSE = BIT(1),
+	APPLICATION = BIT(2),
 };
+
 
 class Event
 {
