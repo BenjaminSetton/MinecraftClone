@@ -30,7 +30,7 @@ class MouseScrolledEvent : public Event
 {
 public:
 	// Rule of three + overloaded constructor
-	MouseScrolledEvent(const float x, const float y) : xDist(x), yDist(y) {}
+	MouseScrolledEvent(const float dist) : scrollDist(dist) {}
 	MouseScrolledEvent(const MouseScrolledEvent& other) = default;
 	~MouseScrolledEvent() = default;
 
@@ -39,12 +39,11 @@ public:
 	virtual const EventType GetType() const override { return EventType::MOUSE_SCROLLED_T; }
 
 	// Getters for the data
-	const float GetX() const { return xDist; }
-	const float GetY() const { return yDist; }
+	const float GetScrollDist() const { return scrollDist; }
 
 private:
 
-	const float xDist, yDist;
+	const float scrollDist;
 };
 
 class MouseButtonEvent : public Event
@@ -60,11 +59,11 @@ public:
 	virtual const EventType GetType() const = 0; 
 
 	// Getters for the data
-	const int GetButton() const { return mouseButton; }
+	const uint16_t GetButton() const { return mouseButton; }
 
 private:
 
-	const int mouseButton;
+	const uint16_t mouseButton;
 };
 
 class MouseButtonDownEvent : public MouseButtonEvent

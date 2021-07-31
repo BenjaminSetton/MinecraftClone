@@ -152,9 +152,9 @@ void Application::InitializeWindows(UINT& screenWidth, UINT& screenHeight)
 	// Give the application a name.
 	m_applicationName = L"Voxel Engine";
 
-	// Setup the windows class with default settings.
+	// Setup the windows class
 	WNDCLASSEX wc;
-	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC | CS_DBLCLKS;
 	wc.lpfnWndProc = WndProc;
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
@@ -273,6 +273,12 @@ LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT msg, WPARAM wparam,
 	{
 		MouseButtonUpEvent rmbUp = MouseButtonUpEvent(MK_RBUTTON);
 		Broadcast(rmbUp);
+		return 0;
+	}
+	case WM_MOUSEHWHEEL:
+	{
+		MouseScrolledEvent scroll = MouseScrolledEvent(HIWORD(wparam));
+		Broadcast(scroll);
 		return 0;
 	}
 

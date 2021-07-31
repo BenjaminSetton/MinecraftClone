@@ -56,8 +56,16 @@ enum class KeyCode
 	LSHIFT				= 0xA0,
 	RSHIFT				= 0xA1,
 	LCONTROL			= 0xA2,
-	RCONTROL			= 0xA3,
+	RCONTROL			= 0xA3
+};
 
+enum class MouseCodes
+{
+	CONTROL				= MK_CONTROL,
+	SHIFT				= MK_SHIFT,
+	LBUTTON				= MK_LBUTTON,
+	RBUTTON				= MK_RBUTTON,
+	MBUTTON				= MK_MBUTTON,
 };
 
 #endif
