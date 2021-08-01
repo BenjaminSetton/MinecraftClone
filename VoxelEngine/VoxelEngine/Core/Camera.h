@@ -3,6 +3,7 @@
 
 #include <DirectXMath.h>
 
+// Defines a camera base class with all the basic functionality
 class Camera
 {
 public:
@@ -20,6 +21,8 @@ public:
 	void SetRotation(const DirectX::XMFLOAT3 rot);
 
 	DirectX::XMMATRIX GetViewMatrix();
+
+	virtual void Update(float deltaTime) = 0;
 
 private:
 

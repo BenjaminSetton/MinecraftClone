@@ -102,8 +102,8 @@
     <ClCompile Include="Utility\Log.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="DebugCamera.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Core\DebugCamera.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -197,8 +197,8 @@
     <ClInclude Include="Core\Events\KeyboardEvent.h">
       <Filter>Core\Events</Filter>
     </ClInclude>
-    <ClInclude Include="DebugCamera.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Core\DebugCamera.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

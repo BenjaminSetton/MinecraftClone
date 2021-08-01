@@ -4,7 +4,7 @@
 #include "../../Utility/Utility.h"
 
 // Event type enumerations
-enum class EventType
+enum class EventType : uint16_t
 {
 	NONE = 0,
 	KEYBOARD_KEY_DOWN_T, KEYBOARD_KEY_UP_T,
@@ -12,7 +12,7 @@ enum class EventType
 };
 
 // Event category enumerations
-enum EventCategory
+enum class EventCategory : uint16_t
 {
 	KEYBOARD = BIT(0),
 	MOUSE = BIT(1),

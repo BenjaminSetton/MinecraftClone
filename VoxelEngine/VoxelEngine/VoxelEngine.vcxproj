@@ -213,11 +213,11 @@
     <ClCompile Include="Core\Chunk.cpp" />
     <ClCompile Include="Core\ChunkManager.cpp" />
     <ClCompile Include="Core\D3D.cpp" />
+    <ClCompile Include="Core\DebugCamera.cpp" />
     <ClCompile Include="Core\DefaultBlockShader.cpp" />
     <ClCompile Include="Core\Graphics.cpp" />
     <ClCompile Include="Core\main.cpp" />
     <ClCompile Include="Core\TextureManager.cpp" />
-    <ClCompile Include="DebugCamera.cpp" />
     <ClCompile Include="Misc\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -247,6 +247,7 @@
     <ClInclude Include="Core\Chunk.h" />
     <ClInclude Include="Core\ChunkManager.h" />
     <ClInclude Include="Core\D3D.h" />
+    <ClInclude Include="Core\DebugCamera.h" />
     <ClInclude Include="Core\DefaultBlockShader.h" />
     <ClInclude Include="Core\Events\Event.h" />
     <ClInclude Include="Core\Events\IEvent.h" />
@@ -255,7 +256,6 @@
     <ClInclude Include="Core\Events\MouseEvent.h" />
     <ClInclude Include="Core\Graphics.h" />
     <ClInclude Include="Core\TextureManager.h" />
-    <ClInclude Include="DebugCamera.h" />
     <ClInclude Include="Misc\pch.h" />
     <ClInclude Include="Utility\Clock.h" />
     <ClInclude Include="Utility\DDSTextureLoader.h" />
