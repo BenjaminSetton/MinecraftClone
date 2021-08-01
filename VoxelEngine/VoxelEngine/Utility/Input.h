@@ -50,6 +50,7 @@ private:
 
 	static bool m_scrollProcessed;
 	static bool m_ignoreFirstFrameForMouseDelta;
+	static bool m_mouseMoved;
 };
 
 #endif

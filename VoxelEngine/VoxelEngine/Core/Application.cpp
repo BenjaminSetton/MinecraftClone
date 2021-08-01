@@ -129,6 +129,7 @@ bool Application::Frame()
 {
 	// Quit running if ESC is pressed
 	if (m_Input->IsKeyDown(VK_ESCAPE)) return false;
+	m_Input->Update();
 
 	// Signal the clock every frame to obtain deltaTime
 	m_Clock->Signal();

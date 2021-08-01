@@ -14,9 +14,9 @@ float Input::m_deltaY = 0;
 float Input::m_prevX = 0;
 float Input::m_prevY = 0;
 
-
 bool Input::m_scrollProcessed = false;
 bool Input::m_ignoreFirstFrameForMouseDelta = true;
+bool Input::m_mouseMoved = false;
 
 Input::Input() : EventObserver((EventCategory)((uint16_t)EventCategory::KEYBOARD | (uint16_t)EventCategory::MOUSE)){}
 
@@ -64,6 +64,7 @@ void Input::MouseMoved(const float x, const float y)
 		m_prevX = x;
 		m_prevY = y;
 	}
+	m_mouseMoved = true;
 }
 
 const float Input::GetMouseDeltaX()
@@ -146,6 +147,12 @@ void Input::Update()
 	// If the scroll has already been processed, set it to 0
 	if (m_scrollProcessed) m_scroll = 0;
 
+	if(!m_mouseMoved)
+	{
+		m_deltaX = m_deltaY = 0;
+	}
 
+	// Set the mouse moved to false to reset mouseMoved messages
+	m_mouseMoved = false;
 
 }

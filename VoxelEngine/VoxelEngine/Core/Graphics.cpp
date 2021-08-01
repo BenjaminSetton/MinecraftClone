@@ -3,6 +3,8 @@
 #include "Graphics.h"
 #include "../Utility/Utility.h"
 
+#include "../Utility/Input.h"
+
 using namespace DirectX;
 
 bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd)
@@ -76,18 +78,11 @@ bool Graphics::Frame(const float dt)
 	// Begin the ImGui frame
 	m_imGuiLayer->BeginFrame();
 
-	// Expose the camera stats to ImGui
-	XMFLOAT3 camPosF3 = m_debugCam->GetPosition();
-	float camPos[] = { camPosF3.x, camPosF3.y, camPosF3.z };
-	XMFLOAT3 camRotF3 = m_debugCam->GetRotation();
-	float camRot[] = { camRotF3.x, camRotF3.y, camRotF3.z };
-	ImGui::Begin("Camera Debug");
-	ImGui::SliderFloat3("Camera Pos", camPos, -20.0f, 20, "%2.2f", 1);
-	ImGui::SliderFloat3("Camera Rot", camRot, -180.0f, 180.0f, "%2.2f", 1);
-	ImGui::End();
-	m_debugCam->SetPosition({ camPos[0], camPos[1], camPos[2] });
-	m_debugCam->SetRotation({ camRot[0], camRot[1], camRot[2] });
-	m_debugCam->ConstructMatrix();
+	//Use it for Y rotation
+	float dx = Input::GetMouseDeltaX();
+
+	// Move the camera based on input
+
 
 	// Begin the D3D scene
 	m_D3D->BeginScene(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
