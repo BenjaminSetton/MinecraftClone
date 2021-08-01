@@ -9,17 +9,18 @@ class Camera
 public:
 
 	Camera();
-	~Camera();
-	Camera(const Camera& camera);
+	~Camera() = default;
+	Camera(const Camera& camera) = default;
 
 	void ConstructMatrix();
 
 	DirectX::XMFLOAT3 GetPosition();
 	void SetPosition(const DirectX::XMFLOAT3 pos);
 
-	DirectX::XMFLOAT3 GetRotation();
-	void SetRotation(const DirectX::XMFLOAT3 rot);
+	DirectX::XMFLOAT4 GetRotation();
+	void SetRotation(const DirectX::XMFLOAT4 rot);
 
+	// Inverts the camera's world matrix to create a view matrix
 	DirectX::XMMATRIX GetViewMatrix();
 
 	virtual void Update(float deltaTime) = 0;
@@ -27,8 +28,9 @@ public:
 protected:
 
 	DirectX::XMFLOAT3 m_position;
-	DirectX::XMFLOAT3 m_rotation;
-	DirectX::XMMATRIX m_viewMatrix;
+	DirectX::XMFLOAT4 m_rotation;
+
+	DirectX::XMMATRIX m_worldMatrix;
 };
 
 
