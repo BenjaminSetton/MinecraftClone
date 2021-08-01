@@ -54,9 +54,10 @@ struct KeyCode
 		DOWN				= 0x28,
 		LEFT				= 0x25,
 		RIGHT				= 0x27,
+		SEMICOLON			= 0xBA,
 
-		LSHIFT				= 0xA0,
-		RSHIFT				= 0xA1,
+		LSHIFT				= 0x10,
+		RSHIFT				= 0x10,
 		LCONTROL			= 0xA2,
 		RCONTROL			= 0xA3
 	};

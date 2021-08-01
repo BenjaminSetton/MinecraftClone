@@ -4,25 +4,19 @@
 #include "../../Utility/Utility.h"
 
 // Event type enumerations
-struct EventType
+enum class EventType : uint16_t
 {
-	enum : uint16_t
-	{
-		NONE = 0,
-		KEYBOARD_KEY_DOWN_T, KEYBOARD_KEY_UP_T,
-		MOUSE_BUTTON_DOWN_T, MOUSE_BUTTON_UP_T, MOUSE_MOVED_T, MOUSE_SCROLLED_T
-	};
+	NONE = 0,
+	KEYBOARD_KEY_DOWN_T, KEYBOARD_KEY_UP_T,
+	MOUSE_BUTTON_DOWN_T, MOUSE_BUTTON_UP_T, MOUSE_MOVED_T, MOUSE_SCROLLED_T
 };
 
 // Event category enumerations
-struct EventCategory
+enum class EventCategory : uint16_t
 {
-	enum : uint16_t
-	{
-		KEYBOARD = BIT(0),
-		MOUSE = BIT(1),
-		APPLICATION = BIT(2),
-	};
+	KEYBOARD = BIT(0),
+	MOUSE = BIT(1),
+	APPLICATION = BIT(2),
 };
 
 

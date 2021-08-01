@@ -16,7 +16,7 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	initResult = m_D3D->Initialize(screenWidth, screenHeight, hwnd, VSYNC_ENABLED, FULL_SCREEN, SCREEN_FAR, SCREEN_NEAR);
 	if (!initResult) return false;
 
-	m_debugCam = new Camera;
+	m_debugCam = new DebugCamera;
 	m_debugCam->SetPosition({-4.0f, 1.65f, -5.0f});
 	// We can temporarily call Render() here since camera's position and rotation isn't changing for now
 	m_debugCam->SetRotation({ 0.0f, 0.0f, 0.0f });
@@ -78,10 +78,8 @@ bool Graphics::Frame(const float dt)
 	// Begin the ImGui frame
 	m_imGuiLayer->BeginFrame();
 
-	//Use it for Y rotation
-	float dx = Input::GetMouseDeltaX();
-
-	// Move the camera based on input
+	// Update the debug camera's position
+	m_debugCam->Update(dt);
 
 
 	// Begin the D3D scene

@@ -3,7 +3,7 @@
 
 // TODO: Include CAMERA_CLASS, SHADERS, and other necessary classes used for rendering
 #include "D3D.h"
-#include "Camera.h"
+#include "DebugCamera.h"
 #include "DefaultBlockShader.h"
 #include "../Core/TextureManager.h"
 #include "../Utility/ImGuiLayer.h"
@@ -38,7 +38,7 @@ public:
 private:
 
 	D3D* m_D3D = nullptr;
-	Camera* m_debugCam = nullptr;
+	DebugCamera* m_debugCam = nullptr;
 	DefaultBlockShader* m_shader = nullptr;
 
 	TextureManager* m_textureManager = nullptr;

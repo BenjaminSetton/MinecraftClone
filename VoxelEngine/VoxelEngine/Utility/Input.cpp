@@ -100,6 +100,7 @@ void Input::OnEvent(const Event& event)
 	{
 		KeyboardDownEvent keyDown = (KeyboardDownEvent&)event;
 		KeyDown(keyDown.GetKey());
+		//VX_LOG_INFO(keyDown.GetKey());
 		return;
 	}
 	case EventType::KEYBOARD_KEY_UP_T:

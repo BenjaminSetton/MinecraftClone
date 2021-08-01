@@ -24,7 +24,7 @@ public:
 
 	virtual void Update(float deltaTime) = 0;
 
-private:
+protected:
 
 	DirectX::XMFLOAT3 m_position;
 	DirectX::XMFLOAT3 m_rotation;
