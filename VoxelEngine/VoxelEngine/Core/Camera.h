@@ -17,8 +17,8 @@ public:
 	DirectX::XMFLOAT3 GetPosition();
 	void SetPosition(const DirectX::XMFLOAT3 pos);
 
-	DirectX::XMFLOAT4 GetRotation();
-	void SetRotation(const DirectX::XMFLOAT4 rot);
+	DirectX::XMFLOAT3 GetRotation();
+	void SetRotation(const DirectX::XMFLOAT3 rot);
 
 	// Inverts the camera's world matrix to create a view matrix
 	DirectX::XMMATRIX GetViewMatrix();
@@ -28,7 +28,7 @@ public:
 protected:
 
 	DirectX::XMFLOAT3 m_position;
-	DirectX::XMFLOAT4 m_rotation;
+	DirectX::XMFLOAT3 m_rotation; // Stores pitch, yaw and roll
 
 	DirectX::XMMATRIX m_worldMatrix;
 };

@@ -10,7 +10,7 @@ using namespace DirectX;
 Camera::Camera()
 {
 	m_position = { 0.0f, 0.0f, 0.0f };
-	XMStoreFloat4(&m_rotation, XMQuaternionIdentity());
+	m_rotation = { 0.0f, 0.0f, 0.0f };
 	m_worldMatrix = XMMatrixIdentity();
 }
 
@@ -27,7 +27,7 @@ void Camera::ConstructMatrix()
 	XMVECTOR lookAt = { 0, 0, 1.0f };
 
 	// Create the rotation matrix from the yaw, pitch, and roll values.
-	XMMATRIX rotationMatrix = XMMatrixRotationQuaternion(XMLoadFloat4(&m_rotation));
+	XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYaw(m_rotation.x, m_rotation.y, m_rotation.z);
 
 	// Transform the lookAt and up vector by the rotation matrix so the view is correctly rotated at the origin.	
 	lookAt = XMVector3Transform(lookAt, rotationMatrix);
@@ -45,7 +45,7 @@ void Camera::ConstructMatrix()
 DirectX::XMFLOAT3 Camera::GetPosition() { return m_position; }
 void Camera::SetPosition(const DirectX::XMFLOAT3 pos) { m_position = pos; }
 
-DirectX::XMFLOAT4 Camera::GetRotation() { return m_rotation; }
-void Camera::SetRotation(const DirectX::XMFLOAT4 rot) { m_rotation = rot; }
+DirectX::XMFLOAT3 Camera::GetRotation() { return m_rotation; }
+void Camera::SetRotation(const DirectX::XMFLOAT3 rot) { m_rotation = rot; }
 
 DirectX::XMMATRIX Camera::GetViewMatrix() { return XMMatrixInverse(nullptr, m_worldMatrix); }

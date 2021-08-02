@@ -45,6 +45,7 @@ private:
 	Block* m_chunk[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 
 	// Used for D3D11 instance buffer
+	// NOTE: This equates to 49KB per chunk (roughly)
 	DirectX::XMFLOAT3 m_blockPositions[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
 
 };

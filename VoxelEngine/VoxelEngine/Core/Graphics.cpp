@@ -19,7 +19,7 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	m_debugCam = new DebugCamera;
 	m_debugCam->SetPosition({-4.0f, 1.65f, -5.0f});
 	// We can temporarily call Render() here since camera's position and rotation isn't changing for now
-	m_debugCam->SetRotation({ 0.0f, 0.0f, 0.0f, 1.0f });
+	m_debugCam->SetRotation({ 0.0f, 0.0f, 0.0f });
 	m_debugCam->ConstructMatrix();
 
 	// Create the shader class object

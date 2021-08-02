@@ -74,7 +74,11 @@ void Chunk::InitializeBuffers()
 				  static_cast<float>(z) + m_pos.z
 				};
 
+
 				// It would be good to only render blocks that are not occluded
+
+				// TODO: Check neighbors inside m_chunk to see if they are NOT air blocks
+				//		 If a block is surrounded by 4 non-transparent blocks, don't render
 				m_blockPositions[index++] = blockPos;
 
 			}
