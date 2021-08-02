@@ -1,13 +1,13 @@
 #include "../Misc/pch.h"
 #include "DefaultBlockShader.h"
 
-#include "Chunk.h"
 #include "../Utility/Utility.h"
 
 using namespace DirectX;
 
 void DefaultBlockShader::CreateObjects(ID3D11Device* device, const WCHAR* vsFilename, const WCHAR* psFilename) 
 {
+
 	// Create the shaders
 	CreateShaders(device, vsFilename, psFilename);
 
@@ -23,7 +23,7 @@ void DefaultBlockShader::Render(ID3D11DeviceContext* context, unsigned int index
 	SetShaderParameters(context, WM, VM, PM, lightDir, lightCol, srv);
 
 	// Render the model
-	context->DrawIndexedInstanced(36, pow(CHUNK_SIZE, 3), 0, 0, 0);
+	context->DrawIndexedInstanced(36, m_chunk->GetNumBlocksToRender()/*pow(CHUNK_SIZE, 3)*/, 0, 0, 0);
 }
 
 void DefaultBlockShader::Shutdown()
@@ -85,10 +85,6 @@ void DefaultBlockShader::Shutdown()
 
 void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 {
-	// MEGA TEMPORARY
-	Chunk* tempChunk = new Chunk();
-
-
 	HRESULT hr;
 	// Setup the description of the matrix dynamic constant buffer that is in the vertex shader.
 	D3D11_BUFFER_DESC matrixBufferDesc;
@@ -177,7 +173,7 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 	instancePosBufferDesc.StructureByteStride = 0;
 
 	D3D11_SUBRESOURCE_DATA instancePosBufferData;
-	instancePosBufferData.pSysMem = tempChunk->GetBlockPositions();
+	instancePosBufferData.pSysMem = m_chunk->GetBlockPositions();
 	instancePosBufferData.SysMemPitch = 0;
 	instancePosBufferData.SysMemSlicePitch = 0;
 

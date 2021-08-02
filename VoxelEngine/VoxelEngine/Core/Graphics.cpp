@@ -81,6 +81,9 @@ bool Graphics::Frame(const float dt)
 	// Update the debug camera's position
 	m_debugCam->Update(dt);
 
+	// Check to toggle wireframe state
+	if (Input::IsKeyDown(KeyCode::E)) m_D3D->SetWireframeRasterState(true);
+	else if (Input::IsKeyDown(KeyCode::R)) m_D3D->SetWireframeRasterState(false);
 
 	// Begin the D3D scene
 	m_D3D->BeginScene(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));

@@ -3,6 +3,7 @@
 
 #include <bitset>
 #include "../Core/Events/IEvent.h"
+#include "../Core/Events/KeyCodes.h"
 
 class Input : public EventObserver
 {

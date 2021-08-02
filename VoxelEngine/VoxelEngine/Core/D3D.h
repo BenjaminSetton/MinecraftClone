@@ -46,6 +46,8 @@ public:
 
 	bool WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
+	void SetWireframeRasterState(const bool isWireframe);
+
 private:
 
 	void CreateRenderTargetView();

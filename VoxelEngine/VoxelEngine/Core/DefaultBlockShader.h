@@ -6,6 +6,9 @@
 #include <DirectXMath.h>
 #include <d3dcompiler.h>
 
+// TEMPORARY
+#include "Chunk.h"
+
 class DefaultBlockShader
 {
 public:
@@ -58,6 +61,9 @@ private:
 
 	ID3D11InputLayout* m_inputLayout;
 	ID3D11SamplerState* m_sampler;
+
+	// Temporary chunk instance
+	Chunk* m_chunk = new Chunk();
 };
 
 

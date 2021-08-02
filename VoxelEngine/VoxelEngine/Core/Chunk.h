@@ -25,6 +25,8 @@ public:
 
 	const DirectX::XMFLOAT3* GetBlockPositions();
 
+	const uint16_t GetNumBlocksToRender();
+
 private:
 
 	// TODO: Think about generating a chunk based on a seed
@@ -38,6 +40,8 @@ private:
 
 	// TODO: Actually use this :)
 	uint32_t m_id;
+
+	uint16_t m_numBlocksToRender;
 
 	DirectX::XMFLOAT3 m_pos;
 	

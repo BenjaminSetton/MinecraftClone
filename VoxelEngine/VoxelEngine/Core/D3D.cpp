@@ -371,6 +371,11 @@ bool D3D::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	return false;
 }
 
+void D3D::SetWireframeRasterState(const bool isWireframe)
+{
+	isWireframe ? m_deviceContext->RSSetState(m_wireframeRasterState) : m_deviceContext->RSSetState(m_defaultRasterState);
+}
+
 void D3D::CreateRenderTargetView()
 {
 	HRESULT hr;

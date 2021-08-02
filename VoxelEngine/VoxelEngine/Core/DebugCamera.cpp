@@ -75,4 +75,6 @@ void DebugCamera::Update(float dt)
 		m_rotation.x + deltaRotation.m128_f32[2]
 	};
 
+	// TODO: Orthonormalize the camera world matrix in order to prevent it from flipping
+
 }
