@@ -57,6 +57,16 @@ static unsigned int indicies[36] =
 	22, 20, 21, 23, 20, 22 // BACK FACE
 };
 
+enum class BlockFace
+{
+	TOP = 0,
+	BOTTOM = 6,
+	LEFT = 12,
+	RIGHT = 18,
+	FRONT = 24,
+	BACK = 30
+};
+
 enum class BlockType 
 {
 	Air,

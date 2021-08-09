@@ -4,7 +4,7 @@
 
 using namespace DirectX;
 
-Chunk::Chunk() : m_active(true), m_id(0), m_pos(XMFLOAT3(-5.0f, 0, 0)), m_numBlocksToRender(0)
+Chunk::Chunk() : m_active(true), m_id(0), m_pos(XMFLOAT3(-5.0f, 0, 0)), m_numFaces(0)
 {
 	// Ensures that a chunk will ALWAYS generate it's corresponding blocks
 	InitializeChunk();
@@ -36,9 +36,9 @@ const bool Chunk::GetActive() { return m_active; }
 
 const DirectX::XMFLOAT3 Chunk::GetPosition() { return m_pos; }
 
-const DirectX::XMFLOAT3* Chunk::GetBlockPositions() { return &m_blockPositions[0]; }
+const BlockVertex* Chunk::GetBlockFaces() { return &m_blockFaces[0]; }
 
-const uint16_t Chunk::GetNumBlocksToRender() { return m_numBlocksToRender; }
+const uint32_t Chunk::GetNumFaces() { return m_numFaces; }
 
 void Chunk::InitializeChunk()
 {
@@ -59,44 +59,105 @@ void Chunk::InitializeChunk()
 			}
 		}
 	}
+
+	Block* bl1 = m_chunk[0][0][0];
+	Block* bl2 = m_chunk[1][0][0];
+	bl1->SetType(BlockType::Air);
+	bl2->SetType(BlockType::Air);
 }
 
 void Chunk::InitializeBuffers()
 {
-	uint16_t index = 0;
+	uint32_t index = 0;
 	for (int x = 0; x < CHUNK_SIZE; x++)
 	{
-		for (int y = 0; y < CHUNK_SIZE; y++)
+		for (int y = CHUNK_SIZE - 1; y >= 0; y--)
 		{
 			for (int z = 0; z < CHUNK_SIZE; z++)
 			{
 				XMFLOAT3 blockPos = 
 				{ static_cast<float>(x) + m_pos.x, 
-				  static_cast<float>(-y) + m_pos.y, 
+				  static_cast<float>(y) + m_pos.y, 
 				  static_cast<float>(z) + m_pos.z
 				};
 
-				// left neighbor
-				if (x - 1 >= 0 && m_chunk[x - 1][y][z]->GetType() != BlockType::Air) continue;
-				// right neighbor
-				if (x + 1 < CHUNK_SIZE - 1 && m_chunk[x + 1][y][z]->GetType() != BlockType::Air) continue;
-				// top neighbor
-				if (y + 1 < CHUNK_SIZE - 1 && m_chunk[x][y + 1][z]->GetType() != BlockType::Air) continue;
-				// bottom neighbor
-				if (y - 1 >= 0 && m_chunk[x][y - 1][z]->GetType() != BlockType::Air) continue;
-				// front neighbor
-				if (z - 1 >= 0 && m_chunk[x][y][z - 1]->GetType() != BlockType::Air) continue;
-				// back neighbor
-				if (z + 1 < CHUNK_SIZE - 1 && m_chunk[x][y][z + 1]->GetType() != BlockType::Air) continue;
+				// NOTE: appends faces that are not occluded (only render faces that can be seen)
+				// RIGHT BACK AND TOP FACES RENDER TWICE
 
-				// It would be good to only render blocks that are not occluded
-
-				// TODO: Check neighbors inside m_chunk to see if they are NOT air blocks
-				//		 If a block is surrounded by 4 non-transparent blocks, don't render
-				m_blockPositions[index++] = blockPos;
-				m_numBlocksToRender++;
+				// Only append faces if current block is not an air block
+				if(m_chunk[x][y][z]->GetType() != BlockType::Air)
+				{
+					// left neighbor
+					if (x - 1 < 0 || m_chunk[x - 1][y][z]->GetType() == BlockType::Air)
+						AppendBlockFaceToArray(BlockFace::LEFT, index, blockPos);
+					// right neighbor
+					if (x + 1 > CHUNK_SIZE - 1 || m_chunk[x + 1][y][z]->GetType() == BlockType::Air)
+						AppendBlockFaceToArray(BlockFace::RIGHT, index, blockPos);
+					// top neighbor
+					if (y + 1 > CHUNK_SIZE - 1 || m_chunk[x][y + 1][z]->GetType() == BlockType::Air)
+						AppendBlockFaceToArray(BlockFace::TOP, index, blockPos);
+					// bottom neighbor
+					if (y - 1 < 0 || m_chunk[x][y - 1][z]->GetType() == BlockType::Air)
+						AppendBlockFaceToArray(BlockFace::BOTTOM, index, blockPos);
+					// front neighbor
+					if (z - 1 < 0 || m_chunk[x][y][z - 1]->GetType() == BlockType::Air)
+						AppendBlockFaceToArray(BlockFace::FRONT, index, blockPos);
+					// back neighbor
+					if (z + 1 > CHUNK_SIZE - 1 || m_chunk[x][y][z + 1]->GetType() == BlockType::Air)
+						AppendBlockFaceToArray(BlockFace::BACK, index, blockPos);
+				}
 
 			}
 		}
 	}
+}
+
+void Chunk::AppendBlockFaceToArray(const BlockFace face, uint32_t& currIndex, const XMFLOAT3& blockPos)
+{
+	uint32_t startIndexArray = 0;
+
+	switch (face)
+	{
+	case BlockFace::BACK:
+	{
+		startIndexArray = static_cast<uint32_t>(BlockFace::BACK);
+		break;
+	}
+	case BlockFace::FRONT:
+	{
+		startIndexArray = static_cast<uint32_t>(BlockFace::FRONT);
+		break;
+	}
+	case BlockFace::LEFT:
+	{
+		startIndexArray = static_cast<uint32_t>(BlockFace::LEFT);
+		break;
+	}
+	case BlockFace::RIGHT:
+	{
+		startIndexArray = static_cast<uint32_t>(BlockFace::RIGHT);
+		break;
+	}
+	case BlockFace::TOP:
+	{
+		startIndexArray = static_cast<uint32_t>(BlockFace::TOP);
+		break;
+	}
+	case BlockFace::BOTTOM:
+	{
+		startIndexArray = static_cast<uint32_t>(BlockFace::BOTTOM);
+		break;
+	}
+	}
+
+	// Append the 6 vertices to the array (an entire face)
+	for(uint32_t i = 0; i < 6; i++)
+	{
+		BlockVertex currVert = verts[indicies[startIndexArray++]];
+		currVert.pos = { currVert.pos.x + blockPos.x, currVert.pos.y + blockPos.y, currVert.pos.z + blockPos.z };
+		m_blockFaces[currIndex++] = currVert;
+	}
+
+	m_numFaces++;
+
 }

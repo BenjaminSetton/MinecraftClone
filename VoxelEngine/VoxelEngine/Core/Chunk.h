@@ -23,9 +23,9 @@ public:
 
 	const DirectX::XMFLOAT3 GetPosition();
 
-	const DirectX::XMFLOAT3* GetBlockPositions();
+	const BlockVertex* GetBlockFaces();
 
-	const uint16_t GetNumBlocksToRender();
+	const uint32_t GetNumFaces();
 
 private:
 
@@ -36,21 +36,23 @@ private:
 
 private:
 
+	void AppendBlockFaceToArray(const BlockFace face, uint32_t& currIndex, const DirectX::XMFLOAT3& blockPos);
+
 	bool m_active;
 
 	// TODO: Actually use this :)
 	uint32_t m_id;
 
-	uint16_t m_numBlocksToRender;
+	uint32_t m_numFaces;
 
 	DirectX::XMFLOAT3 m_pos;
 	
 	// Currently defines a 3D array of 16x16x16 blocks
 	Block* m_chunk[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 
-	// Used for D3D11 instance buffer
-	// NOTE: This equates to 49KB per chunk (roughly)
-	DirectX::XMFLOAT3 m_blockPositions[CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
+	// Used for D3D11 buffer
+	// NOTE: This equates to 786,432 bytes per chunk
+	BlockVertex m_blockFaces[6 * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
 
 };
 

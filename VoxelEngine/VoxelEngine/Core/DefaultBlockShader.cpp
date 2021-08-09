@@ -23,7 +23,7 @@ void DefaultBlockShader::Render(ID3D11DeviceContext* context, unsigned int index
 	SetShaderParameters(context, WM, VM, PM, lightDir, lightCol, srv);
 
 	// Render the model
-	context->DrawIndexedInstanced(36, m_chunk->GetNumBlocksToRender()/*pow(CHUNK_SIZE, 3)*/, 0, 0, 0);
+	context->Draw(m_chunk->GetNumFaces() * 6, 0);
 }
 
 void DefaultBlockShader::Shutdown()
@@ -75,12 +75,6 @@ void DefaultBlockShader::Shutdown()
 		m_vertexBuffer->Release();
 		m_vertexBuffer = nullptr;
 	}
-
-	if (m_indexBuffer)
-	{
-		m_indexBuffer->Release();
-		m_indexBuffer = nullptr;
-	}
 }
 
 void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
@@ -127,58 +121,21 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 	VX_ASSERT(!FAILED(hr));
 
 
-	// Create the vertex and index buffers
+	// Create the vertex
 	D3D11_BUFFER_DESC vertexBufferDesc;
 	vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-	vertexBufferDesc.ByteWidth = sizeof(BlockVertex) * 24;
+	vertexBufferDesc.ByteWidth = sizeof(BlockVertex) * (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * 6);
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.MiscFlags = 0;
 	vertexBufferDesc.StructureByteStride = 0;
 
 	D3D11_SUBRESOURCE_DATA vertexBufferData;
-	vertexBufferData.pSysMem = verts;
+	vertexBufferData.pSysMem = m_chunk->GetBlockFaces();
 	vertexBufferData.SysMemPitch = 0;
 	vertexBufferData.SysMemSlicePitch = 0;
 
-	// Now create the vertex buffer.
 	hr = device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &m_vertexBuffer);
-	VX_ASSERT(!FAILED(hr));
-
-
-	D3D11_BUFFER_DESC indexBufferDesc;
-	indexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-	indexBufferDesc.ByteWidth = sizeof(unsigned int) * 36;
-	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	indexBufferDesc.CPUAccessFlags = 0;
-	indexBufferDesc.MiscFlags = 0;
-	indexBufferDesc.StructureByteStride = 0;
-
-	D3D11_SUBRESOURCE_DATA indexBufferData;
-	indexBufferData.pSysMem = &indicies;
-	indexBufferData.SysMemPitch = 0;
-	indexBufferData.SysMemSlicePitch = 0;
-
-	// Create the index buffer.
-	hr = device->CreateBuffer(&indexBufferDesc, &indexBufferData, &m_indexBuffer);
-	VX_ASSERT(!FAILED(hr));
-
-
-	D3D11_BUFFER_DESC instancePosBufferDesc;
-	instancePosBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	instancePosBufferDesc.ByteWidth = sizeof(XMFLOAT3) * pow(CHUNK_SIZE, 3);
-	instancePosBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	instancePosBufferDesc.CPUAccessFlags = 0;
-	instancePosBufferDesc.MiscFlags = 0;
-	instancePosBufferDesc.StructureByteStride = 0;
-
-	D3D11_SUBRESOURCE_DATA instancePosBufferData;
-	instancePosBufferData.pSysMem = m_chunk->GetBlockPositions();
-	instancePosBufferData.SysMemPitch = 0;
-	instancePosBufferData.SysMemSlicePitch = 0;
-
-	// Create the instance position buffer
-	hr = device->CreateBuffer(&instancePosBufferDesc, &instancePosBufferData, &m_instancePosBuffer);
 	VX_ASSERT(!FAILED(hr));
 	
 }
@@ -287,13 +244,10 @@ void DefaultBlockShader::SetShaderParameters(ID3D11DeviceContext* context, Direc
 	context->PSSetSamplers(0, 1, &m_sampler);
 
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
-	ID3D11Buffer* buffers[] = { m_vertexBuffer, m_instancePosBuffer };
-	unsigned int stride[] = { sizeof(BlockVertex), sizeof(XMFLOAT3) };
-	unsigned int offset[] = { 0, 0 };
+	ID3D11Buffer* buffers[] = { m_vertexBuffer };
+	unsigned int stride[] = { sizeof(BlockVertex) };
+	unsigned int offset[] = { 0 };
 	context->IASetVertexBuffers(0, ARRAYSIZE(buffers), buffers, stride, offset);
-
-	// Set the index buffer to active in the input assembler so it can be rendered.
-	context->IASetIndexBuffer(m_indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
 	// Set the type of primitive that should be rendered from this vertex buffer, in this case triangles.
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

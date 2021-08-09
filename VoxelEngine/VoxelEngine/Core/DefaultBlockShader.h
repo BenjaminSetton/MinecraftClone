@@ -54,10 +54,6 @@ private:
 	ID3D11Buffer* m_lightBuffer;
 
 	ID3D11Buffer* m_vertexBuffer;
-	ID3D11Buffer* m_indexBuffer;
-
-	// Position buffers used for instancing
-	ID3D11Buffer* m_instancePosBuffer;
 
 	ID3D11InputLayout* m_inputLayout;
 	ID3D11SamplerState* m_sampler;
