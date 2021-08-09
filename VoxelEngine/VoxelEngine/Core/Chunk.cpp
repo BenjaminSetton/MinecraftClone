@@ -6,7 +6,7 @@
 
 using namespace DirectX;
 
-Chunk::Chunk() : m_active(true), m_id(0), m_pos(XMFLOAT3(-5.0f, 0, 0)), m_numFaces(0)
+Chunk::Chunk(const XMFLOAT3 pos) : m_id(0), m_pos(pos), m_numFaces(0)
 {
 	// Ensures that a chunk will ALWAYS generate it's corresponding blocks
 	InitializeChunk();
@@ -32,10 +32,6 @@ const uint32_t Chunk::GetID() { return m_id; }
 
 const Block* Chunk::GetBlock(unsigned int x, unsigned int y, unsigned int z) { return m_chunk[x][y][z]; }
 
-void Chunk::SetActive(const bool active) { m_active = active; }
-
-const bool Chunk::GetActive() { return m_active; }
-
 const DirectX::XMFLOAT3 Chunk::GetPosition() { return m_pos; }
 
 const BlockVertex* Chunk::GetBlockFaces() { return &m_blockFaces[0]; }
@@ -44,7 +40,6 @@ const uint32_t Chunk::GetNumFaces() { return m_numFaces; }
 
 void Chunk::InitializeChunk()
 {
-	m_active = true;
 	//m_id = 0; // TODO: Replace with an actual UUID
 	//m_pos = XMFLOAT3(0, 0, 0) // TODO: Relate the chunk ID with it's position
 

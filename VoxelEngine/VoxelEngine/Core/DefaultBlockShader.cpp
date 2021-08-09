@@ -3,6 +3,8 @@
 
 #include "../Utility/Utility.h"
 
+#include "ChunkManager.h"
+
 using namespace DirectX;
 
 void DefaultBlockShader::CreateObjects(ID3D11Device* device, const WCHAR* vsFilename, const WCHAR* psFilename) 
@@ -23,7 +25,7 @@ void DefaultBlockShader::Render(ID3D11DeviceContext* context, unsigned int index
 	SetShaderParameters(context, WM, VM, PM, lightDir, lightCol, srv);
 
 	// Render the model
-	context->Draw(m_chunk->GetNumFaces() * 6, 0);
+	context->Draw(ChunkManager::GetNumFaces() * 6, 0);
 }
 
 void DefaultBlockShader::Shutdown()
@@ -123,7 +125,7 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 
 	// Create the vertex
 	D3D11_BUFFER_DESC vertexBufferDesc;
-	vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 	vertexBufferDesc.ByteWidth = sizeof(BlockVertex) * (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * 6);
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = 0;

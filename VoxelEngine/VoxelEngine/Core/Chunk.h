@@ -9,7 +9,7 @@ class Chunk
 {
 public:
 
-	Chunk();
+	Chunk(const DirectX::XMFLOAT3 pos);
 	Chunk(const Chunk& other) = default; // I don't know why you would even do this, but I do it just in case
 	~Chunk();
 
@@ -17,9 +17,6 @@ public:
 	const uint32_t GetID();
 
 	const Block* GetBlock(unsigned int x, unsigned int y, unsigned int z);
-
-	void SetActive(const bool active);
-	const bool GetActive();
 
 	const DirectX::XMFLOAT3 GetPosition();
 
@@ -38,7 +35,7 @@ private:
 
 	void AppendBlockFaceToArray(const BlockFace face, uint32_t& currIndex, const DirectX::XMFLOAT3& blockPos);
 
-	bool m_active;
+private:
 
 	// TODO: Actually use this :)
 	uint32_t m_id;

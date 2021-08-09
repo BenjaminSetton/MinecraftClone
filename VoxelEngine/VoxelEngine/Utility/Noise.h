@@ -16,9 +16,14 @@ public:
 	
 	static int GetSeed();
 
+	static void SetScale(const double sc);
+
+	static const double GetScale();
+
 private:
 
 	static noise::module::Perlin m_generator;
+	static double m_scale;
 
 };
 
