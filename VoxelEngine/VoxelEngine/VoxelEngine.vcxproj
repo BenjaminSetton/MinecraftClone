@@ -97,7 +97,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EntryPointSymbol>
       </EntryPointSymbol>
-      <AdditionalDependencies>../libnoise/bin/libnoise.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)libnoise\bin\libnoise.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -119,7 +119,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EntryPointSymbol>
       </EntryPointSymbol>
-      <AdditionalDependencies>../libnoise/bin/libnoise.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)libnoise\bin\libnoise.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -230,6 +230,7 @@
     <ClCompile Include="Utility\ImGuiLayer.cpp" />
     <ClCompile Include="Utility\Input.cpp" />
     <ClCompile Include="Utility\Log.cpp" />
+    <ClCompile Include="Utility\Noise.cpp" />
     <ClCompile Include="Utility\ScopeTimer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -262,6 +263,7 @@
     <ClInclude Include="Utility\ImGuiLayer.h" />
     <ClInclude Include="Utility\Input.h" />
     <ClInclude Include="Utility\Log.h" />
+    <ClInclude Include="Utility\Noise.h" />
     <ClInclude Include="Utility\ScopeTimer.h" />
     <ClInclude Include="Utility\Utility.h" />
   </ItemGroup>

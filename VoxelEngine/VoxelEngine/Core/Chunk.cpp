@@ -2,6 +2,8 @@
 
 #include "Chunk.h"
 
+#include "../Utility/Noise.h"
+
 using namespace DirectX;
 
 Chunk::Chunk() : m_active(true), m_id(0), m_pos(XMFLOAT3(-5.0f, 0, 0)), m_numFaces(0)
@@ -50,20 +52,16 @@ void Chunk::InitializeChunk()
 	// For now we'll just initialize all blocks to "DIRT" blocks
 	for(int x = 0; x < CHUNK_SIZE; x++)
 	{
-		for (int y = 0; y < CHUNK_SIZE; y++)
+		for (int z = 0; z < CHUNK_SIZE; z++)
 		{
-			for (int z = 0; z < CHUNK_SIZE; z++)
+			float height = Noise2D::GenerateValue(x, z) * static_cast<float>(CHUNK_SIZE);
+			for(int y = 0; y < CHUNK_SIZE; y++)
 			{
-				Block* newBlock = new Block(BlockType::Dirt);
-				m_chunk[x][y][z] = newBlock;
+				if(y < height) m_chunk[x][y][z] = new Block(BlockType::Dirt);
+				else m_chunk[x][y][z] = new Block(BlockType::Air);
 			}
 		}
 	}
-
-	Block* bl1 = m_chunk[0][0][0];
-	Block* bl2 = m_chunk[1][0][0];
-	bl1->SetType(BlockType::Air);
-	bl2->SetType(BlockType::Air);
 }
 
 void Chunk::InitializeBuffers()
