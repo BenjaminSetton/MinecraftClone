@@ -8,7 +8,7 @@
 using namespace DirectX;
 
 DebugCamera::DebugCamera() : 
-	m_movementSpeed(3.0f), m_rotationSpeed(1.0f), Camera()
+	m_movementSpeed(4.5f), m_rotationSpeed(1.0f), Camera()
 {}
 
 void DebugCamera::Update(float dt)

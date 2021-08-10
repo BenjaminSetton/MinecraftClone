@@ -20,7 +20,7 @@ public:
 
 	const DirectX::XMFLOAT3 GetPosition();
 
-	const BlockVertex* GetBlockFaces();
+	BlockVertex* GetBlockFaces();
 
 	const uint32_t GetNumFaces();
 
@@ -42,6 +42,7 @@ private:
 
 	uint32_t m_numFaces;
 
+	// The chunk's position stored in world space, not chunk space
 	DirectX::XMFLOAT3 m_pos;
 	
 	// Currently defines a 3D array of 16x16x16 blocks

@@ -6,7 +6,6 @@
 
 std::vector<Chunk*> ChunkManager::m_activeChunks = std::vector<Chunk*>();
 uint16_t ChunkManager::m_renderDist = 5;
-long ChunkManager::m_numFaces = 0;
 
 using namespace DirectX;
 
@@ -30,7 +29,7 @@ void ChunkManager::Update(const DirectX::XMFLOAT3 playerPos)
 
 		// 1. Unload chunks if they are too far away from "player"
 		if (chunkDist >= m_renderDist * m_renderDist)
-			UnloadChunk(iter);
+			UnloadChunk(iter--);
 
 		iter++;
 	}
@@ -41,17 +40,18 @@ void ChunkManager::Update(const DirectX::XMFLOAT3 playerPos)
 	{
 		for(uint16_t z = 0; z < m_renderDist; z++)
 		{
-			XMFLOAT3 newChunkPos = {playerPosChunkSpace.x + x, playerPosChunkSpace.y,playerPosChunkSpace.z + z };
+			// A coordinate in chunk space
+			XMFLOAT3 newChunkPosCS = { playerPosChunkSpace.x + x, 0, playerPosChunkSpace.z + z };
 			// If this new chunk is not already active, allocate a new chunk
 			chunkExists = false;
 			for (auto currChunk : m_activeChunks)
 			{
-				XMFLOAT3 currChunkPos = currChunk->GetPosition();
+				XMFLOAT3 currChunkPos = WorldToChunkSpace(currChunk->GetPosition());
 				if
 					(
-						currChunkPos.x == newChunkPos.x &&
-						currChunkPos.y == newChunkPos.y &&
-						currChunkPos.z == newChunkPos.z
+						currChunkPos.x == newChunkPosCS.x &&
+						currChunkPos.y == newChunkPosCS.y &&
+						currChunkPos.z == newChunkPosCS.z
 						)
 				{
 					chunkExists = true;
@@ -60,7 +60,7 @@ void ChunkManager::Update(const DirectX::XMFLOAT3 playerPos)
 			}
 			if(!chunkExists)
 			{
-				XMFLOAT3 chunkWorldSpace = ChunkToWorldSpace(newChunkPos);
+				XMFLOAT3 chunkWorldSpace = ChunkToWorldSpace(newChunkPosCS);
 				LoadChunk(chunkWorldSpace);
 			}
 		}
@@ -73,7 +73,6 @@ void ChunkManager::Update(const DirectX::XMFLOAT3 playerPos)
 void ChunkManager::LoadChunk(const XMFLOAT3 chunkWorldPos) 
 {
 	Chunk* chunk = new Chunk(chunkWorldPos);
-	m_numFaces += chunk->GetNumFaces();
 	m_activeChunks.push_back(chunk); 
 }
 
@@ -97,7 +96,6 @@ void ChunkManager::UnloadChunk(Chunk* chunk)
 		if (iter == chunk)
 		{
 			Chunk* chunk = m_activeChunks[index];
-			m_numFaces -= chunk->GetNumFaces();
 			delete chunk;
 			m_activeChunks.erase(m_activeChunks.begin() + index);
 		}
@@ -112,11 +110,19 @@ void ChunkManager::UnloadChunk(const uint16_t& index)
 	m_activeChunks.erase(m_activeChunks.begin() + index);
 }
 
-const long ChunkManager::GetNumFaces() { return m_numFaces; }
+const uint16_t ChunkManager::GetNumActiveChunks() { return m_activeChunks.size(); }
+
+Chunk* ChunkManager::GetChunkAt(const uint16_t index)
+{
+	if (index < m_activeChunks.size())
+		return m_activeChunks[index];
+	else
+		return nullptr;
+}
 
 XMFLOAT3 ChunkManager::WorldToChunkSpace(const XMFLOAT3& pos)
 {
-	return { pos.x / CHUNK_SIZE, pos.y / CHUNK_SIZE, pos.z / CHUNK_SIZE };
+	return { (float)((int)pos.x / CHUNK_SIZE), (float)((int)pos.y / CHUNK_SIZE), (float)((int)pos.z / CHUNK_SIZE) };
 }
 
 XMFLOAT3 ChunkManager::ChunkToWorldSpace(const XMFLOAT3& pos)

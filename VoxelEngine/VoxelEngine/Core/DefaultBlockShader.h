@@ -6,6 +6,16 @@
 #include <DirectXMath.h>
 #include <d3dcompiler.h>
 
+#include "Chunk.h"
+
+
+// TODO: Track the following rendering stats
+//
+//	- Number of draw calls per frame
+//	- Number of vertices being rendered per frame (so the sum of all chunk vertices being rendered)
+//	- Time taken to render? (maybe)
+//
+//
 class DefaultBlockShader
 {
 public:
@@ -17,6 +27,10 @@ public:
 		DirectX::XMFLOAT4 lightCol, ID3D11ShaderResourceView* srv);
 
 	void Shutdown();
+
+	void SetChunk(Chunk* const chunk);
+
+	const Chunk* GetChunk() const;
 
 private:
 
@@ -54,6 +68,9 @@ private:
 
 	ID3D11InputLayout* m_inputLayout;
 	ID3D11SamplerState* m_sampler;
+
+	// The chunk currently being rendered
+	Chunk* m_chunk = nullptr;
 
 };
 

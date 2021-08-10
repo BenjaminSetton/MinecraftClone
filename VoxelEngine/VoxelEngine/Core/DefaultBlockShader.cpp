@@ -3,8 +3,6 @@
 
 #include "../Utility/Utility.h"
 
-#include "ChunkManager.h"
-
 using namespace DirectX;
 
 void DefaultBlockShader::CreateObjects(ID3D11Device* device, const WCHAR* vsFilename, const WCHAR* psFilename) 
@@ -25,7 +23,7 @@ void DefaultBlockShader::Render(ID3D11DeviceContext* context, unsigned int index
 	SetShaderParameters(context, WM, VM, PM, lightDir, lightCol, srv);
 
 	// Render the model
-	context->Draw(ChunkManager::GetNumFaces() * 6, 0);
+	context->Draw(m_chunk->GetNumFaces() * 6, 0);
 }
 
 void DefaultBlockShader::Shutdown()
@@ -78,6 +76,10 @@ void DefaultBlockShader::Shutdown()
 		m_vertexBuffer = nullptr;
 	}
 }
+
+void DefaultBlockShader::SetChunk(Chunk* const chunk) { m_chunk = chunk; }
+
+const Chunk* DefaultBlockShader::GetChunk() const { return m_chunk; }
 
 void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 {
@@ -132,12 +134,7 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 	vertexBufferDesc.MiscFlags = 0;
 	vertexBufferDesc.StructureByteStride = 0;
 
-	D3D11_SUBRESOURCE_DATA vertexBufferData;
-	vertexBufferData.pSysMem = m_chunk->GetBlockFaces();
-	vertexBufferData.SysMemPitch = 0;
-	vertexBufferData.SysMemSlicePitch = 0;
-
-	hr = device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &m_vertexBuffer);
+	hr = device->CreateBuffer(&vertexBufferDesc, nullptr, &m_vertexBuffer);
 	VX_ASSERT(!FAILED(hr));
 	
 }
@@ -191,17 +188,34 @@ void DefaultBlockShader::CreateShaders(ID3D11Device* device, const WCHAR* vsFile
 void DefaultBlockShader::SetShaderParameters(ID3D11DeviceContext* context, DirectX::XMMATRIX WM, DirectX::XMMATRIX VM, 
 	DirectX::XMMATRIX PM, DirectX::XMFLOAT3 lightDir, DirectX::XMFLOAT4 lightCol, ID3D11ShaderResourceView* srv)
 {
+	// Assert that the chunk exists / has been set
+	VX_ASSERT(m_chunk);
+
 	HRESULT hr;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	MatrixBuffer* matrixBufferPtr;
 	LightBuffer* lightBufferPtr; 
+	BlockVertex* vertexBufferPtr;
 
 	// Transpose the matrices to prepare them for the shader.
 	WM = XMMatrixTranspose(WM);
 	VM = XMMatrixTranspose(VM);
 	PM = XMMatrixTranspose(PM);
 
+#pragma region CHUNK_VERTEX_BUFFER
+	context->UpdateSubresource(m_vertexBuffer, 0, nullptr, m_chunk->GetBlockFaces(), 0, 0);
+	//// Lock the chunk vertex buffer so it can be written to.
+	//hr = context->Map(m_vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	//VX_ASSERT(!FAILED(hr));
+	//// Get a pointer to the data in the vertex buffer.
+	//vertexBufferPtr = (BlockVertex*)mappedResource.pData;
+	//// Copy the matrices into the constant buffer.
+	//vertexBufferPtr = m_chunk->GetBlockFaces();
+	//// Unlock the matrix constant buffer.
+	//context->Unmap(m_vertexBuffer, 0);
+#pragma endregion
 
+#pragma region WVP_MATRICES
 	// Lock the matrix constant buffer so it can be written to.
 	hr = context->Map(m_matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	VX_ASSERT(!FAILED(hr));
@@ -213,7 +227,9 @@ void DefaultBlockShader::SetShaderParameters(ID3D11DeviceContext* context, Direc
 	matrixBufferPtr->projectionMatrix = PM;
 	// Unlock the matrix constant buffer.
 	context->Unmap(m_matrixBuffer, 0);
+#pragma endregion
 
+#pragma LIGHT_MATRIX
 	// Lock the matrix constant buffer so it can be written to.
 	hr = context->Map(m_lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	VX_ASSERT(!FAILED(hr));
@@ -225,6 +241,7 @@ void DefaultBlockShader::SetShaderParameters(ID3D11DeviceContext* context, Direc
 	lightBufferPtr->padding = 0.0f;
 	// Unlock the matrix constant buffer.
 	context->Unmap(m_lightBuffer, 0);
+#pragma endregion
 
 	// Now set the matrix constant buffer in the vertex shader with the updated values.
 	context->VSSetConstantBuffers(0, 1, &m_matrixBuffer);

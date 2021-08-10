@@ -34,7 +34,7 @@ const Block* Chunk::GetBlock(unsigned int x, unsigned int y, unsigned int z) { r
 
 const DirectX::XMFLOAT3 Chunk::GetPosition() { return m_pos; }
 
-const BlockVertex* Chunk::GetBlockFaces() { return &m_blockFaces[0]; }
+BlockVertex* Chunk::GetBlockFaces() { return &m_blockFaces[0]; }
 
 const uint32_t Chunk::GetNumFaces() { return m_numFaces; }
 
@@ -49,7 +49,7 @@ void Chunk::InitializeChunk()
 	{
 		for (int z = 0; z < CHUNK_SIZE; z++)
 		{
-			float height = Noise2D::GenerateValue(x, z) * static_cast<float>(CHUNK_SIZE);
+			float height = Noise2D::GenerateValue(x + m_pos.x, z + m_pos.z) * static_cast<float>(CHUNK_SIZE);
 			for(int y = 0; y < CHUNK_SIZE; y++)
 			{
 				if(y < height) m_chunk[x][y][z] = new Block(BlockType::Dirt);
