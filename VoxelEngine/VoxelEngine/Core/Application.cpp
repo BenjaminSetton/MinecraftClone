@@ -127,6 +127,7 @@ void Application::Shutdown()
 
 bool Application::Frame() 
 {
+
 	// Quit running if ESC is pressed
 	if (m_Input->IsKeyDown(VK_ESCAPE)) return false;
 	m_Input->Update();
@@ -195,9 +196,9 @@ void Application::InitializeWindows(UINT& screenWidth, UINT& screenHeight)
 	}
 	else
 	{
-		// If windowed then set it to 1040x585 resolution.
-		screenWidth = 1040;
-		screenHeight = 585;
+		// If windowed then set it to 1600x900 (16:9) resolution.
+		screenWidth = 1600;
+		screenHeight = 900;
 
 		// Place the window in the middle of the screen.
 		posX = (GetSystemMetrics(SM_CXSCREEN) - screenWidth) / 2;

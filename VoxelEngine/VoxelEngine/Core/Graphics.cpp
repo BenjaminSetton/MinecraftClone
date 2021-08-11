@@ -79,27 +79,31 @@ bool Graphics::Frame(const float dt)
 	// Begin the ImGui frame
 	m_imGuiLayer->BeginFrame();
 
-	// Update the debug camera's position
-	m_debugCam->Update(dt);
-
-	// Update the active chunks
-	ChunkManager::Update(m_debugCam->GetPosition());
-
-	// Check to toggle wireframe state
-	if (Input::IsKeyDown(KeyCode::E)) m_D3D->SetWireframeRasterState(true);
-	else if (Input::IsKeyDown(KeyCode::R)) m_D3D->SetWireframeRasterState(false);
-
-	// Begin the D3D scene
-	m_D3D->BeginScene(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
-
-	// Send the current chunk to the shader and render
-	for(uint16_t i = 0; i < ChunkManager::GetNumActiveChunks(); i++)
 	{
-		m_shader->SetChunk(ChunkManager::GetChunkAt(i));
-		m_shader->Render(m_D3D->GetDeviceContext(), 36, m_D3D->GetWorldMatrix(), m_debugCam->GetViewMatrix(),
-			m_D3D->GetProjectionMatrix(), { 1.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, m_textureManager->GetTexture(std::string("SEAFLOOR_TEX")));
-	}
+		VX_PROFILE_FUNC();
 
+		// Update the debug camera's position
+		m_debugCam->Update(dt);
+
+		// Update the active chunks
+		ChunkManager::Update(m_debugCam->GetPosition());
+
+		// Check to toggle wireframe state
+		if (Input::IsKeyDown(KeyCode::E)) m_D3D->SetWireframeRasterState(true);
+		else if (Input::IsKeyDown(KeyCode::R)) m_D3D->SetWireframeRasterState(false);
+
+		// Begin the D3D scene
+		m_D3D->BeginScene(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
+
+		// Send the current chunk to the shader and render
+		for (uint16_t i = 0; i < ChunkManager::GetNumActiveChunks(); i++)
+		{
+			m_shader->SetChunk(ChunkManager::GetChunkAt(i));
+			m_shader->Render(m_D3D->GetDeviceContext(), 36, m_D3D->GetWorldMatrix(), m_debugCam->GetViewMatrix(),
+				m_D3D->GetProjectionMatrix(), { 1.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, m_textureManager->GetTexture(std::string("SEAFLOOR_TEX")));
+		}
+
+	}
 
 	// End the ImGui frame
 	m_D3D->ClearDepthBuffer(1.0f); // Clear the depth buffer so GUI draws on top of everything

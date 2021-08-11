@@ -52,7 +52,7 @@ void Chunk::InitializeChunk()
 			float height = Noise2D::GenerateValue(x + m_pos.x, z + m_pos.z) * static_cast<float>(CHUNK_SIZE);
 			for(int y = 0; y < CHUNK_SIZE; y++)
 			{
-				if(y < height) m_chunk[x][y][z] = new Block(BlockType::Dirt);
+				if(y <= height) m_chunk[x][y][z] = new Block(BlockType::Dirt);
 				else m_chunk[x][y][z] = new Block(BlockType::Air);
 			}
 		}

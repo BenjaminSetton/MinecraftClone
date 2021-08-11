@@ -8,7 +8,7 @@
 using namespace DirectX;
 
 DebugCamera::DebugCamera() : 
-	m_movementSpeed(4.5f), m_rotationSpeed(1.0f), Camera()
+	m_movementSpeed(7.0f), m_rotationSpeed(1.0f), Camera()
 {}
 
 void DebugCamera::Update(float dt)
@@ -35,6 +35,12 @@ void DebugCamera::Update(float dt)
 		deltaTranslation.m128_f32[1] -= m_movementSpeed * dt;
 
 	// Update rotation only if LMB is held down
+
+	// NOTE!
+	//
+	//	THERE IS AN ISSUE WITH WINDOW RESIZING/FRAMERATE WHERE
+	//	CAMREA ROTATION SPEEDS UP OR SLOWS DOWN
+	//
 	if(Input::IsMouseDown(MouseCode::LBUTTON))
 	{
 		// Rotation around the X axis (look up/down)
