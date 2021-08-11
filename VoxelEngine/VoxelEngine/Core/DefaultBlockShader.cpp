@@ -204,15 +204,6 @@ void DefaultBlockShader::SetShaderParameters(ID3D11DeviceContext* context, Direc
 
 #pragma region CHUNK_VERTEX_BUFFER
 	context->UpdateSubresource(m_vertexBuffer, 0, nullptr, m_chunk->GetBlockFaces(), 0, 0);
-	//// Lock the chunk vertex buffer so it can be written to.
-	//hr = context->Map(m_vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	//VX_ASSERT(!FAILED(hr));
-	//// Get a pointer to the data in the vertex buffer.
-	//vertexBufferPtr = (BlockVertex*)mappedResource.pData;
-	//// Copy the matrices into the constant buffer.
-	//vertexBufferPtr = m_chunk->GetBlockFaces();
-	//// Unlock the matrix constant buffer.
-	//context->Unmap(m_vertexBuffer, 0);
 #pragma endregion
 
 #pragma region WVP_MATRICES

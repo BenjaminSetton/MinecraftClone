@@ -108,6 +108,9 @@
     <ClCompile Include="Utility\Noise.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
+    <ClCompile Include="Core\ShadowShader.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utility\Clock.h">
@@ -205,6 +208,9 @@
     </ClInclude>
     <ClInclude Include="Utility\Noise.h">
       <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\ShadowShader.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

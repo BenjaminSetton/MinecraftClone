@@ -217,6 +217,7 @@
     <ClCompile Include="Core\DefaultBlockShader.cpp" />
     <ClCompile Include="Core\Graphics.cpp" />
     <ClCompile Include="Core\main.cpp" />
+    <ClCompile Include="Core\ShadowShader.cpp" />
     <ClCompile Include="Core\TextureManager.cpp" />
     <ClCompile Include="Misc\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -256,6 +257,7 @@
     <ClInclude Include="Core\Events\KeyCodes.h" />
     <ClInclude Include="Core\Events\MouseEvent.h" />
     <ClInclude Include="Core\Graphics.h" />
+    <ClInclude Include="Core\ShadowShader.h" />
     <ClInclude Include="Core\TextureManager.h" />
     <ClInclude Include="Misc\pch.h" />
     <ClInclude Include="Utility\Clock.h" />

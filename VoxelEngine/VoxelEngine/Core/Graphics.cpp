@@ -76,6 +76,11 @@ void Graphics::Shutdown()
 
 bool Graphics::Frame(const float dt)
 {
+	// Debugging stats
+	int numDrawCalls = 0;
+	int numVertices = 0;
+	int numChunks = 0;
+
 	// Begin the ImGui frame
 	m_imGuiLayer->BeginFrame();
 
@@ -101,7 +106,18 @@ bool Graphics::Frame(const float dt)
 			m_shader->SetChunk(ChunkManager::GetChunkAt(i));
 			m_shader->Render(m_D3D->GetDeviceContext(), 36, m_D3D->GetWorldMatrix(), m_debugCam->GetViewMatrix(),
 				m_D3D->GetProjectionMatrix(), { 1.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, m_textureManager->GetTexture(std::string("SEAFLOOR_TEX")));
+			
+			numChunks++;
+			numDrawCalls++;
+			numVertices += ChunkManager::GetChunkAt(i)->GetNumFaces() * 4;
 		}
+
+
+		ImGui::Begin("Debug Panel");
+		ImGui::Text("Chunk Count: %i", numChunks);
+		ImGui::Text("Draw Calls: %i", numDrawCalls);
+		ImGui::Text("Vertex Count: %i", numVertices);
+		ImGui::End();
 
 	}
 
