@@ -15,14 +15,77 @@ void DefaultBlockShader::CreateObjects(ID3D11Device* device, const WCHAR* vsFile
 	CreateD3DObjects(device);
 }
 
-void DefaultBlockShader::Render(ID3D11DeviceContext* context, unsigned int indexCount,
-	XMMATRIX WM, XMMATRIX VM, XMMATRIX PM, XMFLOAT3 lightDir,
-	XMFLOAT4 lightCol, ID3D11ShaderResourceView* srv)
+void DefaultBlockShader::Initialize(ID3D11DeviceContext* context, DirectX::XMMATRIX WM, DirectX::XMMATRIX VM,
+	DirectX::XMMATRIX PM, DirectX::XMFLOAT3 lightDir, DirectX::XMFLOAT4 lightCol, ID3D11ShaderResourceView* srv)
 {
-	// Set the shader parameters
-	SetShaderParameters(context, WM, VM, PM, lightDir, lightCol, srv);
 
-	// Render the model
+	HRESULT hr;
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	MatrixBuffer* matrixBufferPtr;
+	LightBuffer* lightBufferPtr;
+	BlockVertex* vertexBufferPtr;
+
+	m_projection = XMMatrixTranspose(PM);
+
+#pragma region WVP_MATRICES
+	// Lock the matrix constant buffer so it can be written to.
+	hr = context->Map(m_matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	VX_ASSERT(!FAILED(hr));
+	// Get a pointer to the data in the constant buffer.
+	matrixBufferPtr = (MatrixBuffer*)mappedResource.pData;
+	// Copy the matrices into the constant buffer.
+	matrixBufferPtr->worldMatrix = XMMatrixIdentity();
+	matrixBufferPtr->viewMatrix = XMMatrixTranspose(VM);
+	matrixBufferPtr->projectionMatrix = m_projection;
+	// Unlock the matrix constant buffer.
+	context->Unmap(m_matrixBuffer, 0);
+#pragma endregion
+
+#pragma LIGHT_MATRIX
+	// Lock the matrix constant buffer so it can be written to.
+	hr = context->Map(m_lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	VX_ASSERT(!FAILED(hr));
+	// Get a pointer to the data in the constant buffer.
+	lightBufferPtr = (LightBuffer*)mappedResource.pData;
+	// Copy the matrices into the constant buffer.
+	lightBufferPtr->lightDir = lightDir;
+	lightBufferPtr->lightCol = lightCol;
+	lightBufferPtr->padding = 0.0f;
+	// Unlock the matrix constant buffer.
+	context->Unmap(m_lightBuffer, 0);
+#pragma endregion
+
+	// Now set the matrix constant buffer in the vertex shader with the updated values.
+	context->VSSetConstantBuffers(0, 1, &m_matrixBuffer);
+
+	// Set the light constant buffer in the pixel shader
+	context->PSSetConstantBuffers(0, 1, &m_lightBuffer);
+
+	// Bind the SRV (textures) to the pixel shader Texture2D slot
+	context->PSSetShaderResources(0, 1, &srv);
+
+	// Set the vertex input layout.
+	context->IASetInputLayout(m_inputLayout);
+
+	// Set the vertex and pixel shaders that will be used to render this triangle.
+	context->VSSetShader(m_vertexShader, NULL, 0);
+	context->PSSetShader(m_pixelShader, NULL, 0);
+
+	// Set the sampler state in the pixel shader.
+	context->PSSetSamplers(0, 1, &m_sampler);
+
+	// Set the type of primitive that should be rendered from this vertex buffer, in this case triangles.
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}
+
+void DefaultBlockShader::Render(ID3D11DeviceContext* context)
+{
+	VX_ASSERT(m_chunk);
+
+	// Update the vertex buffer
+	UpdateVertexBuffer(context);
+
+	// Render the chunk
 	context->Draw(m_chunk->GetNumFaces() * 6, 0);
 }
 
@@ -84,6 +147,7 @@ const Chunk* DefaultBlockShader::GetChunk() const { return m_chunk; }
 void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 {
 	HRESULT hr;
+
 	// Setup the description of the matrix dynamic constant buffer that is in the vertex shader.
 	D3D11_BUFFER_DESC matrixBufferDesc;
 	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -185,80 +249,31 @@ void DefaultBlockShader::CreateShaders(ID3D11Device* device, const WCHAR* vsFile
 }
 
 
-void DefaultBlockShader::SetShaderParameters(ID3D11DeviceContext* context, DirectX::XMMATRIX WM, DirectX::XMMATRIX VM, 
-	DirectX::XMMATRIX PM, DirectX::XMFLOAT3 lightDir, DirectX::XMFLOAT4 lightCol, ID3D11ShaderResourceView* srv)
+void DefaultBlockShader::UpdateVertexBuffer(ID3D11DeviceContext* context)
 {
-	// Assert that the chunk exists / has been set
-	VX_ASSERT(m_chunk);
-
-	HRESULT hr;
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	MatrixBuffer* matrixBufferPtr;
-	LightBuffer* lightBufferPtr; 
-	BlockVertex* vertexBufferPtr;
-
-	// Transpose the matrices to prepare them for the shader.
-	WM = XMMatrixTranspose(WM);
-	VM = XMMatrixTranspose(VM);
-	PM = XMMatrixTranspose(PM);
-
-#pragma region CHUNK_VERTEX_BUFFER
 	context->UpdateSubresource(m_vertexBuffer, 0, nullptr, m_chunk->GetBlockFaces(), 0, 0);
-#pragma endregion
-
-#pragma region WVP_MATRICES
-	// Lock the matrix constant buffer so it can be written to.
-	hr = context->Map(m_matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	VX_ASSERT(!FAILED(hr));
-	// Get a pointer to the data in the constant buffer.
-	matrixBufferPtr = (MatrixBuffer*)mappedResource.pData;
-	// Copy the matrices into the constant buffer.
-	matrixBufferPtr->worldMatrix = WM;
-	matrixBufferPtr->viewMatrix = VM;
-	matrixBufferPtr->projectionMatrix = PM;
-	// Unlock the matrix constant buffer.
-	context->Unmap(m_matrixBuffer, 0);
-#pragma endregion
-
-#pragma LIGHT_MATRIX
-	// Lock the matrix constant buffer so it can be written to.
-	hr = context->Map(m_lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	VX_ASSERT(!FAILED(hr));
-	// Get a pointer to the data in the constant buffer.
-	lightBufferPtr = (LightBuffer*)mappedResource.pData;
-	// Copy the matrices into the constant buffer.
-	lightBufferPtr->lightDir = lightDir;
-	lightBufferPtr->lightCol = lightCol;
-	lightBufferPtr->padding = 0.0f;
-	// Unlock the matrix constant buffer.
-	context->Unmap(m_lightBuffer, 0);
-#pragma endregion
-
-	// Now set the matrix constant buffer in the vertex shader with the updated values.
-	context->VSSetConstantBuffers(0, 1, &m_matrixBuffer);
-
-	// Set the light constant buffer in the pixel shader
-	context->PSSetConstantBuffers(0, 1, &m_lightBuffer);
-
-	// Bind the SRV (textures) to the pixel shader Texture2D slot
-	context->PSSetShaderResources(0, 1, &srv);
-
-	// Set the vertex input layout.
-	context->IASetInputLayout(m_inputLayout);
-
-	// Set the vertex and pixel shaders that will be used to render this triangle.
-	context->VSSetShader(m_vertexShader, NULL, 0);
-	context->PSSetShader(m_pixelShader, NULL, 0);
-
-	// Set the sampler state in the pixel shader.
-	context->PSSetSamplers(0, 1, &m_sampler);
 
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
 	ID3D11Buffer* buffers[] = { m_vertexBuffer };
 	unsigned int stride[] = { sizeof(BlockVertex) };
 	unsigned int offset[] = { 0 };
 	context->IASetVertexBuffers(0, ARRAYSIZE(buffers), buffers, stride, offset);
+}
 
-	// Set the type of primitive that should be rendered from this vertex buffer, in this case triangles.
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+void DefaultBlockShader::UpdateViewMatrix(ID3D11DeviceContext* context, DirectX::XMMATRIX viewMatrix)
+{
+	HRESULT hr;
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	MatrixBuffer* matrixBufferPtr;
+
+	// Lock the matrix constant buffer so it can be written to.
+	hr = context->Map(m_matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	VX_ASSERT(!FAILED(hr));
+
+	matrixBufferPtr = (MatrixBuffer*)mappedResource.pData;
+	matrixBufferPtr->worldMatrix = XMMatrixIdentity();
+	matrixBufferPtr->viewMatrix = XMMatrixTranspose(viewMatrix);
+	matrixBufferPtr->projectionMatrix = m_projection;
+
+	context->Unmap(m_matrixBuffer, 0);
 }

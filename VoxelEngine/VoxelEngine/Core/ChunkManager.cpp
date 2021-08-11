@@ -8,7 +8,7 @@
 // Static variable definitions
 
 std::vector<Chunk*> ChunkManager::m_activeChunks = std::vector<Chunk*>();
-uint16_t ChunkManager::m_renderDist = 4;
+uint16_t ChunkManager::m_renderDist = 3;
 Chunk* ChunkManager::m_activeChunk = new Chunk[pow(2 * m_renderDist + 1, 2)];
 
 using namespace DirectX;

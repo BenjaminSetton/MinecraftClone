@@ -22,15 +22,20 @@ public:
 
 	void CreateObjects(ID3D11Device* device, const WCHAR* vsFilename, const WCHAR* psFilename);
 
-	void Render(ID3D11DeviceContext* context, unsigned int indexCount, DirectX::XMMATRIX WM, 
-		DirectX::XMMATRIX VM, DirectX::XMMATRIX PM, DirectX::XMFLOAT3 lightDir, 
-		DirectX::XMFLOAT4 lightCol, ID3D11ShaderResourceView* srv);
+	void Initialize(ID3D11DeviceContext* context, DirectX::XMMATRIX WM, DirectX::XMMATRIX VM, 
+		DirectX::XMMATRIX PM, DirectX::XMFLOAT3 lightDir, DirectX::XMFLOAT4 lightCol, ID3D11ShaderResourceView* srv);
+	
+	void Render(ID3D11DeviceContext* context);
 
 	void Shutdown();
 
+	
 	void SetChunk(Chunk* const chunk);
 
 	const Chunk* GetChunk() const;
+
+	void UpdateViewMatrix(ID3D11DeviceContext* context, DirectX::XMMATRIX viewMatrix);
+
 
 private:
 
@@ -49,12 +54,14 @@ private:
 		float padding;
 	};
 
-	void SetShaderParameters(ID3D11DeviceContext* context, DirectX::XMMATRIX WM, DirectX::XMMATRIX VM, 
-		DirectX::XMMATRIX PM, DirectX::XMFLOAT3 lightDir, DirectX::XMFLOAT4 lightCol, ID3D11ShaderResourceView* srv);
 
 	void CreateD3DObjects(ID3D11Device* device);
 
 	void CreateShaders(ID3D11Device* device, const WCHAR* vsFilename, const WCHAR* psFilename);
+
+	void UpdateVertexBuffer(ID3D11DeviceContext* context);
+
+private:
 
 
 	// D3D object definitions
@@ -71,6 +78,9 @@ private:
 
 	// The chunk currently being rendered
 	Chunk* m_chunk = nullptr;
+
+	// Stores the transposed projection matrix
+	DirectX::XMMATRIX m_projection;
 
 };
 

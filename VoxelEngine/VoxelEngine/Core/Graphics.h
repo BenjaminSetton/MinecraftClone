@@ -39,7 +39,7 @@ private:
 
 	D3D* m_D3D = nullptr;
 	DebugCamera* m_debugCam = nullptr;
-	DefaultBlockShader* m_shader = nullptr;
+	DefaultBlockShader* m_chunkShader = nullptr;
 
 	TextureManager* m_textureManager = nullptr;
 

@@ -11,6 +11,33 @@ class ShadowShader
 {
 public:
 
+	void CreateObjects(ID3D11Device* device, const WCHAR* vsFilename, const WCHAR* psFilename);
+
+	void Render(ID3D11DeviceContext* context, unsigned int indexCount, DirectX::XMMATRIX WM,
+		DirectX::XMMATRIX VM, DirectX::XMMATRIX PM, DirectX::XMFLOAT3 lightDir,
+		DirectX::XMFLOAT4 lightCol, ID3D11ShaderResourceView* srv);
+
+	void Shutdown();
+
+	void SetChunk(Chunk* const chunk);
+
+private:
+
+	// pipeline vertex struct
+	struct CameraMatrixBuffer
+	{
+		DirectX::XMMATRIX worldMatrix;
+		DirectX::XMMATRIX viewMatrix;
+		DirectX::XMMATRIX projectionMatrix;
+	};
+
+	void SetShaderParameters(ID3D11DeviceContext* context, DirectX::XMMATRIX WM, DirectX::XMMATRIX VM,
+		DirectX::XMMATRIX PM, DirectX::XMFLOAT3 lightDir, DirectX::XMFLOAT4 lightCol, ID3D11ShaderResourceView* srv);
+
+	void CreateD3DObjects(ID3D11Device* device);
+
+	void CreateShaders(ID3D11Device* device, const WCHAR* vsFilename, const WCHAR* psFilename);
+
 private:
 
 	// D3D object definitions

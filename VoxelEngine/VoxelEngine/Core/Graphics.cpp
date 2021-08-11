@@ -23,13 +23,16 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	// We can temporarily call Render() here since camera's position and rotation isn't changing for now
 	m_debugCam->ConstructMatrix();
 
-	// Create the shader class object
-	m_shader = new DefaultBlockShader;
-	m_shader->CreateObjects(m_D3D->GetDevice(), L"./Shaders/DefaultBlock_VS.hlsl", L"./Shaders/DefaultBlock_PS.hlsl");
 
 	// Create and initialize the texture manager
 	m_textureManager = new TextureManager;
 	m_textureManager->Init(m_D3D->GetDevice());
+	
+	// Create the shader class object
+	m_chunkShader = new DefaultBlockShader;
+	m_chunkShader->CreateObjects(m_D3D->GetDevice(), L"./Shaders/DefaultBlock_VS.hlsl", L"./Shaders/DefaultBlock_PS.hlsl");
+	m_chunkShader->Initialize(m_D3D->GetDeviceContext(), m_D3D->GetWorldMatrix(), m_debugCam->GetViewMatrix(),
+		m_D3D->GetProjectionMatrix(), { 1.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, m_textureManager->GetTexture(std::string("SEAFLOOR_TEX")));
 	
 	// Create and initialize the ImGuiLayer
 	m_imGuiLayer = new ImGuiLayer;
@@ -47,6 +50,13 @@ void Graphics::Shutdown()
 		m_imGuiLayer = nullptr;
 	}
 
+	if (m_chunkShader)
+	{
+		m_chunkShader->Shutdown();
+		delete m_chunkShader;
+		m_chunkShader = nullptr;
+	}
+
 	if(m_textureManager)
 	{
 		m_textureManager->Shutdown();
@@ -54,12 +64,6 @@ void Graphics::Shutdown()
 		m_textureManager = nullptr;
 	}
 
-	if(m_shader)
-	{
-		m_shader->Shutdown();
-		delete m_shader;
-		m_shader = nullptr;
-	}
 	if (m_D3D)
 	{
 		m_D3D->Shutdown();
@@ -103,9 +107,10 @@ bool Graphics::Frame(const float dt)
 		// Send the current chunk to the shader and render
 		for (uint16_t i = 0; i < ChunkManager::GetNumActiveChunks(); i++)
 		{
-			m_shader->SetChunk(ChunkManager::GetChunkAt(i));
-			m_shader->Render(m_D3D->GetDeviceContext(), 36, m_D3D->GetWorldMatrix(), m_debugCam->GetViewMatrix(),
-				m_D3D->GetProjectionMatrix(), { 1.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, m_textureManager->GetTexture(std::string("SEAFLOOR_TEX")));
+			// Render the chunks
+			m_chunkShader->SetChunk(ChunkManager::GetChunkAt(i));
+			m_chunkShader->UpdateViewMatrix(m_D3D->GetDeviceContext(), m_debugCam->GetViewMatrix());
+			m_chunkShader->Render(m_D3D->GetDeviceContext());
 			
 			numChunks++;
 			numDrawCalls++;
