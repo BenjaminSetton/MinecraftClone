@@ -9,7 +9,7 @@ class Chunk
 {
 public:
 
-	Chunk(const DirectX::XMFLOAT3 pos);
+	Chunk(const DirectX::XMFLOAT3 pos = { 0.0f, 0.0f, 0.0f });
 	Chunk(const Chunk& other) = default; // I don't know why you would even do this, but I do it just in case
 	~Chunk();
 

@@ -25,19 +25,24 @@ public:
 
 private:
 
-	// Helper method. Consider moving to a Utility library
+	// Helper methods. Consider moving to a Utility library
 	static DirectX::XMFLOAT3 WorldToChunkSpace(const DirectX::XMFLOAT3& pos);
 	static DirectX::XMFLOAT3 ChunkToWorldSpace(const DirectX::XMFLOAT3& pos);
 
 private:
 
+	// TODO: Look into storing the chunks in an unordered map
 	static std::vector<Chunk*> m_activeChunks;
 
-	// Temporary RENDER_DIST. Consider moving to another "settings" or "game" class
+	// An array of Chunks 
+	static Chunk* m_activeChunk;
+
+	// NOTE! Temporarily stored here
+	// Consider moving to another "settings" or "game" class
 	static uint16_t m_renderDist;
 
-	// ChunkManager could store a vector of BlockVertex objects which would store all the vertices
-	// of the active chunks (this would mean that all the data would be duplicated)
+	// The maximum number of chunks is dictated by (2 * m_renderDist + 1)^2, considering
+	// just the x and z axis since there are currently no vertical chunks
 };
 
 #endif

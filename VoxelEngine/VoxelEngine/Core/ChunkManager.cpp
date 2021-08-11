@@ -1,11 +1,15 @@
 #include "../Misc/pch.h"
 
 #include "ChunkManager.h"
+#include "../Utility/Utility.h"
+#include "../../imgui/imgui.h"
+
 
 // Static variable definitions
 
 std::vector<Chunk*> ChunkManager::m_activeChunks = std::vector<Chunk*>();
-uint16_t ChunkManager::m_renderDist = 5;
+uint16_t ChunkManager::m_renderDist = 4;
+Chunk* ChunkManager::m_activeChunk = new Chunk[pow(2 * m_renderDist + 1, 2)];
 
 using namespace DirectX;
 
@@ -13,32 +17,41 @@ using namespace DirectX;
 
 void ChunkManager::Update(const DirectX::XMFLOAT3 playerPos)
 {
+	VX_PROFILE_FUNC();
+
+	ImGui::Begin("Debug Panel");
+	ImGui::Text("(PRE-UNLOAD) Number of chunks: %d", m_activeChunks.size());
+
 	// Chunk coord
 	XMFLOAT3 playerPosChunkSpace = WorldToChunkSpace(playerPos);
 
-	// Loop through all active chunks
+	// 1. Unload chunks outside of render distance
 	int iter = 0;
-	for(auto& chunk : m_activeChunks)
+	for (auto& chunk : m_activeChunks)
 	{
 		XMFLOAT3 chunkPosChunkSpace = WorldToChunkSpace(chunk->GetPosition());
 
-		float chunkDist =
-			(chunkPosChunkSpace.x - playerPosChunkSpace.x) * (chunkPosChunkSpace.x - playerPosChunkSpace.x) +
-			(chunkPosChunkSpace.y - playerPosChunkSpace.y) * (chunkPosChunkSpace.y - playerPosChunkSpace.y) +
-			(chunkPosChunkSpace.z - playerPosChunkSpace.z) * (chunkPosChunkSpace.z - playerPosChunkSpace.z);
+		XMFLOAT3 chunkDistFromPlayer =
+		{
+			abs(chunkPosChunkSpace.x - playerPosChunkSpace.x),
+			abs(chunkPosChunkSpace.y - playerPosChunkSpace.y),
+			abs(chunkPosChunkSpace.z - playerPosChunkSpace.z),
+		};
 
 		// 1. Unload chunks if they are too far away from "player"
-		if (chunkDist >= m_renderDist * m_renderDist)
+		if (chunkDistFromPlayer.x > m_renderDist || chunkDistFromPlayer.z > m_renderDist)
 			UnloadChunk(iter--);
 
 		iter++;
 	}
 
+	ImGui::Text("(POST-UNLOAD) Number of chunks: %d", m_activeChunks.size());
+
 	// 2. Load chunks if they are inside render distance
 	bool chunkExists = false;
-	for(uint16_t x = 0; x < m_renderDist; x++)
+	for(int16_t x = -m_renderDist; x <= m_renderDist; x++)
 	{
-		for(uint16_t z = 0; z < m_renderDist; z++)
+		for(int16_t z = -m_renderDist; z <= m_renderDist; z++)
 		{
 			// A coordinate in chunk space
 			XMFLOAT3 newChunkPosCS = { playerPosChunkSpace.x + x, 0, playerPosChunkSpace.z + z };
@@ -66,7 +79,9 @@ void ChunkManager::Update(const DirectX::XMFLOAT3 playerPos)
 		}
 	}
 
+	ImGui::Text("(POST-LOAD) Number of chunks: %d", m_activeChunks.size());
 
+	ImGui::End();
 
 }
 
