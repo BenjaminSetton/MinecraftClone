@@ -34,11 +34,11 @@ private:
 
 	void InitializeBuffers();
 
-	//void AdjustChunkBoundaries();
-
 private:
 
 	void AppendBlockFaceToArray(const BlockFace face, uint32_t& currIndex, const DirectX::XMFLOAT3& blockPos);
+
+	void ResetFaces();
 
 private:
 

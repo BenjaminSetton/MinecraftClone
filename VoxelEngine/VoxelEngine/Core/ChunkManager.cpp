@@ -99,10 +99,38 @@ void ChunkManager::Update(const DirectX::XMFLOAT3 playerPos)
 		}
 	}
 
-	// 3. Force all new chunks to initialize their buffers
+	// 3. Force all new chunks and their neighbors to initialize their buffers
 	for(uint16_t i = 0; i < newChunkList.size(); i++)
 	{
-		newChunkList[i]->InitializeBuffers();
+		Chunk* newChunk = newChunkList[i];
+		XMFLOAT3 chunkPosCS = newChunk->GetPosition();
+
+		// Left neighbor
+		Chunk* leftNeighbor = GetChunkAtPos({chunkPosCS.x - 1, chunkPosCS.y, chunkPosCS.z});
+		if (leftNeighbor) leftNeighbor->InitializeBuffers();
+
+		// Right neighbor
+		Chunk* rightNeighbor = GetChunkAtPos({ chunkPosCS.x + 1, chunkPosCS.y, chunkPosCS.z });
+		if (rightNeighbor) rightNeighbor->InitializeBuffers();
+
+		// Top neighbor
+		Chunk* topNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y + 1, chunkPosCS.z });
+		if (topNeighbor) topNeighbor->InitializeBuffers();
+
+		// Bottom neighbor
+		Chunk* bottomNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y - 1, chunkPosCS.z });
+		if (bottomNeighbor) bottomNeighbor->InitializeBuffers();
+
+		// Front neighbor
+		Chunk* frontNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y, chunkPosCS.z - 1});
+		if (frontNeighbor) frontNeighbor->InitializeBuffers();
+
+		// Back neighbor
+		Chunk* backNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y, chunkPosCS.z + 1 });
+		if (backNeighbor) backNeighbor->InitializeBuffers();
+
+		// Current chunk
+		newChunk->InitializeBuffers();
 	}
 
 	ImGui::Begin("Debug Panel");
