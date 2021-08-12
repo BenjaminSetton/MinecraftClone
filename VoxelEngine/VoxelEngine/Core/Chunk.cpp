@@ -4,33 +4,18 @@
 
 #include "../Utility/Noise.h"
 
+#include "ChunkManager.h" // To check for neighboring chunks
+
 using namespace DirectX;
 
 Chunk::Chunk(const XMFLOAT3 pos) : m_id(0), m_pos(pos), m_numFaces(0)
 {
-	// Ensures that a chunk will ALWAYS generate it's corresponding blocks
 	InitializeChunk();
-	InitializeBuffers();
-}
-
-Chunk::~Chunk()
-{
-	for (int x = 0; x < CHUNK_SIZE; x++)
-	{
-		for (int y = 0; y < CHUNK_SIZE; y++)
-		{
-			for (int z = 0; z < CHUNK_SIZE; z++)
-			{
-				Block* block = m_chunk[x][y][z];
-				delete block;
-			}
-		}
-	}
 }
 
 const uint32_t Chunk::GetID() { return m_id; }
 
-const Block* Chunk::GetBlock(unsigned int x, unsigned int y, unsigned int z) { return m_chunk[x][y][z]; }
+Block* Chunk::GetBlock(unsigned int x, unsigned int y, unsigned int z) { return &m_chunk[x][y][z]; }
 
 const DirectX::XMFLOAT3 Chunk::GetPosition() { return m_pos; }
 
@@ -41,7 +26,8 @@ const uint32_t Chunk::GetNumFaces() { return m_numFaces; }
 void Chunk::InitializeChunk()
 {
 	//m_id = 0; // TODO: Replace with an actual UUID
-	//m_pos = XMFLOAT3(0, 0, 0) // TODO: Relate the chunk ID with it's position
+
+	XMFLOAT3 posWS = { m_pos.x * CHUNK_SIZE, m_pos.y * CHUNK_SIZE, m_pos.z * CHUNK_SIZE };
 
 	// Populate the chunk array
 	// For now we'll just initialize all blocks to "DIRT" blocks
@@ -49,11 +35,11 @@ void Chunk::InitializeChunk()
 	{
 		for (int z = 0; z < CHUNK_SIZE; z++)
 		{
-			float height = Noise2D::GenerateValue(x + m_pos.x, z + m_pos.z) * static_cast<float>(CHUNK_SIZE);
+			float height = Noise2D::GenerateValue(x + posWS.x, z + posWS.z) * static_cast<float>(CHUNK_SIZE);
 			for(int y = 0; y < CHUNK_SIZE; y++)
 			{
-				if(y <= height) m_chunk[x][y][z] = new Block(BlockType::Dirt);
-				else m_chunk[x][y][z] = new Block(BlockType::Air);
+				if(y <= height) m_chunk[x][y][z] = Block(BlockType::Dirt);
+				else m_chunk[x][y][z] = Block(BlockType::Air);
 			}
 		}
 	}
@@ -61,6 +47,16 @@ void Chunk::InitializeChunk()
 
 void Chunk::InitializeBuffers()
 {
+	// Retrieve neighboring chunks
+	Chunk* leftChunk = ChunkManager::GetChunkAtPos({ m_pos.x - 1, m_pos.y, m_pos.z });
+	Chunk* rightChunk = ChunkManager::GetChunkAtPos({ m_pos.x + 1, m_pos.y, m_pos.z });
+	Chunk* topChunk = ChunkManager::GetChunkAtPos({ m_pos.x, m_pos.y + 1, m_pos.z });
+	Chunk* bottomChunk = ChunkManager::GetChunkAtPos({ m_pos.x, m_pos.y - 1, m_pos.z });
+	Chunk* frontChunk = ChunkManager::GetChunkAtPos({ m_pos.x, m_pos.y, m_pos.z - 1 });
+	Chunk* backChunk = ChunkManager::GetChunkAtPos({ m_pos.x, m_pos.y, m_pos.z + 1 });
+
+	XMFLOAT3 posWS = { m_pos.x * CHUNK_SIZE, m_pos.y * CHUNK_SIZE, m_pos.z * CHUNK_SIZE };
+
 	uint32_t index = 0;
 	for (int x = 0; x < CHUNK_SIZE; x++)
 	{
@@ -69,34 +65,87 @@ void Chunk::InitializeBuffers()
 			for (int z = 0; z < CHUNK_SIZE; z++)
 			{
 				XMFLOAT3 blockPos = 
-				{ static_cast<float>(x) + m_pos.x, 
-				  static_cast<float>(y) + m_pos.y, 
-				  static_cast<float>(z) + m_pos.z
+				{ static_cast<float>(x) + posWS.x,
+				  static_cast<float>(y) + posWS.y,
+				  static_cast<float>(z) + posWS.z
 				};
 
 				// NOTE: appends faces that are not occluded (only render faces that can be seen)
 				// RIGHT BACK AND TOP FACES RENDER TWICE
 
 				// Only append faces if current block is not an air block
-				if(m_chunk[x][y][z]->GetType() != BlockType::Air)
+				if(m_chunk[x][y][z].GetType() != BlockType::Air)
 				{
+					// left limit 
+					if (x - 1 < 0)
+					{
+						if(!leftChunk)
+							AppendBlockFaceToArray(BlockFace::LEFT, index, blockPos);
+						else if(leftChunk->GetBlock(CHUNK_SIZE - 1, y, z)->GetType() == BlockType::Air)
+							AppendBlockFaceToArray(BlockFace::LEFT, index, blockPos);
+					}
 					// left neighbor
-					if (x - 1 < 0 || m_chunk[x - 1][y][z]->GetType() == BlockType::Air)
+					else if(m_chunk[x - 1][y][z].GetType() == BlockType::Air)
 						AppendBlockFaceToArray(BlockFace::LEFT, index, blockPos);
+
+					// right limit
+					if (x + 1 > CHUNK_SIZE - 1)
+					{
+						if (!rightChunk)
+							AppendBlockFaceToArray(BlockFace::RIGHT, index, blockPos);
+						else if(rightChunk->GetBlock(0, y, z)->GetType() == BlockType::Air)
+							AppendBlockFaceToArray(BlockFace::RIGHT, index, blockPos);
+					}
 					// right neighbor
-					if (x + 1 > CHUNK_SIZE - 1 || m_chunk[x + 1][y][z]->GetType() == BlockType::Air)
+					else if(m_chunk[x + 1][y][z].GetType() == BlockType::Air)
 						AppendBlockFaceToArray(BlockFace::RIGHT, index, blockPos);
+
 					// top neighbor
-					if (y + 1 > CHUNK_SIZE - 1 || m_chunk[x][y + 1][z]->GetType() == BlockType::Air)
+					if (y + 1 > CHUNK_SIZE - 1)
+					{
+						if (!topChunk)
+							AppendBlockFaceToArray(BlockFace::TOP, index, blockPos);
+						else if(topChunk->GetBlock(x, 0, z)->GetType() == BlockType::Air)
+							AppendBlockFaceToArray(BlockFace::TOP, index, blockPos);
+					}
+					else if(m_chunk[x][y + 1][z].GetType() == BlockType::Air)
 						AppendBlockFaceToArray(BlockFace::TOP, index, blockPos);
+
 					// bottom neighbor
-					if (y - 1 < 0 || m_chunk[x][y - 1][z]->GetType() == BlockType::Air)
+					if (y - 1 < 0)
+					{
+
+						// This will be commented out since there are no vertical chunks yet
+
+						//if (!bottomChunk)
+						//	AppendBlockFaceToArray(BlockFace::BOTTOM, index, blockPos);
+						//else 
+							if(bottomChunk && bottomChunk->GetBlock(x, CHUNK_SIZE - 1, z)->GetType() == BlockType::Air)
+							AppendBlockFaceToArray(BlockFace::BOTTOM, index, blockPos);
+					}
+					else if(m_chunk[x][y - 1][z].GetType() == BlockType::Air)
 						AppendBlockFaceToArray(BlockFace::BOTTOM, index, blockPos);
+
 					// front neighbor
-					if (z - 1 < 0 || m_chunk[x][y][z - 1]->GetType() == BlockType::Air)
+					if (z - 1 < 0)
+					{
+						if (!frontChunk) 
+							AppendBlockFaceToArray(BlockFace::FRONT, index, blockPos);
+						else if(frontChunk->GetBlock(x, y, CHUNK_SIZE - 1)->GetType() == BlockType::Air)
+							AppendBlockFaceToArray(BlockFace::FRONT, index, blockPos);
+					}
+					else if(m_chunk[x][y][z - 1].GetType() == BlockType::Air)
 						AppendBlockFaceToArray(BlockFace::FRONT, index, blockPos);
+
 					// back neighbor
-					if (z + 1 > CHUNK_SIZE - 1 || m_chunk[x][y][z + 1]->GetType() == BlockType::Air)
+					if (z + 1 > CHUNK_SIZE - 1)
+					{
+						if (!backChunk)
+							AppendBlockFaceToArray(BlockFace::BACK, index, blockPos);
+						else if(backChunk->GetBlock(x, y, 0)->GetType() == BlockType::Air)
+							AppendBlockFaceToArray(BlockFace::BACK, index, blockPos);
+					}
+					else if(m_chunk[x][y][z + 1].GetType() == BlockType::Air)
 						AppendBlockFaceToArray(BlockFace::BACK, index, blockPos);
 				}
 
@@ -104,6 +153,89 @@ void Chunk::InitializeBuffers()
 		}
 	}
 }
+
+//void Chunk::AdjustChunkBoundaries()
+//{
+//
+//	uint32_t index = 0;
+//	for (int x = 0; x < CHUNK_SIZE; x++)
+//	{
+//		for (int y = CHUNK_SIZE - 1; y >= 0; y--)
+//		{
+//			for (int z = 0; z < CHUNK_SIZE; z++)
+//			{
+//				// Skip if we're not in an edge
+//				if
+//					(
+//						(x > 0 && x < CHUNK_SIZE - 1) &&
+//						(y > 0 && y < CHUNK_SIZE - 1) &&
+//						(z > 0 && z < CHUNK_SIZE - 1)
+//						)
+//				{
+//					int test = 0;
+//					continue;
+//				}
+//
+//
+//				XMFLOAT3 blockPos =
+//				{ static_cast<float>(x) + m_pos.x,
+//				  static_cast<float>(y) + m_pos.y,
+//				  static_cast<float>(z) + m_pos.z
+//				};
+//
+//				// NOTE: appends faces that are not occluded (only render faces that can be seen)
+//				// RIGHT BACK AND TOP FACES RENDER TWICE
+//
+//				// Only append faces if current block is not an air block
+//				if (m_chunk[x][y][z]->GetType() != BlockType::Air)
+//				{
+//					// left neighbor
+//					if (x - 1 < 0)
+//					{
+//						if (leftChunk && leftChunk->GetBlock(CHUNK_SIZE - 1, y, z)->GetType() == BlockType::Air)
+//							AppendBlockFaceToArray(BlockFace::LEFT, index, blockPos);
+//					}
+//
+//					// right neighbor
+//					if (x + 1 > CHUNK_SIZE - 1)
+//					{
+//						if (rightChunk && rightChunk->GetBlock(0, y, z)->GetType() == BlockType::Air)
+//							AppendBlockFaceToArray(BlockFace::RIGHT, index, blockPos);
+//					}
+//
+//					// top neighbor
+//					if (y + 1 > CHUNK_SIZE - 1)
+//					{
+//						if (topChunk && topChunk->GetBlock(x, 0, z)->GetType() == BlockType::Air)
+//							AppendBlockFaceToArray(BlockFace::TOP, index, blockPos);
+//					}
+//
+//					// bottom neighbor
+//					if (y - 1 < 0)
+//					{
+//						if (bottomChunk && bottomChunk->GetBlock(x, CHUNK_SIZE - 1, z)->GetType() == BlockType::Air)
+//							AppendBlockFaceToArray(BlockFace::BOTTOM, index, blockPos);
+//					}
+//
+//					// front neighbor
+//					if (z - 1 < 0)
+//					{
+//						if (frontChunk && frontChunk->GetBlock(x, y, CHUNK_SIZE - 1)->GetType() == BlockType::Air)
+//							AppendBlockFaceToArray(BlockFace::FRONT, index, blockPos);
+//					}
+//
+//					// back neighbor
+//					if (z + 1 > CHUNK_SIZE - 1)
+//					{
+//						if (backChunk && backChunk->GetBlock(x, y, 0)->GetType() == BlockType::Air)
+//							AppendBlockFaceToArray(BlockFace::BACK, index, blockPos);
+//					}
+//				}
+//
+//			}
+//		}
+//	}
+//}
 
 void Chunk::AppendBlockFaceToArray(const BlockFace face, uint32_t& currIndex, const XMFLOAT3& blockPos)
 {

@@ -20,7 +20,6 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 
 	m_debugCam = new DebugCamera;
 	m_debugCam->SetPosition({-4.0f, 14.0f, -10.0f});
-	// We can temporarily call Render() here since camera's position and rotation isn't changing for now
 	m_debugCam->ConstructMatrix();
 
 
@@ -38,11 +37,15 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	m_imGuiLayer = new ImGuiLayer;
 	m_imGuiLayer->Initialize(hwnd, m_D3D->GetDevice(), m_D3D->GetDeviceContext());
 
+	ChunkManager::Initialize(m_debugCam->GetPosition());
+
 	return true;
 }
 
 void Graphics::Shutdown()
 {
+	ChunkManager::Shutdown();
+
 	if(m_imGuiLayer)
 	{
 		m_imGuiLayer->Shutdown();
@@ -104,17 +107,20 @@ bool Graphics::Frame(const float dt)
 		// Begin the D3D scene
 		m_D3D->BeginScene(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
 
-		// Send the current chunk to the shader and render
-		for (uint16_t i = 0; i < ChunkManager::GetNumActiveChunks(); i++)
 		{
-			// Render the chunks
-			m_chunkShader->SetChunk(ChunkManager::GetChunkAt(i));
-			m_chunkShader->UpdateViewMatrix(m_D3D->GetDeviceContext(), m_debugCam->GetViewMatrix());
-			m_chunkShader->Render(m_D3D->GetDeviceContext());
-			
-			numChunks++;
-			numDrawCalls++;
-			numVertices += ChunkManager::GetChunkAt(i)->GetNumFaces() * 4;
+			VX_PROFILE_SCOPE("Render Loop");
+			// Send the current chunk to the shader and render
+			for (uint16_t i = 0; i < ChunkManager::GetNumActiveChunks(); i++)
+			{
+				// Render the chunks
+				m_chunkShader->SetChunk(ChunkManager::GetChunkAtIndex(i));
+				m_chunkShader->UpdateViewMatrix(m_D3D->GetDeviceContext(), m_debugCam->GetViewMatrix());
+				m_chunkShader->Render(m_D3D->GetDeviceContext());
+
+				numChunks++;
+				numDrawCalls++;
+				numVertices += ChunkManager::GetChunkAtIndex(i)->GetNumFaces() * 4;
+			}
 		}
 
 
