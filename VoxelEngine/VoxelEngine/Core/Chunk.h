@@ -23,20 +23,22 @@ public:
 	// Returns chunks' position in WORLD SPACE
 	const DirectX::XMFLOAT3 GetPosition();
 
-	BlockVertex* GetBlockFaces();
-
 	const uint32_t GetNumFaces();
+
+	BlockVertex* GetFaceArray();
+
+	const uint32_t GetStartIndex();
 
 private:
 
 	// TODO: Think about generating a chunk based on a seed
 	void InitializeChunk();
 
-	void InitializeBuffers();
+	void InitializeVertexBuffer(const uint32_t startIndex);
 
 private:
 
-	void AppendBlockFaceToArray(const BlockFace face, uint32_t& currIndex, const DirectX::XMFLOAT3& blockPos);
+	void AppendBlockFaceToVector(const BlockFace face, uint32_t& index, const DirectX::XMFLOAT3& blockPos);
 
 	void ResetFaces();
 
@@ -56,6 +58,8 @@ private:
 	// Used for D3D11 buffer
 	// NOTE: This equates to 786,432 bytes per chunk
 	BlockVertex m_blockFaces[6 * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
+
+	uint32_t m_chunkStartIndex;
 
 };
 

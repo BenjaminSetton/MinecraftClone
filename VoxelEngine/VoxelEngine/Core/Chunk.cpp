@@ -1,12 +1,11 @@
 #include "../Misc/pch.h"
-
 #include "Chunk.h"
-
 #include "../Utility/Noise.h"
+#include "ChunkManager.h"
 
-#include "ChunkManager.h" // To check for neighboring chunks
 
 using namespace DirectX;
+
 
 Chunk::Chunk(const XMFLOAT3 pos) : m_id(0), m_pos(pos), m_numFaces(0)
 {
@@ -19,9 +18,11 @@ Block* Chunk::GetBlock(unsigned int x, unsigned int y, unsigned int z) { return 
 
 const DirectX::XMFLOAT3 Chunk::GetPosition() { return m_pos; }
 
-BlockVertex* Chunk::GetBlockFaces() { return &m_blockFaces[0]; }
-
 const uint32_t Chunk::GetNumFaces() { return m_numFaces; }
+
+BlockVertex* Chunk::GetFaceArray() { return &m_blockFaces[0]; }
+
+const uint32_t Chunk::GetStartIndex() { return m_chunkStartIndex; }
 
 void Chunk::InitializeChunk()
 {
@@ -45,8 +46,10 @@ void Chunk::InitializeChunk()
 	}
 }
 
-void Chunk::InitializeBuffers()
+void Chunk::InitializeVertexBuffer(const uint32_t startIndex)
 {
+	m_chunkStartIndex = startIndex;
+
 	ResetFaces();
 
 	// Retrieve neighboring chunks
@@ -82,36 +85,36 @@ void Chunk::InitializeBuffers()
 					if (x - 1 < 0)
 					{
 						if(!leftChunk)
-							AppendBlockFaceToArray(BlockFace::LEFT, index, blockPos);
+							AppendBlockFaceToVector(BlockFace::LEFT, index, blockPos);
 						else if(leftChunk->GetBlock(CHUNK_SIZE - 1, y, z)->GetType() == BlockType::Air)
-							AppendBlockFaceToArray(BlockFace::LEFT, index, blockPos);
+							AppendBlockFaceToVector(BlockFace::LEFT, index, blockPos);
 					}
 					// left neighbor
 					else if(m_chunk[x - 1][y][z].GetType() == BlockType::Air)
-						AppendBlockFaceToArray(BlockFace::LEFT, index, blockPos);
+						AppendBlockFaceToVector(BlockFace::LEFT, index, blockPos);
 
 					// right limit
 					if (x + 1 > CHUNK_SIZE - 1)
 					{
 						if (!rightChunk)
-							AppendBlockFaceToArray(BlockFace::RIGHT, index, blockPos);
+							AppendBlockFaceToVector(BlockFace::RIGHT, index, blockPos);
 						else if(rightChunk->GetBlock(0, y, z)->GetType() == BlockType::Air)
-							AppendBlockFaceToArray(BlockFace::RIGHT, index, blockPos);
+							AppendBlockFaceToVector(BlockFace::RIGHT, index, blockPos);
 					}
 					// right neighbor
 					else if(m_chunk[x + 1][y][z].GetType() == BlockType::Air)
-						AppendBlockFaceToArray(BlockFace::RIGHT, index, blockPos);
+						AppendBlockFaceToVector(BlockFace::RIGHT, index, blockPos);
 
 					// top neighbor
 					if (y + 1 > CHUNK_SIZE - 1)
 					{
 						if (!topChunk)
-							AppendBlockFaceToArray(BlockFace::TOP, index, blockPos);
+							AppendBlockFaceToVector(BlockFace::TOP, index, blockPos);
 						else if(topChunk->GetBlock(x, 0, z)->GetType() == BlockType::Air)
-							AppendBlockFaceToArray(BlockFace::TOP, index, blockPos);
+							AppendBlockFaceToVector(BlockFace::TOP, index, blockPos);
 					}
 					else if(m_chunk[x][y + 1][z].GetType() == BlockType::Air)
-						AppendBlockFaceToArray(BlockFace::TOP, index, blockPos);
+						AppendBlockFaceToVector(BlockFace::TOP, index, blockPos);
 
 					// bottom neighbor
 					if (y - 1 < 0)
@@ -120,35 +123,35 @@ void Chunk::InitializeBuffers()
 						// This will be commented out since there are no vertical chunks yet
 
 						//if (!bottomChunk)
-						//	AppendBlockFaceToArray(BlockFace::BOTTOM, index, blockPos);
+						//	AppendBlockFaceToVector(BlockFace::BOTTOM, index, blockPos);
 						//else 
-							if(bottomChunk && bottomChunk->GetBlock(x, CHUNK_SIZE - 1, z)->GetType() == BlockType::Air)
-							AppendBlockFaceToArray(BlockFace::BOTTOM, index, blockPos);
+						if(bottomChunk && bottomChunk->GetBlock(x, CHUNK_SIZE - 1, z)->GetType() == BlockType::Air)
+							AppendBlockFaceToVector(BlockFace::BOTTOM, index, blockPos);
 					}
 					else if(m_chunk[x][y - 1][z].GetType() == BlockType::Air)
-						AppendBlockFaceToArray(BlockFace::BOTTOM, index, blockPos);
+						AppendBlockFaceToVector(BlockFace::BOTTOM, index, blockPos);
 
 					// front neighbor
 					if (z - 1 < 0)
 					{
 						if (!frontChunk) 
-							AppendBlockFaceToArray(BlockFace::FRONT, index, blockPos);
+							AppendBlockFaceToVector(BlockFace::FRONT, index, blockPos);
 						else if(frontChunk->GetBlock(x, y, CHUNK_SIZE - 1)->GetType() == BlockType::Air)
-							AppendBlockFaceToArray(BlockFace::FRONT, index, blockPos);
+							AppendBlockFaceToVector(BlockFace::FRONT, index, blockPos);
 					}
 					else if(m_chunk[x][y][z - 1].GetType() == BlockType::Air)
-						AppendBlockFaceToArray(BlockFace::FRONT, index, blockPos);
+						AppendBlockFaceToVector(BlockFace::FRONT, index, blockPos);
 
 					// back neighbor
 					if (z + 1 > CHUNK_SIZE - 1)
 					{
 						if (!backChunk)
-							AppendBlockFaceToArray(BlockFace::BACK, index, blockPos);
+							AppendBlockFaceToVector(BlockFace::BACK, index, blockPos);
 						else if(backChunk->GetBlock(x, y, 0)->GetType() == BlockType::Air)
-							AppendBlockFaceToArray(BlockFace::BACK, index, blockPos);
+							AppendBlockFaceToVector(BlockFace::BACK, index, blockPos);
 					}
 					else if(m_chunk[x][y][z + 1].GetType() == BlockType::Air)
-						AppendBlockFaceToArray(BlockFace::BACK, index, blockPos);
+						AppendBlockFaceToVector(BlockFace::BACK, index, blockPos);
 				}
 
 			}
@@ -156,7 +159,7 @@ void Chunk::InitializeBuffers()
 	}
 }
 
-void Chunk::AppendBlockFaceToArray(const BlockFace face, uint32_t& currIndex, const XMFLOAT3& blockPos)
+void Chunk::AppendBlockFaceToVector(const BlockFace face, uint32_t& index, const XMFLOAT3& blockPos)
 {
 	uint32_t startIndexArray = 0;
 
@@ -199,7 +202,7 @@ void Chunk::AppendBlockFaceToArray(const BlockFace face, uint32_t& currIndex, co
 	{
 		BlockVertex currVert = verts[indicies[startIndexArray++]];
 		currVert.pos = { currVert.pos.x + blockPos.x, currVert.pos.y + blockPos.y, currVert.pos.z + blockPos.z };
-		m_blockFaces[currIndex++] = currVert;
+		m_blockFaces[index++] = currVert;
 	}
 
 	m_numFaces++;
@@ -208,6 +211,6 @@ void Chunk::AppendBlockFaceToArray(const BlockFace face, uint32_t& currIndex, co
 
 void Chunk::ResetFaces()
 {
-	memset(&m_blockFaces[0], 0, sizeof(BlockVertex) * 6 * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE);
+	memset(&m_blockFaces[0], 0, sizeof(BlockVertex) * m_numFaces);
 	m_numFaces = 0;
 }

@@ -27,6 +27,9 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	m_textureManager = new TextureManager;
 	m_textureManager->Init(m_D3D->GetDevice());
 	
+	// Initialize ChunkManager class (DefaultBlockShader will use it's data so initialization has to take place before it)
+	ChunkManager::Initialize(m_debugCam->GetPosition());
+
 	// Create the shader class object
 	m_chunkShader = new DefaultBlockShader;
 	m_chunkShader->CreateObjects(m_D3D->GetDevice(), L"./Shaders/DefaultBlock_VS.hlsl", L"./Shaders/DefaultBlock_PS.hlsl");
@@ -37,7 +40,6 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	m_imGuiLayer = new ImGuiLayer;
 	m_imGuiLayer->Initialize(hwnd, m_D3D->GetDevice(), m_D3D->GetDeviceContext());
 
-	ChunkManager::Initialize(m_debugCam->GetPosition());
 
 	return true;
 }
@@ -108,20 +110,18 @@ bool Graphics::Frame(const float dt)
 		m_D3D->BeginScene(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
 
 		{
-			VX_PROFILE_SCOPE("Render Loop");
-			// Send the current chunk to the shader and render
-			for (uint16_t i = 0; i < ChunkManager::GetNumActiveChunks(); i++)
-			{
-				// Render the chunks
-				m_chunkShader->SetChunk(ChunkManager::GetChunkAtIndex(i));
-				m_chunkShader->UpdateViewMatrix(m_D3D->GetDeviceContext(), m_debugCam->GetViewMatrix());
-				m_chunkShader->Render(m_D3D->GetDeviceContext());
+			VX_PROFILE_SCOPE("Rendering");
 
-				numChunks++;
-				numDrawCalls++;
-				numVertices += ChunkManager::GetChunkAtIndex(i)->GetNumFaces() * 4;
-			}
+			// Send the chunks to the shader and render
+			m_chunkShader->UpdateViewMatrix(m_D3D->GetDeviceContext(), m_debugCam->GetViewMatrix());
+			m_chunkShader->Render(m_D3D->GetDeviceContext());
+
+			
 		}
+
+		numChunks = ChunkManager::GetNumActiveChunks();
+		numDrawCalls++;
+		numVertices += ChunkManager::GetNumVertices();
 
 
 		ImGui::Begin("Debug Panel");

@@ -6,7 +6,7 @@
 #include <DirectXMath.h>
 #include <d3dcompiler.h>
 
-#include "Chunk.h"
+#include "ChunkManager.h"
 
 
 // TODO: Track the following rendering stats
@@ -28,11 +28,6 @@ public:
 	void Render(ID3D11DeviceContext* context);
 
 	void Shutdown();
-
-	
-	void SetChunk(Chunk* const chunk);
-
-	const Chunk* GetChunk() const;
 
 	void UpdateViewMatrix(ID3D11DeviceContext* context, DirectX::XMMATRIX viewMatrix);
 
@@ -75,9 +70,6 @@ private:
 
 	ID3D11InputLayout* m_inputLayout;
 	ID3D11SamplerState* m_sampler;
-
-	// The chunk currently being rendered
-	Chunk* m_chunk = nullptr;
 
 	// Stores the transposed projection matrix
 	DirectX::XMMATRIX m_projection;

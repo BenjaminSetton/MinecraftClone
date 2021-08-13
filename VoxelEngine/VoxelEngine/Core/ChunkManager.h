@@ -2,11 +2,13 @@
 #define _CHUNKMANAGER_H
 
 #include <vector>
-#include <unordered_map>
 
 #include "Chunk.h"
 
-// This static class just manages chunks the most naive way possible.
+constexpr uint32_t MAX_VERTS_PER_CHUNK = 
+	6/*verts per face*/ * 6/*faces per block*/ * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * 0.5;
+
+
 // This is a work in progress!!
 class ChunkManager
 {
@@ -30,6 +32,10 @@ public:
 	// Returns chunk at "pos" CHUNK SPACE
 	static Chunk* GetChunkAtPos(const DirectX::XMFLOAT3 pos);
 
+	static const uint32_t GetNumVertices();
+
+	static const std::vector<BlockVertex>& GetVertices();
+
 private:
 
 	// Helper methods. Consider moving to a Utility library
@@ -37,6 +43,8 @@ private:
 	static DirectX::XMFLOAT3 ChunkToWorldSpace(const DirectX::XMFLOAT3& pos);
 
 	static void ResetChunkMemory(const uint16_t index);
+
+	static void PopulateVertexBuffer(Chunk* chunk);
 
 private:
 	
@@ -46,6 +54,8 @@ private:
 	// NOTE! Temporarily stored here
 	// Consider moving to another "settings" or "game" class
 	static uint16_t m_renderDist;
+
+	static std::vector<BlockVertex> m_vertices;
 
 };
 

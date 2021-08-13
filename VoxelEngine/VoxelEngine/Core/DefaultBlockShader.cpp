@@ -80,13 +80,18 @@ void DefaultBlockShader::Initialize(ID3D11DeviceContext* context, DirectX::XMMAT
 
 void DefaultBlockShader::Render(ID3D11DeviceContext* context)
 {
-	VX_ASSERT(m_chunk);
+	{
+		VX_PROFILE_SCOPE("UpdateVertexBuffer");
+		// Update the vertex buffer
+		UpdateVertexBuffer(context);
+	}
 
-	// Update the vertex buffer
-	UpdateVertexBuffer(context);
-
-	// Render the chunk
-	context->Draw(m_chunk->GetNumFaces() * 6, 0);
+	{
+		VX_PROFILE_SCOPE("Draw");
+		// Render the chunk
+		uint32_t numVerts = ChunkManager::GetVertices().size();
+		context->Draw(numVerts, 0);
+	}
 }
 
 void DefaultBlockShader::Shutdown()
@@ -140,10 +145,6 @@ void DefaultBlockShader::Shutdown()
 	}
 }
 
-void DefaultBlockShader::SetChunk(Chunk* const chunk) { m_chunk = chunk; }
-
-const Chunk* DefaultBlockShader::GetChunk() const { return m_chunk; }
-
 void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 {
 	HRESULT hr;
@@ -189,10 +190,10 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 	VX_ASSERT(!FAILED(hr));
 
 
-	// Create the vertex
+	// Create the vertex buffer
 	D3D11_BUFFER_DESC vertexBufferDesc;
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.ByteWidth = sizeof(BlockVertex) * (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * 6);
+	vertexBufferDesc.ByteWidth = sizeof(BlockVertex) * ChunkManager::GetVertices().capacity();
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.MiscFlags = 0;
@@ -251,7 +252,10 @@ void DefaultBlockShader::CreateShaders(ID3D11Device* device, const WCHAR* vsFile
 
 void DefaultBlockShader::UpdateVertexBuffer(ID3D11DeviceContext* context)
 {
-	context->UpdateSubresource(m_vertexBuffer, 0, nullptr, m_chunk->GetBlockFaces(), 0, 0);
+	{
+		VX_PROFILE_SCOPE("UpdateSubresource");
+		context->UpdateSubresource(m_vertexBuffer, 0, nullptr, &ChunkManager::GetVertices()[0], 0, 0);
+	}
 
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
 	ID3D11Buffer* buffers[] = { m_vertexBuffer };
