@@ -17,10 +17,8 @@ using namespace DirectX;
 
 // Static variable definitions
 
-// pow(2 * m_renderDist + 1, 2)
 std::vector<Chunk*> ChunkManager::m_activeChunks = std::vector<Chunk*>();
-uint16_t ChunkManager::m_renderDist = 4;
-std::vector<BlockVertex> ChunkManager::m_vertices = std::vector<BlockVertex>();
+uint16_t ChunkManager::m_renderDist = 8;
 
 
 void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
@@ -44,11 +42,8 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 		}
 	}
 
-	// Resize the vector to contain all possible block faces (this is not necessary but will do for now)
-	m_vertices.reserve(m_activeChunks.size() * MAX_VERTS_PER_CHUNK);
-
 	// Initialize all the chunks' buffers
-	for (uint16_t iter = 0; iter < m_activeChunks.size(); iter++) PopulateVertexBuffer(m_activeChunks[iter]);
+	for (uint16_t iter = 0; iter < m_activeChunks.size(); iter++) m_activeChunks[iter]->InitializeVertexBuffer();
 }
 
 void ChunkManager::Shutdown()
@@ -114,31 +109,31 @@ void ChunkManager::Update(const DirectX::XMFLOAT3 playerPos)
 
 		// Left neighbor
 		Chunk* leftNeighbor = GetChunkAtPos({chunkPosCS.x - 1, chunkPosCS.y, chunkPosCS.z});
-		if (leftNeighbor) PopulateVertexBuffer(leftNeighbor);
+		if (leftNeighbor) leftNeighbor->InitializeVertexBuffer();
 		
 
 		// Right neighbor
 		Chunk* rightNeighbor = GetChunkAtPos({ chunkPosCS.x + 1, chunkPosCS.y, chunkPosCS.z });
-		if (rightNeighbor) PopulateVertexBuffer(rightNeighbor);
+		if (rightNeighbor) rightNeighbor->InitializeVertexBuffer();
 
 		// Top neighbor
 		Chunk* topNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y + 1, chunkPosCS.z });
-		if (topNeighbor) PopulateVertexBuffer(topNeighbor);
+		if (topNeighbor) topNeighbor->InitializeVertexBuffer();
 
 		// Bottom neighbor
 		Chunk* bottomNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y - 1, chunkPosCS.z });
-		if (bottomNeighbor) PopulateVertexBuffer(bottomNeighbor);
+		if (bottomNeighbor) bottomNeighbor->InitializeVertexBuffer();
 
 		// Front neighbor
 		Chunk* frontNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y, chunkPosCS.z - 1});
-		if (frontNeighbor) PopulateVertexBuffer(frontNeighbor);
+		if (frontNeighbor) frontNeighbor->InitializeVertexBuffer();
 
 		// Back neighbor
 		Chunk* backNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y, chunkPosCS.z + 1 });
-		if (backNeighbor) PopulateVertexBuffer(backNeighbor);
+		if (backNeighbor) backNeighbor->InitializeVertexBuffer();
 
 		// Current chunk
-		PopulateVertexBuffer(newChunk);
+		newChunk->InitializeVertexBuffer();
 	}
 
 	ImGui::Begin("Debug Panel");
@@ -177,9 +172,6 @@ void ChunkManager::UnloadChunk(Chunk* chunk)
 		{
 			Chunk* chunk = m_activeChunks[index];
 
-			// Delete chunk vertices
-			m_vertices.erase(m_vertices.begin() + chunk->GetStartIndex(), m_vertices.begin() + chunk->GetStartIndex() + (chunk->GetNumFaces() * 6));
-
 			// Delete chunk instance
 			delete chunk;
 			m_activeChunks.erase(m_activeChunks.begin() + index);
@@ -192,9 +184,6 @@ void ChunkManager::UnloadChunk(Chunk* chunk)
 void ChunkManager::UnloadChunk(const uint16_t& index)
 {
 	Chunk* chunk = m_activeChunks[index];
-
-	// Delete chunk vertices
-	m_vertices.erase(m_vertices.begin() + chunk->GetStartIndex(), m_vertices.begin() + chunk->GetStartIndex() + (chunk->GetNumFaces() * 6));
 
 	// Delete chunk instance
 	delete chunk;
@@ -235,9 +224,7 @@ Chunk* ChunkManager::GetChunkAtPos(const DirectX::XMFLOAT3 posCS)
 	else return m_activeChunks[index];
 }
 
-const uint32_t ChunkManager::GetNumVertices() { return m_vertices.size(); }
-
-const std::vector<BlockVertex>& ChunkManager::GetVertices() { return m_vertices; }
+std::vector<Chunk*>& ChunkManager::GetChunkVector() { return m_activeChunks; }
 
 XMFLOAT3 ChunkManager::WorldToChunkSpace(const XMFLOAT3& pos)
 {
@@ -253,13 +240,4 @@ XMFLOAT3 ChunkManager::ChunkToWorldSpace(const XMFLOAT3& pos)
 void ChunkManager::ResetChunkMemory(const uint16_t index)
 {
 	memset(&m_activeChunks[index], 0, sizeof(Chunk));
-}
-
-void ChunkManager::PopulateVertexBuffer(Chunk* chunk)
-{
-	chunk->InitializeVertexBuffer(m_vertices.size());
-
-	uint32_t initialSize = m_vertices.size();
-	m_vertices.resize(initialSize + chunk->GetNumFaces() * 6);
-	memcpy(&m_vertices[initialSize], chunk->GetFaceArray(), chunk->GetNumFaces() * 6 * sizeof(BlockVertex));
 }

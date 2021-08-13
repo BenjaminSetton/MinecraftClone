@@ -5,10 +5,6 @@
 
 #include "Chunk.h"
 
-constexpr uint32_t MAX_VERTS_PER_CHUNK = 
-	6/*verts per face*/ * 6/*faces per block*/ * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * 0.5;
-
-
 // This is a work in progress!!
 class ChunkManager
 {
@@ -32,9 +28,7 @@ public:
 	// Returns chunk at "pos" CHUNK SPACE
 	static Chunk* GetChunkAtPos(const DirectX::XMFLOAT3 pos);
 
-	static const uint32_t GetNumVertices();
-
-	static const std::vector<BlockVertex>& GetVertices();
+	static std::vector<Chunk*>& GetChunkVector();
 
 private:
 
@@ -44,8 +38,6 @@ private:
 
 	static void ResetChunkMemory(const uint16_t index);
 
-	static void PopulateVertexBuffer(Chunk* chunk);
-
 private:
 	
 	// Stores active chunks in CHUNK SPACE
@@ -54,8 +46,6 @@ private:
 	// NOTE! Temporarily stored here
 	// Consider moving to another "settings" or "game" class
 	static uint16_t m_renderDist;
-
-	static std::vector<BlockVertex> m_vertices;
 
 };
 

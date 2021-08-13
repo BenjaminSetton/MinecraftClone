@@ -4,6 +4,7 @@
 #define CHUNK_SIZE 16
 
 #include "Block.h"
+#include <d3d11.h>
 
 class Chunk
 {
@@ -13,7 +14,7 @@ public:
 
 	Chunk(const DirectX::XMFLOAT3 pos = { 0.0f, 0.0f, 0.0f });
 	Chunk(const Chunk& other) = default; // I don't know why you would even do this, but I do it just in case
-	~Chunk() = default;
+	~Chunk();
 
 
 	const uint32_t GetID();
@@ -23,22 +24,24 @@ public:
 	// Returns chunks' position in WORLD SPACE
 	const DirectX::XMFLOAT3 GetPosition();
 
-	const uint32_t GetNumFaces();
+	const uint32_t GetFaceCount();
 
-	BlockVertex* GetFaceArray();
+	const uint32_t GetVertexCount();
 
-	const uint32_t GetStartIndex();
+	ID3D11Buffer* GetBuffer();
 
 private:
 
 	// TODO: Think about generating a chunk based on a seed
 	void InitializeChunk();
 
-	void InitializeVertexBuffer(const uint32_t startIndex);
+	void InitializeVertexBuffer();
+
+	void CreateVertexBuffer();
 
 private:
 
-	void AppendBlockFaceToVector(const BlockFace face, uint32_t& index, const DirectX::XMFLOAT3& blockPos);
+	void AppendBlockFaceToArray(const BlockFace face, uint32_t& index, const DirectX::XMFLOAT3& blockPos, BlockVertex* blockArray);
 
 	void ResetFaces();
 
@@ -55,11 +58,8 @@ private:
 	// Currently defines a 3D array of 16x16x16 blocks
 	Block m_chunk[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 
-	// Used for D3D11 buffer
-	// NOTE: This equates to 786,432 bytes per chunk
-	BlockVertex m_blockFaces[6 * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE];
-
-	uint32_t m_chunkStartIndex;
+	// D3D11 Vertex buffer
+	ID3D11Buffer* m_buffer;
 
 };
 

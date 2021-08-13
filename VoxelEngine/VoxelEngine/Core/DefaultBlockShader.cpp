@@ -80,18 +80,24 @@ void DefaultBlockShader::Initialize(ID3D11DeviceContext* context, DirectX::XMMAT
 
 void DefaultBlockShader::Render(ID3D11DeviceContext* context)
 {
+	int debugVerts = 0;
+	int numDrawCalls = 0;
+
+	for(auto chunk : ChunkManager::GetChunkVector())
 	{
-		VX_PROFILE_SCOPE("UpdateVertexBuffer");
 		// Update the vertex buffer
-		UpdateVertexBuffer(context);
+		BindVertexBuffer(context, chunk);
+	
+		// Render the chunk
+		uint32_t numVerts = chunk->GetVertexCount();
+		context->Draw(numVerts, 0);
+
+		debugVerts += numVerts;
+		numDrawCalls++;
 	}
 
-	{
-		VX_PROFILE_SCOPE("Draw");
-		// Render the chunk
-		uint32_t numVerts = ChunkManager::GetVertices().size();
-		context->Draw(numVerts, 0);
-	}
+	ImGui::Text("Vertex Count: %i", debugVerts);
+	ImGui::Text("Draw Calls: %i", numDrawCalls);
 }
 
 void DefaultBlockShader::Shutdown()
@@ -138,11 +144,11 @@ void DefaultBlockShader::Shutdown()
 		m_vertexShader = nullptr;
 	}
 
-	if(m_vertexBuffer)
-	{
-		m_vertexBuffer->Release();
-		m_vertexBuffer = nullptr;
-	}
+	//if(m_vertexBuffer)
+	//{
+	//	m_vertexBuffer->Release();
+	//	m_vertexBuffer = nullptr;
+	//}
 }
 
 void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
@@ -190,17 +196,17 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 	VX_ASSERT(!FAILED(hr));
 
 
-	// Create the vertex buffer
-	D3D11_BUFFER_DESC vertexBufferDesc;
-	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.ByteWidth = sizeof(BlockVertex) * ChunkManager::GetVertices().capacity();
-	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vertexBufferDesc.CPUAccessFlags = 0;
-	vertexBufferDesc.MiscFlags = 0;
-	vertexBufferDesc.StructureByteStride = 0;
+	//// Create the vertex buffer
+	//D3D11_BUFFER_DESC vertexBufferDesc;
+	//vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	//vertexBufferDesc.ByteWidth = sizeof(BlockVertex) * ChunkManager::GetVertices().capacity();
+	//vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	//vertexBufferDesc.CPUAccessFlags = 0;
+	//vertexBufferDesc.MiscFlags = 0;
+	//vertexBufferDesc.StructureByteStride = 0;
 
-	hr = device->CreateBuffer(&vertexBufferDesc, nullptr, &m_vertexBuffer);
-	VX_ASSERT(!FAILED(hr));
+	//hr = device->CreateBuffer(&vertexBufferDesc, nullptr, &m_vertexBuffer);
+	//VX_ASSERT(!FAILED(hr));
 	
 }
 
@@ -250,15 +256,15 @@ void DefaultBlockShader::CreateShaders(ID3D11Device* device, const WCHAR* vsFile
 }
 
 
-void DefaultBlockShader::UpdateVertexBuffer(ID3D11DeviceContext* context)
+void DefaultBlockShader::BindVertexBuffer(ID3D11DeviceContext* context, Chunk* chunk)
 {
-	{
-		VX_PROFILE_SCOPE("UpdateSubresource");
-		context->UpdateSubresource(m_vertexBuffer, 0, nullptr, &ChunkManager::GetVertices()[0], 0, 0);
-	}
+	//{
+	//	VX_PROFILE_SCOPE("UpdateSubresource");
+	//	context->UpdateSubresource(m_vertexBuffer, 0, nullptr, &ChunkManager::GetVertices()[0], 0, 0);
+	//}
 
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
-	ID3D11Buffer* buffers[] = { m_vertexBuffer };
+	ID3D11Buffer* buffers[] = { chunk->GetBuffer() };
 	unsigned int stride[] = { sizeof(BlockVertex) };
 	unsigned int offset[] = { 0 };
 	context->IASetVertexBuffers(0, ARRAYSIZE(buffers), buffers, stride, offset);

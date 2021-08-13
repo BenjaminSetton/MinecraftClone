@@ -9,37 +9,35 @@
 
 using namespace DirectX;
 
+
 bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd)
 {
 
 	bool initResult;
 
-	m_D3D = new D3D;
-	initResult = m_D3D->Initialize(screenWidth, screenHeight, hwnd, VSYNC_ENABLED, FULL_SCREEN, SCREEN_FAR, SCREEN_NEAR);
+	initResult = D3D::Initialize(screenWidth, screenHeight, hwnd, VSYNC_ENABLED, FULL_SCREEN, SCREEN_FAR, SCREEN_NEAR);
 	if (!initResult) return false;
 
 	m_debugCam = new DebugCamera;
 	m_debugCam->SetPosition({-4.0f, 14.0f, -10.0f});
 	m_debugCam->ConstructMatrix();
 
-
 	// Create and initialize the texture manager
 	m_textureManager = new TextureManager;
-	m_textureManager->Init(m_D3D->GetDevice());
+	m_textureManager->Init(D3D::GetDevice());
 	
 	// Initialize ChunkManager class (DefaultBlockShader will use it's data so initialization has to take place before it)
 	ChunkManager::Initialize(m_debugCam->GetPosition());
 
 	// Create the shader class object
 	m_chunkShader = new DefaultBlockShader;
-	m_chunkShader->CreateObjects(m_D3D->GetDevice(), L"./Shaders/DefaultBlock_VS.hlsl", L"./Shaders/DefaultBlock_PS.hlsl");
-	m_chunkShader->Initialize(m_D3D->GetDeviceContext(), m_D3D->GetWorldMatrix(), m_debugCam->GetViewMatrix(),
-		m_D3D->GetProjectionMatrix(), { 1.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, m_textureManager->GetTexture(std::string("SEAFLOOR_TEX")));
+	m_chunkShader->CreateObjects(D3D::GetDevice(), L"./Shaders/DefaultBlock_VS.hlsl", L"./Shaders/DefaultBlock_PS.hlsl");
+	m_chunkShader->Initialize(D3D::GetDeviceContext(), D3D::GetWorldMatrix(), m_debugCam->GetViewMatrix(),
+		D3D::GetProjectionMatrix(), { 1.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, m_textureManager->GetTexture(std::string("SEAFLOOR_TEX")));
 	
 	// Create and initialize the ImGuiLayer
 	m_imGuiLayer = new ImGuiLayer;
-	m_imGuiLayer->Initialize(hwnd, m_D3D->GetDevice(), m_D3D->GetDeviceContext());
-
+	m_imGuiLayer->Initialize(hwnd, D3D::GetDevice(), D3D::GetDeviceContext());
 
 	return true;
 }
@@ -69,12 +67,7 @@ void Graphics::Shutdown()
 		m_textureManager = nullptr;
 	}
 
-	if (m_D3D)
-	{
-		m_D3D->Shutdown();
-		delete m_D3D;
-		m_D3D = nullptr;
-	}
+	D3D::Shutdown();
 
 	if (m_debugCam) 
 	{
@@ -86,12 +79,12 @@ void Graphics::Shutdown()
 bool Graphics::Frame(const float dt)
 {
 	// Debugging stats
-	int numDrawCalls = 0;
-	int numVertices = 0;
 	int numChunks = 0;
 
 	// Begin the ImGui frame
 	m_imGuiLayer->BeginFrame();
+
+	std::thread chunkLoader(ChunkManager::Update, m_debugCam->GetPosition());
 
 	{
 		VX_PROFILE_FUNC();
@@ -100,44 +93,41 @@ bool Graphics::Frame(const float dt)
 		m_debugCam->Update(dt);
 
 		// Update the active chunks
-		ChunkManager::Update(m_debugCam->GetPosition());
+		//ChunkManager::Update(m_debugCam->GetPosition());
 
 		// Check to toggle wireframe state
-		if (Input::IsKeyDown(KeyCode::E)) m_D3D->SetWireframeRasterState(true);
-		else if (Input::IsKeyDown(KeyCode::R)) m_D3D->SetWireframeRasterState(false);
+		if (Input::IsKeyDown(KeyCode::E)) D3D::SetWireframeRasterState(true);
+		else if (Input::IsKeyDown(KeyCode::R)) D3D::SetWireframeRasterState(false);
 
 		// Begin the D3D scene
-		m_D3D->BeginScene(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
+		D3D::BeginScene(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
 
 		{
 			VX_PROFILE_SCOPE("Rendering");
 
 			// Send the chunks to the shader and render
-			m_chunkShader->UpdateViewMatrix(m_D3D->GetDeviceContext(), m_debugCam->GetViewMatrix());
-			m_chunkShader->Render(m_D3D->GetDeviceContext());
-
-			
+			m_chunkShader->UpdateViewMatrix(D3D::GetDeviceContext(), m_debugCam->GetViewMatrix());
+			m_chunkShader->Render(D3D::GetDeviceContext());	
 		}
 
 		numChunks = ChunkManager::GetNumActiveChunks();
-		numDrawCalls++;
-		numVertices += ChunkManager::GetNumVertices();
 
+
+		if (chunkLoader.joinable()) chunkLoader.join();
 
 		ImGui::Begin("Debug Panel");
 		ImGui::Text("Chunk Count: %i", numChunks);
-		ImGui::Text("Draw Calls: %i", numDrawCalls);
-		ImGui::Text("Vertex Count: %i", numVertices);
 		ImGui::End();
 
 	}
 
+
 	// End the ImGui frame
-	m_D3D->ClearDepthBuffer(1.0f); // Clear the depth buffer so GUI draws on top of everything
+	D3D::ClearDepthBuffer(1.0f); // Clear the depth buffer so GUI draws on top of everything
 	m_imGuiLayer->EndFrame();
 
 	// End the scene and present the swap chain
-	m_D3D->EndScene();
+	D3D::EndScene();
 
 	return true;
 }
@@ -150,7 +140,7 @@ bool Graphics::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	if (m_imGuiLayer->WndProc(hwnd, msg, wparam, lparam)) return true;
 
 	// Call the D3D WndProc
-	if (m_D3D->WndProc(hwnd, msg, wparam, lparam)) return true;
+	if (D3D::WndProc(hwnd, msg, wparam, lparam)) return true;
 
 	return false;
 	

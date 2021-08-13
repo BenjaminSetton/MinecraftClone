@@ -20,67 +20,67 @@ public:
 	D3D(const D3D&) = default;
 	~D3D() = default;
 
-	bool Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd, const bool& vsync, 
+	static bool Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd, const bool& vsync, 
 					const bool& fullscreen, const float& screenFar, const float& screenNear);
-	void Shutdown();
+	static void Shutdown();
 
-	void BeginScene(DirectX::XMFLOAT4 clearToColor);
-	void EndScene();
+	static void BeginScene(DirectX::XMFLOAT4 clearToColor);
+	static void EndScene();
 
-	ID3D11Device* GetDevice();
-	ID3D11DeviceContext* GetDeviceContext();
-	IDXGISwapChain* GetSwapChain();
+	static ID3D11Device* GetDevice();
+	static ID3D11DeviceContext* GetDeviceContext();
+	static IDXGISwapChain* GetSwapChain();
 
-	const DirectX::XMMATRIX GetWorldMatrix() const;
+	static const DirectX::XMMATRIX GetWorldMatrix();
 
-	const DirectX::XMMATRIX GetProjectionMatrix() const;
-	const DirectX::XMMATRIX GetOrthoMatrix() const;
-	ID3D11RenderTargetView* GetRenderTargetView() const;
+	static const DirectX::XMMATRIX GetProjectionMatrix();
+	static const DirectX::XMMATRIX GetOrthoMatrix();
+	static ID3D11RenderTargetView* GetRenderTargetView();
 
-	void GetVideoCardInfo(char*, int&);
+	static void GetVideoCardInfo(char*, int&);
 
-	void TurnZBufferOn();
-	void TurnZBufferOff();
+	static void TurnZBufferOn();
+	static void TurnZBufferOff();
 
-	void ClearDepthBuffer(float value);
+	static void ClearDepthBuffer(float value);
 
-	bool WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+	static bool WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
-	void SetWireframeRasterState(const bool isWireframe);
-
-private:
-
-	void CreateRenderTargetView();
-
-	void CreateDepthStencilView(UINT width, UINT height);
-
-	void OnResize(LPARAM lparam);
+	static void SetWireframeRasterState(const bool isWireframe);
 
 private:
 
-	bool m_vsync_enabled;
-	int m_videoCardMemory;
-	char m_videoCardDescription[128];
+	static void CreateRenderTargetView();
 
-	float m_screenNear;
-	float m_screenFar;
+	static void CreateDepthStencilView(UINT width, UINT height);
 
-	IDXGISwapChain* m_swapChain = nullptr;
-	ID3D11Device* m_device = nullptr;
-	ID3D11DeviceContext* m_deviceContext = nullptr;
+	static void OnResize(LPARAM lparam);
 
-	ID3D11RenderTargetView* m_renderTargetView = nullptr;
-	ID3D11Texture2D* m_depthStencilBuffer = nullptr;
+private:
 
-	ID3D11DepthStencilState* m_depthStencilState = nullptr;
-	ID3D11DepthStencilState* m_depthDisabledStencilState = nullptr;
-	ID3D11DepthStencilView* m_depthStencilView = nullptr;
-	ID3D11RasterizerState* m_defaultRasterState = nullptr;
-	ID3D11RasterizerState* m_wireframeRasterState = nullptr;
+	static bool m_vsync_enabled;
+	static int m_videoCardMemory;
+	static char m_videoCardDescription[128];
 
-	DirectX::XMMATRIX m_projectionMatrix;
-	DirectX::XMMATRIX m_worldMatrix;
-	DirectX::XMMATRIX m_orthoMatrix;
+	static float m_screenNear;
+	static float m_screenFar;
+
+	static IDXGISwapChain* m_swapChain;
+	static ID3D11Device* m_device;
+	static ID3D11DeviceContext* m_deviceContext;
+
+	static ID3D11RenderTargetView* m_renderTargetView;
+	static ID3D11Texture2D* m_depthStencilBuffer;
+
+	static ID3D11DepthStencilState* m_depthStencilState;
+	static ID3D11DepthStencilState* m_depthDisabledStencilState;
+	static ID3D11DepthStencilView* m_depthStencilView;
+	static ID3D11RasterizerState* m_defaultRasterState;
+	static ID3D11RasterizerState* m_wireframeRasterState;
+
+	static DirectX::XMMATRIX m_projectionMatrix;
+	static DirectX::XMMATRIX m_worldMatrix;
+	static DirectX::XMMATRIX m_orthoMatrix;
 
 
 };

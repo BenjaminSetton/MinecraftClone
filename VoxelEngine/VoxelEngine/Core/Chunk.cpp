@@ -1,15 +1,26 @@
 #include "../Misc/pch.h"
 #include "Chunk.h"
 #include "../Utility/Noise.h"
+#include "../Utility/Utility.h"
+
 #include "ChunkManager.h"
+#include "D3D.h"
 
 
 using namespace DirectX;
+
+constexpr uint32_t BUFFER_SIZE = 36 / 2 * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
 
 
 Chunk::Chunk(const XMFLOAT3 pos) : m_id(0), m_pos(pos), m_numFaces(0)
 {
 	InitializeChunk();
+	CreateVertexBuffer();
+}
+
+Chunk::~Chunk()
+{
+	m_buffer->Release();
 }
 
 const uint32_t Chunk::GetID() { return m_id; }
@@ -18,11 +29,11 @@ Block* Chunk::GetBlock(unsigned int x, unsigned int y, unsigned int z) { return 
 
 const DirectX::XMFLOAT3 Chunk::GetPosition() { return m_pos; }
 
-const uint32_t Chunk::GetNumFaces() { return m_numFaces; }
+const uint32_t Chunk::GetFaceCount() { return m_numFaces; }
 
-BlockVertex* Chunk::GetFaceArray() { return &m_blockFaces[0]; }
+const uint32_t Chunk::GetVertexCount() { return GetFaceCount() * 6; }
 
-const uint32_t Chunk::GetStartIndex() { return m_chunkStartIndex; }
+ID3D11Buffer* Chunk::GetBuffer() { return m_buffer; }
 
 void Chunk::InitializeChunk()
 {
@@ -46,10 +57,8 @@ void Chunk::InitializeChunk()
 	}
 }
 
-void Chunk::InitializeVertexBuffer(const uint32_t startIndex)
+void Chunk::InitializeVertexBuffer()
 {
-	m_chunkStartIndex = startIndex;
-
 	ResetFaces();
 
 	// Retrieve neighboring chunks
@@ -61,6 +70,10 @@ void Chunk::InitializeVertexBuffer(const uint32_t startIndex)
 	Chunk* backChunk = ChunkManager::GetChunkAtPos({ m_pos.x, m_pos.y, m_pos.z + 1 });
 
 	XMFLOAT3 posWS = { m_pos.x * CHUNK_SIZE, m_pos.y * CHUNK_SIZE, m_pos.z * CHUNK_SIZE };
+
+
+	// Local array (deleted after loop ends and buffer is updated)
+	BlockVertex* blockFaces = new BlockVertex[BUFFER_SIZE];
 
 	uint32_t index = 0;
 	for (int x = 0; x < CHUNK_SIZE; x++)
@@ -84,37 +97,33 @@ void Chunk::InitializeVertexBuffer(const uint32_t startIndex)
 					// left limit 
 					if (x - 1 < 0)
 					{
-						if(!leftChunk)
-							AppendBlockFaceToVector(BlockFace::LEFT, index, blockPos);
-						else if(leftChunk->GetBlock(CHUNK_SIZE - 1, y, z)->GetType() == BlockType::Air)
-							AppendBlockFaceToVector(BlockFace::LEFT, index, blockPos);
+						if(leftChunk && leftChunk->GetBlock(CHUNK_SIZE - 1, y, z)->GetType() == BlockType::Air)
+							AppendBlockFaceToArray(BlockFace::LEFT, index, blockPos, blockFaces);
 					}
 					// left neighbor
 					else if(m_chunk[x - 1][y][z].GetType() == BlockType::Air)
-						AppendBlockFaceToVector(BlockFace::LEFT, index, blockPos);
+						AppendBlockFaceToArray(BlockFace::LEFT, index, blockPos, blockFaces);
 
 					// right limit
 					if (x + 1 > CHUNK_SIZE - 1)
 					{
-						if (!rightChunk)
-							AppendBlockFaceToVector(BlockFace::RIGHT, index, blockPos);
-						else if(rightChunk->GetBlock(0, y, z)->GetType() == BlockType::Air)
-							AppendBlockFaceToVector(BlockFace::RIGHT, index, blockPos);
+						if(rightChunk && rightChunk->GetBlock(0, y, z)->GetType() == BlockType::Air)
+							AppendBlockFaceToArray(BlockFace::RIGHT, index, blockPos, blockFaces);
 					}
 					// right neighbor
 					else if(m_chunk[x + 1][y][z].GetType() == BlockType::Air)
-						AppendBlockFaceToVector(BlockFace::RIGHT, index, blockPos);
+						AppendBlockFaceToArray(BlockFace::RIGHT, index, blockPos, blockFaces);
 
 					// top neighbor
 					if (y + 1 > CHUNK_SIZE - 1)
 					{
 						if (!topChunk)
-							AppendBlockFaceToVector(BlockFace::TOP, index, blockPos);
+							AppendBlockFaceToArray(BlockFace::TOP, index, blockPos, blockFaces);
 						else if(topChunk->GetBlock(x, 0, z)->GetType() == BlockType::Air)
-							AppendBlockFaceToVector(BlockFace::TOP, index, blockPos);
+							AppendBlockFaceToArray(BlockFace::TOP, index, blockPos, blockFaces);
 					}
 					else if(m_chunk[x][y + 1][z].GetType() == BlockType::Air)
-						AppendBlockFaceToVector(BlockFace::TOP, index, blockPos);
+						AppendBlockFaceToArray(BlockFace::TOP, index, blockPos, blockFaces);
 
 					// bottom neighbor
 					if (y - 1 < 0)
@@ -123,43 +132,63 @@ void Chunk::InitializeVertexBuffer(const uint32_t startIndex)
 						// This will be commented out since there are no vertical chunks yet
 
 						//if (!bottomChunk)
-						//	AppendBlockFaceToVector(BlockFace::BOTTOM, index, blockPos);
+						//	AppendBlockFaceToArray(BlockFace::BOTTOM, index, blockPos);
 						//else 
 						if(bottomChunk && bottomChunk->GetBlock(x, CHUNK_SIZE - 1, z)->GetType() == BlockType::Air)
-							AppendBlockFaceToVector(BlockFace::BOTTOM, index, blockPos);
+							AppendBlockFaceToArray(BlockFace::BOTTOM, index, blockPos, blockFaces);
 					}
 					else if(m_chunk[x][y - 1][z].GetType() == BlockType::Air)
-						AppendBlockFaceToVector(BlockFace::BOTTOM, index, blockPos);
+						AppendBlockFaceToArray(BlockFace::BOTTOM, index, blockPos, blockFaces);
 
 					// front neighbor
 					if (z - 1 < 0)
 					{
-						if (!frontChunk) 
-							AppendBlockFaceToVector(BlockFace::FRONT, index, blockPos);
-						else if(frontChunk->GetBlock(x, y, CHUNK_SIZE - 1)->GetType() == BlockType::Air)
-							AppendBlockFaceToVector(BlockFace::FRONT, index, blockPos);
+						if(frontChunk && frontChunk->GetBlock(x, y, CHUNK_SIZE - 1)->GetType() == BlockType::Air)
+							AppendBlockFaceToArray(BlockFace::FRONT, index, blockPos, blockFaces);
 					}
 					else if(m_chunk[x][y][z - 1].GetType() == BlockType::Air)
-						AppendBlockFaceToVector(BlockFace::FRONT, index, blockPos);
+						AppendBlockFaceToArray(BlockFace::FRONT, index, blockPos, blockFaces);
 
 					// back neighbor
 					if (z + 1 > CHUNK_SIZE - 1)
 					{
-						if (!backChunk)
-							AppendBlockFaceToVector(BlockFace::BACK, index, blockPos);
-						else if(backChunk->GetBlock(x, y, 0)->GetType() == BlockType::Air)
-							AppendBlockFaceToVector(BlockFace::BACK, index, blockPos);
+						if(backChunk && backChunk->GetBlock(x, y, 0)->GetType() == BlockType::Air)
+							AppendBlockFaceToArray(BlockFace::BACK, index, blockPos, blockFaces);
 					}
 					else if(m_chunk[x][y][z + 1].GetType() == BlockType::Air)
-						AppendBlockFaceToVector(BlockFace::BACK, index, blockPos);
+						AppendBlockFaceToArray(BlockFace::BACK, index, blockPos, blockFaces);
 				}
 
 			}
 		}
 	}
+
+	// Update Buffer
+	D3D::GetDeviceContext()->UpdateSubresource(m_buffer, 0, nullptr, blockFaces, 0, 0);
+
+	// Delete array
+	delete[] blockFaces;
+
 }
 
-void Chunk::AppendBlockFaceToVector(const BlockFace face, uint32_t& index, const XMFLOAT3& blockPos)
+void Chunk::CreateVertexBuffer()
+{
+	HRESULT hr;
+
+	// Create the vertex buffer
+	D3D11_BUFFER_DESC vertexBufferDesc;
+	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	vertexBufferDesc.ByteWidth = sizeof(BlockVertex) * BUFFER_SIZE;
+	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertexBufferDesc.CPUAccessFlags = 0;
+	vertexBufferDesc.MiscFlags = 0;
+	vertexBufferDesc.StructureByteStride = 0;
+
+	hr = D3D::GetDevice()->CreateBuffer(&vertexBufferDesc, nullptr, &m_buffer);
+	VX_ASSERT(!FAILED(hr));
+}
+
+void Chunk::AppendBlockFaceToArray(const BlockFace face, uint32_t& index, const XMFLOAT3& blockPos, BlockVertex* blockArray)
 {
 	uint32_t startIndexArray = 0;
 
@@ -202,7 +231,7 @@ void Chunk::AppendBlockFaceToVector(const BlockFace face, uint32_t& index, const
 	{
 		BlockVertex currVert = verts[indicies[startIndexArray++]];
 		currVert.pos = { currVert.pos.x + blockPos.x, currVert.pos.y + blockPos.y, currVert.pos.z + blockPos.z };
-		m_blockFaces[index++] = currVert;
+		blockArray[index++] = currVert;
 	}
 
 	m_numFaces++;
@@ -211,6 +240,5 @@ void Chunk::AppendBlockFaceToVector(const BlockFace face, uint32_t& index, const
 
 void Chunk::ResetFaces()
 {
-	memset(&m_blockFaces[0], 0, sizeof(BlockVertex) * m_numFaces);
 	m_numFaces = 0;
 }

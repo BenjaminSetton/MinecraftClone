@@ -10,6 +10,7 @@
 
 // idk why it makes me include this here..again
 #include <windows.h>
+#include <thread>
 
 /////////////
 // GLOBALS
@@ -37,7 +38,6 @@ public:
 
 private:
 
-	D3D* m_D3D = nullptr;
 	DebugCamera* m_debugCam = nullptr;
 	DefaultBlockShader* m_chunkShader = nullptr;
 

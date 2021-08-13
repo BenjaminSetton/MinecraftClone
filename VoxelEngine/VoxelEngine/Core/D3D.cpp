@@ -5,6 +5,30 @@
 
 using namespace DirectX;
 
+bool D3D::m_vsync_enabled;
+int D3D::m_videoCardMemory;
+char D3D::m_videoCardDescription[128];
+
+float D3D::m_screenNear;
+float D3D::m_screenFar;
+
+IDXGISwapChain* D3D::m_swapChain = nullptr;
+ID3D11Device* D3D::m_device = nullptr;
+ID3D11DeviceContext* D3D::m_deviceContext = nullptr;
+
+ID3D11RenderTargetView* D3D::m_renderTargetView = nullptr;
+ID3D11Texture2D* D3D::m_depthStencilBuffer = nullptr;
+
+ID3D11DepthStencilState* D3D::m_depthStencilState = nullptr;
+ID3D11DepthStencilState* D3D::m_depthDisabledStencilState = nullptr;
+ID3D11DepthStencilView* D3D::m_depthStencilView = nullptr;
+ID3D11RasterizerState* D3D::m_defaultRasterState = nullptr;
+ID3D11RasterizerState* D3D::m_wireframeRasterState = nullptr;
+
+DirectX::XMMATRIX D3D::m_projectionMatrix = XMMatrixIdentity();
+DirectX::XMMATRIX D3D::m_worldMatrix = XMMatrixIdentity();
+DirectX::XMMATRIX D3D::m_orthoMatrix = XMMatrixIdentity();
+
 bool D3D::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd, const bool& vsync,
 					 const bool& fullscreen, const float& screenFar, const float& screenNear)
 {
@@ -329,11 +353,11 @@ ID3D11DeviceContext* D3D::GetDeviceContext() { return m_deviceContext; }
 
 IDXGISwapChain* D3D::GetSwapChain() { return m_swapChain; }
 
-const XMMATRIX D3D::GetWorldMatrix() const { return m_worldMatrix; }
+const XMMATRIX D3D::GetWorldMatrix() { return m_worldMatrix; }
 
-const XMMATRIX D3D::GetProjectionMatrix() const { return m_projectionMatrix; }
-const XMMATRIX D3D::GetOrthoMatrix() const { return m_orthoMatrix; }
-ID3D11RenderTargetView* D3D::GetRenderTargetView() const { return m_renderTargetView; }
+const XMMATRIX D3D::GetProjectionMatrix() { return m_projectionMatrix; }
+const XMMATRIX D3D::GetOrthoMatrix() { return m_orthoMatrix; }
+ID3D11RenderTargetView* D3D::GetRenderTargetView() { return m_renderTargetView; }
 
 void D3D::GetVideoCardInfo(char* videoCardDescription, int& videoCardMemory)
 {
