@@ -12,7 +12,12 @@ class ScopeTimer
 {
 public:
 
-	ScopeTimer(std::string name = "Unnamed");
+
+	//	IMGUI = 0
+	//	CONSOLE = 1
+	
+
+	ScopeTimer(std::string name = "Unnamed", const int mode = 0);
 	ScopeTimer(const ScopeTimer& other) = default;
 
 	~ScopeTimer();
@@ -20,6 +25,7 @@ public:
 private:
 	std::chrono::steady_clock::time_point m_start;
 	std::string m_name;
+	int m_mode;
 };
 
 #endif

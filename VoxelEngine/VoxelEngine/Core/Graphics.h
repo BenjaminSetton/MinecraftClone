@@ -10,7 +10,6 @@
 
 // idk why it makes me include this here..again
 #include <windows.h>
-#include <thread>
 
 /////////////
 // GLOBALS

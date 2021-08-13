@@ -96,8 +96,10 @@ void DefaultBlockShader::Render(ID3D11DeviceContext* context)
 		numDrawCalls++;
 	}
 
+	ImGui::Begin("Debug Panel");
 	ImGui::Text("Vertex Count: %i", debugVerts);
 	ImGui::Text("Draw Calls: %i", numDrawCalls);
+	ImGui::End();
 }
 
 void DefaultBlockShader::Shutdown()

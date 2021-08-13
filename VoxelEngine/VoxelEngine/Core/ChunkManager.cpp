@@ -42,8 +42,12 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 		}
 	}
 
-	// Initialize all the chunks' buffers
-	for (uint16_t iter = 0; iter < m_activeChunks.size(); iter++) m_activeChunks[iter]->InitializeVertexBuffer();
+	{
+		VX_PROFILE_SCOPE_MSG_MODE("Initial Chunk Loading", 1);
+		// Initialize all the chunks' buffers
+		// Consider adding multi-threading to speed up load time
+		for (uint16_t iter = 0; iter < m_activeChunks.size(); iter++) m_activeChunks[iter]->InitializeVertexBuffer();
+	}
 }
 
 void ChunkManager::Shutdown()

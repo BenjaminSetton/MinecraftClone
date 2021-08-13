@@ -9,7 +9,7 @@
 
 using namespace DirectX;
 
-constexpr uint32_t BUFFER_SIZE = 36 / 2 * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
+constexpr uint32_t BUFFER_SIZE = 6 * 6 * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * 0.1;
 
 
 Chunk::Chunk(const XMFLOAT3 pos) : m_id(0), m_pos(pos), m_numFaces(0)

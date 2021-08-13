@@ -21,8 +21,10 @@
 
 // Profiling defines
 #define VX_PROFILE_FUNC() auto VARNAME(var) = ScopeTimer(std::string(__FUNCTION__));
+#define VX_PROFILE_FUNC_MODE(mode) auto VARNAME(var) = ScopeTimer(std::string(__FUNCTION__), mode);
 #define VX_PROFILE_SCOPE() auto VARNAME(var) = ScopeTimer();
-#define VX_PROFILE_SCOPE(msg) auto VARNAME(var) = ScopeTimer(std::string(msg));
+#define VX_PROFILE_SCOPE_MSG(msg) auto VARNAME(var) = ScopeTimer(std::string(msg));
+#define VX_PROFILE_SCOPE_MSG_MODE(msg, mode) auto VARNAME(var) = ScopeTimer(std::string(msg), mode);
 
 // Log defines
 #define VX_LOG_ERROR(msg) \
@@ -66,8 +68,10 @@ VARNAME(log).End();
 
 // Log defines
 #define VX_PROFILE_FUNC()
+#define VX_PROFILE_FUNC_MODE(mode)
 #define VX_PROFILE_SCOPE()
-#define VX_PROFILE_SCOPE(msg)
+#define VX_PROFILE_SCOPE_MSG(msg)
+#define VX_PROFILE_SCOPE_MSG_MODE(msg, mode)
 
 #define VX_LOG_ERROR(msg)
 #define VX_LOG_WARN(msg)

@@ -84,8 +84,6 @@ bool Graphics::Frame(const float dt)
 	// Begin the ImGui frame
 	m_imGuiLayer->BeginFrame();
 
-	std::thread chunkLoader(ChunkManager::Update, m_debugCam->GetPosition());
-
 	{
 		VX_PROFILE_FUNC();
 
@@ -93,7 +91,7 @@ bool Graphics::Frame(const float dt)
 		m_debugCam->Update(dt);
 
 		// Update the active chunks
-		//ChunkManager::Update(m_debugCam->GetPosition());
+		ChunkManager::Update(m_debugCam->GetPosition());
 
 		// Check to toggle wireframe state
 		if (Input::IsKeyDown(KeyCode::E)) D3D::SetWireframeRasterState(true);
@@ -111,9 +109,6 @@ bool Graphics::Frame(const float dt)
 		}
 
 		numChunks = ChunkManager::GetNumActiveChunks();
-
-
-		if (chunkLoader.joinable()) chunkLoader.join();
 
 		ImGui::Begin("Debug Panel");
 		ImGui::Text("Chunk Count: %i", numChunks);
