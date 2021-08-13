@@ -66,6 +66,7 @@ void ChunkManager::Update(const DirectX::XMFLOAT3 playerPos)
 	// Chunk coord
 	XMFLOAT3 playerPosChunkSpace = WorldToChunkSpace(playerPos);
 
+
 	// 1. Unload chunks outside of render distance
 	for (uint32_t i = 0; i < m_activeChunks.size(); i++)
 	{
@@ -85,11 +86,14 @@ void ChunkManager::Update(const DirectX::XMFLOAT3 playerPos)
 			UnloadChunk(i--);
 
 	}
+	
 
 	// 2. Load chunks if they are inside render distance
-	for(int16_t x = -m_renderDist; x <= m_renderDist; x++)
+
+	// Z-axis chunk checking (includes corner chunks)
+	for (int16_t x = -m_renderDist; x <= m_renderDist; x += 2 * m_renderDist)
 	{
-		for(int16_t z = -m_renderDist; z <= m_renderDist; z++)
+		for (int16_t z = -m_renderDist; z <= m_renderDist; z++)
 		{
 			// A coordinate in chunk space
 			XMFLOAT3 newChunkPosCS = { playerPosChunkSpace.x + x, 0, playerPosChunkSpace.z + z };
@@ -105,16 +109,37 @@ void ChunkManager::Update(const DirectX::XMFLOAT3 playerPos)
 		}
 	}
 
+	// X-axis chunk checking (excludes corner chunks)
+	for (int16_t z = -m_renderDist; z <= m_renderDist; z += 2 * m_renderDist) 
+	{
+		for (int16_t x = -m_renderDist + 1; x < m_renderDist; x++)
+		{
+			// A coordinate in chunk space
+			XMFLOAT3 newChunkPosCS = { playerPosChunkSpace.x + x, 0, playerPosChunkSpace.z + z };
+
+			// If this new chunk is not already active, allocate a new chunk
+			if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
+			else
+			{
+				Chunk* newChunk = LoadChunk(newChunkPosCS);
+				newChunkList.push_back(newChunk);
+			}
+
+		}
+	}
+	
+
+
 	// 3. Force all new chunks and their neighbors to initialize their buffers
-	for(uint16_t i = 0; i < newChunkList.size(); i++)
+	for (uint16_t i = 0; i < newChunkList.size(); i++)
 	{
 		Chunk* newChunk = newChunkList[i];
 		XMFLOAT3 chunkPosCS = newChunk->GetPosition();
 
 		// Left neighbor
-		Chunk* leftNeighbor = GetChunkAtPos({chunkPosCS.x - 1, chunkPosCS.y, chunkPosCS.z});
+		Chunk* leftNeighbor = GetChunkAtPos({ chunkPosCS.x - 1, chunkPosCS.y, chunkPosCS.z });
 		if (leftNeighbor) leftNeighbor->InitializeVertexBuffer();
-		
+
 
 		// Right neighbor
 		Chunk* rightNeighbor = GetChunkAtPos({ chunkPosCS.x + 1, chunkPosCS.y, chunkPosCS.z });
@@ -129,7 +154,7 @@ void ChunkManager::Update(const DirectX::XMFLOAT3 playerPos)
 		if (bottomNeighbor) bottomNeighbor->InitializeVertexBuffer();
 
 		// Front neighbor
-		Chunk* frontNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y, chunkPosCS.z - 1});
+		Chunk* frontNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y, chunkPosCS.z - 1 });
 		if (frontNeighbor) frontNeighbor->InitializeVertexBuffer();
 
 		// Back neighbor
@@ -139,11 +164,12 @@ void ChunkManager::Update(const DirectX::XMFLOAT3 playerPos)
 		// Current chunk
 		newChunk->InitializeVertexBuffer();
 	}
+	
 
 	ImGui::Begin("Debug Panel");
 	ImGui::Text("Player Position (Chunk Space): %i, %i, %i", (int)playerPosChunkSpace.x, 0, (int)playerPosChunkSpace.z);
 	ImGui::Text("Active Chunks: %i", m_activeChunks.size());
-	ImGui::Text("New Chunks This Frame: %i", newChunkList.size());
+	ImGui::Text("Render Distance: %i", m_renderDist);
 	ImGui::End();
 }
 

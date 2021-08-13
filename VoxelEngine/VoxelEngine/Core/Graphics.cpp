@@ -101,7 +101,7 @@ bool Graphics::Frame(const float dt)
 		D3D::BeginScene(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
 
 		{
-			VX_PROFILE_SCOPE("Rendering");
+			//VX_PROFILE_SCOPE_MSG("Rendering");
 
 			// Send the chunks to the shader and render
 			m_chunkShader->UpdateViewMatrix(D3D::GetDeviceContext(), m_debugCam->GetViewMatrix());
