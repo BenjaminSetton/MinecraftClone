@@ -31,15 +31,18 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	// Initialize ChunkManager class (DefaultBlockShader will use it's data so initialization has to take place before it)
 	ChunkManager::Initialize(m_debugCam->GetPosition());
 
-	// Create the shader class object
-	m_chunkShader = new DefaultBlockShader;
-	m_chunkShader->CreateObjects(L"./Shaders/DefaultBlock_VS.hlsl", L"./Shaders/DefaultBlock_PS.hlsl");
-	m_chunkShader->Initialize(m_debugCam->GetViewMatrix(), D3D::GetProjectionMatrix(), 
-		lightDirection, { 1.0f, 1.0f, 1.0f, 1.0f });
-	
+	// Create the shadow shader class
 	m_shadowShader = new ShadowShader;
 	m_shadowShader->CreateObjects(L"./Shaders/ShadowMap_VS.hlsl", L"./Shaders/ShadowMap_PS.hlsl");
 	m_shadowShader->Initialize(lightDirection, D3D::GetOrthoMatrix(), screenWidth, screenHeight);
+
+
+	// Create the chunk shader class object
+	m_chunkShader = new DefaultBlockShader;
+	m_chunkShader->CreateObjects(L"./Shaders/DefaultBlock_VS.hlsl", L"./Shaders/DefaultBlock_PS.hlsl");
+	m_chunkShader->Initialize(m_debugCam->GetViewMatrix(), D3D::GetProjectionMatrix(), 
+		m_shadowShader->GetLightViewMatrix(), D3D::GetOrthoMatrix(), lightDirection, { 1.0f, 1.0f, 1.0f, 1.0f });
+	
 
 	// Create and initialize the ImGuiLayer
 	m_imGuiLayer = new ImGuiLayer;
@@ -128,7 +131,7 @@ bool Graphics::Frame(const float dt)
 				m_shadowShader->GetShadowMap()
 			};
 			// Send the chunks to the shader and render
-			m_chunkShader->UpdateViewMatrix(m_debugCam->GetViewMatrix());
+			m_chunkShader->UpdateViewMatrices(m_debugCam->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
 			m_chunkShader->Render(srvs);
 		}
 	}

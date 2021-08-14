@@ -26,6 +26,8 @@ public:
 
 	ID3D11ShaderResourceView* GetShadowMap();
 
+	const DirectX::XMMATRIX GetLightViewMatrix();
+
 
 private:
 
@@ -63,6 +65,7 @@ private:
 
 	ID3D11InputLayout* m_inputLayout = nullptr;
 
+	DirectX::XMMATRIX m_lightViewMatrix;
 	DirectX::XMMATRIX m_ortho;
 
 };

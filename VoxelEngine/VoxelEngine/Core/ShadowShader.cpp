@@ -27,8 +27,9 @@ void ShadowShader::Initialize(DirectX::XMFLOAT3 lightDirection, DirectX::XMMATRI
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	BlockVertex* vertexBufferPtr;
 
-	XMMATRIX viewMatrix = DirectX::XMMatrixLookAtLH({ 0.0f, 0.0f, 0.0f, 0.0f }, XMLoadFloat3(&lightDirection), { 0.0f, 1.0f, 0.0f, 1.0f });
+	XMMATRIX viewMatrix = XMMatrixTranspose(XMMatrixLookAtLH({ 0.0f, 10.0f, 0.0f, 0.0f }, XMLoadFloat3(&lightDirection), { 0.0f, 1.0f, 0.0f, 1.0f }));
 
+	m_lightViewMatrix = viewMatrix;
 	m_ortho = XMMatrixTranspose(OM);
 
 	CreateDepthBuffer(width, height);
@@ -41,7 +42,7 @@ void ShadowShader::Initialize(DirectX::XMFLOAT3 lightDirection, DirectX::XMMATRI
 	matrixBufferPtr = (MatrixBuffer*)mappedResource.pData;
 	// Copy the matrices into the constant buffer.
 	matrixBufferPtr->worldMatrix = XMMatrixIdentity();
-	matrixBufferPtr->viewMatrix = XMMatrixTranspose(viewMatrix);
+	matrixBufferPtr->viewMatrix = viewMatrix;
 	matrixBufferPtr->orthoMatrix = m_ortho;
 	// Unlock the matrix constant buffer.
 	context->Unmap(m_matrixBuffer, 0);
@@ -277,6 +278,8 @@ void ShadowShader::BindObjects()
 {
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
+	context->ClearDepthStencilView(m_depthView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
 	// Set the depth stencil state.
 	context->OMSetDepthStencilState(m_depthState, 1);
 	context->OMSetRenderTargets(0, nullptr, m_depthView);
@@ -319,3 +322,5 @@ void ShadowShader::UpdateViewMatrix(DirectX::XMMATRIX viewMatrix)
 }
 
 ID3D11ShaderResourceView* ShadowShader::GetShadowMap() { return m_shadowMapSRV; }
+
+const DirectX::XMMATRIX ShadowShader::GetLightViewMatrix() { return m_lightViewMatrix; }

@@ -17,8 +17,9 @@ void DefaultBlockShader::CreateObjects(const WCHAR* vsFilename, const WCHAR* psF
 	CreateD3DObjects();
 }
 
-void DefaultBlockShader::Initialize(DirectX::XMMATRIX VM,
-	DirectX::XMMATRIX PM, DirectX::XMFLOAT3 lightDir, DirectX::XMFLOAT4 lightCol)
+void DefaultBlockShader::Initialize(XMMATRIX camViewMatrix, XMMATRIX camProjectionMatrix,
+	XMMATRIX lightViewMatrix, XMMATRIX lightProjectionMatrix,
+	XMFLOAT3 lightDir, XMFLOAT4 lightCol)
 {
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
@@ -28,7 +29,8 @@ void DefaultBlockShader::Initialize(DirectX::XMMATRIX VM,
 	LightBuffer* lightBufferPtr;
 	BlockVertex* vertexBufferPtr;
 
-	m_projection = XMMatrixTranspose(PM);
+	m_camPM = XMMatrixTranspose(camProjectionMatrix);
+	m_lightPM = XMMatrixTranspose(lightProjectionMatrix);
 
 #pragma region WVP_MATRICES
 	// Lock the matrix constant buffer so it can be written to.
@@ -38,8 +40,10 @@ void DefaultBlockShader::Initialize(DirectX::XMMATRIX VM,
 	matrixBufferPtr = (MatrixBuffer*)mappedResource.pData;
 	// Copy the matrices into the constant buffer.
 	matrixBufferPtr->worldMatrix = XMMatrixIdentity();
-	matrixBufferPtr->viewMatrix = XMMatrixTranspose(VM);
-	matrixBufferPtr->projectionMatrix = m_projection;
+	matrixBufferPtr->viewMatrix = XMMatrixTranspose(camViewMatrix);
+	matrixBufferPtr->projectionMatrix = m_camPM;
+	matrixBufferPtr->lightViewMatrix = XMMatrixTranspose(camViewMatrix);
+	matrixBufferPtr->lightProjectionMatrix = m_lightPM;
 	// Unlock the matrix constant buffer.
 	context->Unmap(m_matrixBuffer, 0);
 #pragma endregion
@@ -240,7 +244,6 @@ void DefaultBlockShader::CreateShaders(const WCHAR* vsFilename, const WCHAR* psF
 	PSBlob = nullptr;
 }
 
-
 void DefaultBlockShader::BindVertexBuffer(Chunk* chunk)
 {
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
@@ -285,7 +288,7 @@ void DefaultBlockShader::BindObjects(ID3D11ShaderResourceView* const* srvs)
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
-void DefaultBlockShader::UpdateViewMatrix(DirectX::XMMATRIX viewMatrix)
+void DefaultBlockShader::UpdateViewMatrices(DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX lightViewMatrix)
 {
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
@@ -300,7 +303,9 @@ void DefaultBlockShader::UpdateViewMatrix(DirectX::XMMATRIX viewMatrix)
 	matrixBufferPtr = (MatrixBuffer*)mappedResource.pData;
 	matrixBufferPtr->worldMatrix = XMMatrixIdentity();
 	matrixBufferPtr->viewMatrix = XMMatrixTranspose(viewMatrix);
-	matrixBufferPtr->projectionMatrix = m_projection;
+	matrixBufferPtr->projectionMatrix = m_camPM;
+	matrixBufferPtr->lightViewMatrix = lightViewMatrix;
+	matrixBufferPtr->lightProjectionMatrix = m_lightPM;
 
 	context->Unmap(m_matrixBuffer, 0);
 }
