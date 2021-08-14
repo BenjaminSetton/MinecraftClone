@@ -20,16 +20,16 @@ class DefaultBlockShader
 {
 public:
 
-	void CreateObjects(ID3D11Device* device, const WCHAR* vsFilename, const WCHAR* psFilename);
+	void CreateObjects(const WCHAR* vsFilename, const WCHAR* psFilename);
 
-	void Initialize(ID3D11DeviceContext* context, DirectX::XMMATRIX WM, DirectX::XMMATRIX VM, 
-		DirectX::XMMATRIX PM, DirectX::XMFLOAT3 lightDir, DirectX::XMFLOAT4 lightCol, ID3D11ShaderResourceView* srv);
+	void Initialize(DirectX::XMMATRIX VM, 
+		DirectX::XMMATRIX PM, DirectX::XMFLOAT3 lightDir, DirectX::XMFLOAT4 lightCol);
 	
-	void Render(ID3D11DeviceContext* context);
+	void Render(ID3D11ShaderResourceView* const* srvs);
 
 	void Shutdown();
 
-	void UpdateViewMatrix(ID3D11DeviceContext* context, DirectX::XMMATRIX viewMatrix);
+	void UpdateViewMatrix(DirectX::XMMATRIX viewMatrix);
 
 
 private:
@@ -50,11 +50,13 @@ private:
 	};
 
 
-	void CreateD3DObjects(ID3D11Device* device);
+	void CreateD3DObjects();
 
-	void CreateShaders(ID3D11Device* device, const WCHAR* vsFilename, const WCHAR* psFilename);
+	void CreateShaders(const WCHAR* vsFilename, const WCHAR* psFilename);
 
-	void BindVertexBuffer(ID3D11DeviceContext* context, Chunk* chunk);
+	void BindVertexBuffer(Chunk* chunk);
+
+	void BindObjects(ID3D11ShaderResourceView* const* srvs);
 
 private:
 
@@ -67,7 +69,9 @@ private:
 	ID3D11Buffer* m_lightBuffer;
 
 	ID3D11InputLayout* m_inputLayout;
-	ID3D11SamplerState* m_sampler;
+
+	ID3D11SamplerState* m_samplerWrap;
+	ID3D11SamplerState* m_samplerClamp;
 
 	// Stores the transposed projection matrix
 	DirectX::XMMATRIX m_projection;

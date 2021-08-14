@@ -29,6 +29,8 @@ DirectX::XMMATRIX D3D::m_projectionMatrix = XMMatrixIdentity();
 DirectX::XMMATRIX D3D::m_worldMatrix = XMMatrixIdentity();
 DirectX::XMMATRIX D3D::m_orthoMatrix = XMMatrixIdentity();
 
+bool D3D::m_depthDisabled = false;
+
 bool D3D::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd, const bool& vsync,
 					 const bool& fullscreen, const float& screenFar, const float& screenNear)
 {
@@ -365,14 +367,25 @@ void D3D::GetVideoCardInfo(char* videoCardDescription, int& videoCardMemory)
 	videoCardMemory = m_videoCardMemory;
 }
 
+ID3D11RenderTargetView* D3D::GetBackBuffer() { return m_renderTargetView; }
+
+ID3D11DepthStencilView* D3D::GetDepthStencilView() { return m_depthStencilView; }
+
+ID3D11DepthStencilState* D3D::GetDepthStencilState()
+{
+	if (m_depthDisabled) return m_depthDisabledStencilState;
+	else return m_depthStencilState;
+}
+
 void D3D::TurnZBufferOn()
 {
 	m_deviceContext->OMSetDepthStencilState(m_depthStencilState, 1);
+	m_depthDisabled = false;
 }
 void D3D::TurnZBufferOff()
 {
 	m_deviceContext->OMSetDepthStencilState(m_depthDisabledStencilState, 1);
-	return;
+	m_depthDisabled = true;
 }
 
 void D3D::ClearDepthBuffer(float value)

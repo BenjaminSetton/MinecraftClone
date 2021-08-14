@@ -39,6 +39,10 @@ public:
 
 	static void GetVideoCardInfo(char*, int&);
 
+	static ID3D11RenderTargetView* GetBackBuffer();
+	static ID3D11DepthStencilView* GetDepthStencilView();
+	static ID3D11DepthStencilState* GetDepthStencilState();
+
 	static void TurnZBufferOn();
 	static void TurnZBufferOff();
 
@@ -75,6 +79,7 @@ private:
 	static ID3D11DepthStencilState* m_depthStencilState;
 	static ID3D11DepthStencilState* m_depthDisabledStencilState;
 	static ID3D11DepthStencilView* m_depthStencilView;
+
 	static ID3D11RasterizerState* m_defaultRasterState;
 	static ID3D11RasterizerState* m_wireframeRasterState;
 
@@ -82,7 +87,7 @@ private:
 	static DirectX::XMMATRIX m_worldMatrix;
 	static DirectX::XMMATRIX m_orthoMatrix;
 
-
+	static bool m_depthDisabled;
 };
 
 #endif

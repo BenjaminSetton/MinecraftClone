@@ -15,6 +15,8 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 
 	bool initResult;
 
+	XMFLOAT3 lightDirection = { 1.0f, -1.0f, 0.0f };
+
 	initResult = D3D::Initialize(screenWidth, screenHeight, hwnd, VSYNC_ENABLED, FULL_SCREEN, SCREEN_FAR, SCREEN_NEAR);
 	if (!initResult) return false;
 
@@ -31,10 +33,14 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 
 	// Create the shader class object
 	m_chunkShader = new DefaultBlockShader;
-	m_chunkShader->CreateObjects(D3D::GetDevice(), L"./Shaders/DefaultBlock_VS.hlsl", L"./Shaders/DefaultBlock_PS.hlsl");
-	m_chunkShader->Initialize(D3D::GetDeviceContext(), D3D::GetWorldMatrix(), m_debugCam->GetViewMatrix(),
-		D3D::GetProjectionMatrix(), { 1.0f, -1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f }, m_textureManager->GetTexture(std::string("SEAFLOOR_TEX")));
+	m_chunkShader->CreateObjects(L"./Shaders/DefaultBlock_VS.hlsl", L"./Shaders/DefaultBlock_PS.hlsl");
+	m_chunkShader->Initialize(m_debugCam->GetViewMatrix(), D3D::GetProjectionMatrix(), 
+		lightDirection, { 1.0f, 1.0f, 1.0f, 1.0f });
 	
+	m_shadowShader = new ShadowShader;
+	m_shadowShader->CreateObjects(L"./Shaders/ShadowMap_VS.hlsl", L"./Shaders/ShadowMap_PS.hlsl");
+	m_shadowShader->Initialize(lightDirection, D3D::GetOrthoMatrix(), screenWidth, screenHeight);
+
 	// Create and initialize the ImGuiLayer
 	m_imGuiLayer = new ImGuiLayer;
 	m_imGuiLayer->Initialize(hwnd, D3D::GetDevice(), D3D::GetDeviceContext());
@@ -51,6 +57,13 @@ void Graphics::Shutdown()
 		m_imGuiLayer->Shutdown();
 		delete m_imGuiLayer;
 		m_imGuiLayer = nullptr;
+	}
+
+	if(m_shadowShader)
+	{
+		m_shadowShader->Shutdown();
+		delete m_shadowShader;
+		m_shadowShader = nullptr;
 	}
 
 	if (m_chunkShader)
@@ -98,22 +111,26 @@ bool Graphics::Frame(const float dt)
 		else if (Input::IsKeyDown(KeyCode::R)) D3D::SetWireframeRasterState(false);
 
 		// Begin the D3D scene
+
+
 		D3D::BeginScene(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
 
 		{
-			//VX_PROFILE_SCOPE_MSG("Rendering");
+			VX_PROFILE_SCOPE_MSG("Render Loop");
 
+			// Render the shadow map
+			m_shadowShader->Render();
+
+
+			ID3D11ShaderResourceView* srvs[] =
+			{
+				m_textureManager->GetTexture(std::string("SEAFLOOR_TEX")),
+				m_shadowShader->GetShadowMap()
+			};
 			// Send the chunks to the shader and render
-			m_chunkShader->UpdateViewMatrix(D3D::GetDeviceContext(), m_debugCam->GetViewMatrix());
-			m_chunkShader->Render(D3D::GetDeviceContext());	
+			m_chunkShader->UpdateViewMatrix(m_debugCam->GetViewMatrix());
+			m_chunkShader->Render(srvs);
 		}
-
-		numChunks = ChunkManager::GetNumActiveChunks();
-
-		ImGui::Begin("Debug Panel");
-		ImGui::Text("Chunk Count: %i", numChunks);
-		ImGui::End();
-
 	}
 
 

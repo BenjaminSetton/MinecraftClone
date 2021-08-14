@@ -1,23 +1,26 @@
 #include "../Misc/pch.h"
 #include "DefaultBlockShader.h"
+#include "D3D.h"
 
 #include "../Utility/Utility.h"
 
 using namespace DirectX;
 
-void DefaultBlockShader::CreateObjects(ID3D11Device* device, const WCHAR* vsFilename, const WCHAR* psFilename) 
+void DefaultBlockShader::CreateObjects(const WCHAR* vsFilename, const WCHAR* psFilename) 
 {
+	ID3D11Device* device = D3D::GetDevice();
 
 	// Create the shaders
-	CreateShaders(device, vsFilename, psFilename);
+	CreateShaders(vsFilename, psFilename);
 
 	// Create the rest of the objects
-	CreateD3DObjects(device);
+	CreateD3DObjects();
 }
 
-void DefaultBlockShader::Initialize(ID3D11DeviceContext* context, DirectX::XMMATRIX WM, DirectX::XMMATRIX VM,
-	DirectX::XMMATRIX PM, DirectX::XMFLOAT3 lightDir, DirectX::XMFLOAT4 lightCol, ID3D11ShaderResourceView* srv)
+void DefaultBlockShader::Initialize(DirectX::XMMATRIX VM,
+	DirectX::XMMATRIX PM, DirectX::XMFLOAT3 lightDir, DirectX::XMFLOAT4 lightCol)
 {
+	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
 	HRESULT hr;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -55,38 +58,21 @@ void DefaultBlockShader::Initialize(ID3D11DeviceContext* context, DirectX::XMMAT
 	context->Unmap(m_lightBuffer, 0);
 #pragma endregion
 
-	// Now set the matrix constant buffer in the vertex shader with the updated values.
-	context->VSSetConstantBuffers(0, 1, &m_matrixBuffer);
-
-	// Set the light constant buffer in the pixel shader
-	context->PSSetConstantBuffers(0, 1, &m_lightBuffer);
-
-	// Bind the SRV (textures) to the pixel shader Texture2D slot
-	context->PSSetShaderResources(0, 1, &srv);
-
-	// Set the vertex input layout.
-	context->IASetInputLayout(m_inputLayout);
-
-	// Set the vertex and pixel shaders that will be used to render this triangle.
-	context->VSSetShader(m_vertexShader, NULL, 0);
-	context->PSSetShader(m_pixelShader, NULL, 0);
-
-	// Set the sampler state in the pixel shader.
-	context->PSSetSamplers(0, 1, &m_sampler);
-
-	// Set the type of primitive that should be rendered from this vertex buffer, in this case triangles.
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
-void DefaultBlockShader::Render(ID3D11DeviceContext* context)
+void DefaultBlockShader::Render(ID3D11ShaderResourceView* const* srvs)
 {
+	ID3D11DeviceContext* context = D3D::GetDeviceContext();
+
 	int debugVerts = 0;
 	int numDrawCalls = 0;
+
+	BindObjects(srvs);
 
 	for(auto chunk : ChunkManager::GetChunkVector())
 	{
 		// Update the vertex buffer
-		BindVertexBuffer(context, chunk);
+		BindVertexBuffer(chunk);
 	
 		// Render the chunk
 		uint32_t numVerts = chunk->GetVertexCount();
@@ -104,57 +90,54 @@ void DefaultBlockShader::Render(ID3D11DeviceContext* context)
 
 void DefaultBlockShader::Shutdown()
 {
-	// Release the sampler state.
-	if (m_sampler)
+	if (m_samplerWrap)
 	{
-		m_sampler->Release();
-		m_sampler = nullptr;
+		m_samplerWrap->Release();
+		m_samplerWrap = nullptr;
 	}
 
-	// Release the matrix constant buffer.
+	if (m_samplerClamp)
+	{
+		m_samplerClamp->Release();
+		m_samplerClamp = nullptr;
+	}
+
 	if (m_lightBuffer)
 	{
 		m_lightBuffer->Release();
 		m_lightBuffer = nullptr;
 	}
 
-	// Release the matrix constant buffer.
 	if (m_matrixBuffer)
 	{
 		m_matrixBuffer->Release();
 		m_matrixBuffer = nullptr;
 	}
 
-	// Release the layout.
 	if (m_inputLayout)
 	{
 		m_inputLayout->Release();
 		m_inputLayout = nullptr;
 	}
 
-	// Release the pixel shader.
 	if (m_pixelShader)
 	{
 		m_pixelShader->Release();
 		m_pixelShader = nullptr;
 	}
 
-	// Release the vertex shader.
 	if (m_vertexShader)
 	{
 		m_vertexShader->Release();
 		m_vertexShader = nullptr;
 	}
 
-	//if(m_vertexBuffer)
-	//{
-	//	m_vertexBuffer->Release();
-	//	m_vertexBuffer = nullptr;
-	//}
 }
 
-void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
+void DefaultBlockShader::CreateD3DObjects()
 {
+	ID3D11Device* device = D3D::GetDevice();
+
 	HRESULT hr;
 
 	// Setup the description of the matrix dynamic constant buffer that is in the vertex shader.
@@ -183,7 +166,7 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 	hr = device->CreateBuffer(&lightBufferDesc, NULL, &m_lightBuffer);
 	VX_ASSERT(!FAILED(hr));
 
-	// Create a texture sampler state description.
+	// Create a wrap texture sampler state description.
 	D3D11_SAMPLER_DESC samplerDesc = {};
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -194,26 +177,29 @@ void DefaultBlockShader::CreateD3DObjects(ID3D11Device* device)
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
 	// Create the texture sampler state.
-	hr = device->CreateSamplerState(&samplerDesc, &m_sampler);
+	hr = device->CreateSamplerState(&samplerDesc, &m_samplerWrap);
 	VX_ASSERT(!FAILED(hr));
 
+	// Create a clamp texture sampler state description.
+	ZeroMemory(&samplerDesc, sizeof(samplerDesc));
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	samplerDesc.MinLOD = 0;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
-	//// Create the vertex buffer
-	//D3D11_BUFFER_DESC vertexBufferDesc;
-	//vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	//vertexBufferDesc.ByteWidth = sizeof(BlockVertex) * ChunkManager::GetVertices().capacity();
-	//vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	//vertexBufferDesc.CPUAccessFlags = 0;
-	//vertexBufferDesc.MiscFlags = 0;
-	//vertexBufferDesc.StructureByteStride = 0;
-
-	//hr = device->CreateBuffer(&vertexBufferDesc, nullptr, &m_vertexBuffer);
-	//VX_ASSERT(!FAILED(hr));
+	// Create the texture sampler state.
+	hr = device->CreateSamplerState(&samplerDesc, &m_samplerClamp);
+	VX_ASSERT(!FAILED(hr));
 	
 }
 
-void DefaultBlockShader::CreateShaders(ID3D11Device* device, const WCHAR* vsFilename, const WCHAR* psFilename)
+void DefaultBlockShader::CreateShaders(const WCHAR* vsFilename, const WCHAR* psFilename)
 {
+	ID3D11Device* device = D3D::GetDevice();
+
 	HRESULT hr;
 	ID3D10Blob* VSBlob;
 	ID3D10Blob* PSBlob;
@@ -240,9 +226,6 @@ void DefaultBlockShader::CreateShaders(ID3D11Device* device, const WCHAR* vsFile
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-
-		// Per-instance data
-		{ "POS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_INSTANCE_DATA, 1 }
 	};
 
 	// Create the vertex input layout.
@@ -258,12 +241,9 @@ void DefaultBlockShader::CreateShaders(ID3D11Device* device, const WCHAR* vsFile
 }
 
 
-void DefaultBlockShader::BindVertexBuffer(ID3D11DeviceContext* context, Chunk* chunk)
+void DefaultBlockShader::BindVertexBuffer(Chunk* chunk)
 {
-	//{
-	//	VX_PROFILE_SCOPE("UpdateSubresource");
-	//	context->UpdateSubresource(m_vertexBuffer, 0, nullptr, &ChunkManager::GetVertices()[0], 0, 0);
-	//}
+	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
 	ID3D11Buffer* buffers[] = { chunk->GetBuffer() };
@@ -272,8 +252,43 @@ void DefaultBlockShader::BindVertexBuffer(ID3D11DeviceContext* context, Chunk* c
 	context->IASetVertexBuffers(0, ARRAYSIZE(buffers), buffers, stride, offset);
 }
 
-void DefaultBlockShader::UpdateViewMatrix(ID3D11DeviceContext* context, DirectX::XMMATRIX viewMatrix)
+void DefaultBlockShader::BindObjects(ID3D11ShaderResourceView* const* srvs)
 {
+	ID3D11DeviceContext* context = D3D::GetDeviceContext();
+
+	// Set the back buffer and the depth buffer
+	ID3D11RenderTargetView* backBuffer = D3D::GetBackBuffer();
+	context->OMSetDepthStencilState(D3D::GetDepthStencilState(), 1);
+	context->OMSetRenderTargets(1, &backBuffer, D3D::GetDepthStencilView());
+
+	// Now set the matrix constant buffer in the vertex shader with the updated values.
+	context->VSSetConstantBuffers(0, 1, &m_matrixBuffer);
+
+	// Set the light constant buffer in the pixel shader
+	context->PSSetConstantBuffers(0, 1, &m_lightBuffer);
+
+	// Bind the block texture and shadow map
+	context->PSSetShaderResources(0, 2, srvs);
+
+	// Set the vertex input layout.
+	context->IASetInputLayout(m_inputLayout);
+
+	// Set the vertex and pixel shaders that will be used to render this triangle.
+	context->VSSetShader(m_vertexShader, NULL, 0);
+	context->PSSetShader(m_pixelShader, NULL, 0);
+
+	// Set the sampler state in the pixel shader.
+	ID3D11SamplerState* samplers[] = { m_samplerWrap, m_samplerClamp };
+	context->PSSetSamplers(0, ARRAYSIZE(samplers), samplers);
+
+	// Set the type of primitive that should be rendered from this vertex buffer, in this case triangles.
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}
+
+void DefaultBlockShader::UpdateViewMatrix(DirectX::XMMATRIX viewMatrix)
+{
+	ID3D11DeviceContext* context = D3D::GetDeviceContext();
+
 	HRESULT hr;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	MatrixBuffer* matrixBufferPtr;

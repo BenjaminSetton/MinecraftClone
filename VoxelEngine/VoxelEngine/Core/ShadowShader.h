@@ -1,59 +1,69 @@
 #ifndef _SHADOW_SHADER
 #define _SHADOW_SHADER
 
+// Includes
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include <d3dcompiler.h>
 
-#include "Chunk.h"
+#include "ChunkManager.h"
+
 
 class ShadowShader
 {
 public:
 
-	void CreateObjects(ID3D11Device* device, const WCHAR* vsFilename, const WCHAR* psFilename);
+	void CreateObjects(const WCHAR* vsFilename, const WCHAR* psFilename);
 
-	void Render(ID3D11DeviceContext* context, unsigned int indexCount, DirectX::XMMATRIX WM,
-		DirectX::XMMATRIX VM, DirectX::XMMATRIX PM, DirectX::XMFLOAT3 lightDir,
-		DirectX::XMFLOAT4 lightCol, ID3D11ShaderResourceView* srv);
+	void Initialize(DirectX::XMFLOAT3 lightDirection, DirectX::XMMATRIX OM, const uint32_t width,
+		const uint32_t height);
+
+	void Render();
 
 	void Shutdown();
 
-	void SetChunk(Chunk* const chunk);
+	void UpdateViewMatrix(DirectX::XMMATRIX viewMatrix);
+
+	ID3D11ShaderResourceView* GetShadowMap();
+
 
 private:
 
 	// pipeline vertex struct
-	struct CameraMatrixBuffer
+	struct MatrixBuffer
 	{
 		DirectX::XMMATRIX worldMatrix;
 		DirectX::XMMATRIX viewMatrix;
-		DirectX::XMMATRIX projectionMatrix;
+		DirectX::XMMATRIX orthoMatrix;
 	};
 
-	void SetShaderParameters(ID3D11DeviceContext* context, DirectX::XMMATRIX WM, DirectX::XMMATRIX VM,
-		DirectX::XMMATRIX PM, DirectX::XMFLOAT3 lightDir, DirectX::XMFLOAT4 lightCol, ID3D11ShaderResourceView* srv);
+	void CreateD3DObjects();
 
-	void CreateD3DObjects(ID3D11Device* device);
+	void CreateShaders(const WCHAR* vsFilename, const WCHAR* psFilename);
 
-	void CreateShaders(ID3D11Device* device, const WCHAR* vsFilename, const WCHAR* psFilename);
+	// Depth buffer has to be resized if window is resized
+	void CreateDepthBuffer(const uint32_t width, const uint32_t height);
+
+	void BindVertexBuffer(Chunk* chunk);
+
+	void BindObjects();
 
 private:
 
+	ID3D11Texture2D* m_shadowTex = nullptr;
+	ID3D11DepthStencilView* m_depthView = nullptr;
+	ID3D11DepthStencilState* m_depthState = nullptr;
+	ID3D11ShaderResourceView* m_shadowMapSRV = nullptr;
+
 	// D3D object definitions
-	ID3D11VertexShader* m_vertexShader;
-	ID3D11PixelShader* m_pixelShader;
+	ID3D11VertexShader* m_vertexShader = nullptr;
+	ID3D11PixelShader* m_pixelShader = nullptr;
 
-	ID3D11Buffer* m_matrixBuffer;
-	ID3D11Buffer* m_lightBuffer;
+	ID3D11Buffer* m_matrixBuffer = nullptr;
 
-	ID3D11Buffer* m_vertexBuffer;
+	ID3D11InputLayout* m_inputLayout = nullptr;
 
-	ID3D11InputLayout* m_inputLayout;
-	ID3D11SamplerState* m_sampler;
-
-	// The chunk currently being rendered
-	Chunk* m_chunk = nullptr;
+	DirectX::XMMATRIX m_ortho;
 
 };
 

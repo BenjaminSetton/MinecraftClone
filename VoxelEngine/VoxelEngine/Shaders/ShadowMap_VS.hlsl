@@ -3,7 +3,7 @@ cbuffer WVP
 {
     float4x4 worldMatrix;
     float4x4 viewMatrix;
-    float4x4 orthoMatrix;
+    float4x4 projectionMatrix;
 };
 
 struct VertexIn
@@ -16,10 +16,7 @@ struct VertexIn
 struct VertexOut
 {
     float4 pos : SV_Position;
-    float3 norm : NORMAL0;
-    float2 uv : TEXCOORD0;
 };
-
 
 VertexOut main(VertexIn input)
 {
@@ -28,10 +25,7 @@ VertexOut main(VertexIn input)
     
     output.pos = mul(outPos, worldMatrix);
     output.pos = mul(output.pos, viewMatrix);
-    output.pos = mul(output.pos, orthoMatrix);
-    
-    output.norm = mul(input.norm, (float3x3) worldMatrix);
-    output.uv = input.uv;
+    output.pos = mul(output.pos, projectionMatrix);
     
 	return output;
 }

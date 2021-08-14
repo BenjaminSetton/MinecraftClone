@@ -1,6 +1,8 @@
 
 Texture2D blockTexture;
-SamplerState samp;
+Texture2D shadowMapTexture;
+SamplerState sampWrap;
+SamplerState sampClamp;
 
 cbuffer LightBuffer
 {
@@ -22,7 +24,7 @@ float4 main(VertexOut input) : SV_TARGET
     float4 color = ambientLight;
     
     // Sample the block texture
-    float4 diffuse = blockTexture.Sample(samp, input.uv);
+    float4 diffuse = blockTexture.Sample(sampWrap, input.uv);
     
     float4 lightIntensity = saturate(dot(normalize(-lightDir), input.norm));
     
