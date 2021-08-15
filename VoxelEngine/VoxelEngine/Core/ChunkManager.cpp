@@ -167,7 +167,9 @@ void ChunkManager::Update(const DirectX::XMFLOAT3 playerPos)
 	
 
 	ImGui::Begin("Debug Panel");
-	ImGui::Text("Player Position (Chunk Space): %i, %i, %i", (int)playerPosChunkSpace.x, 0, (int)playerPosChunkSpace.z);
+	ImGui::Text("Player Position: %2.3f, %2.3f, %2.3f (%i, %i, %i)", 
+		playerPos.x, playerPos.y, playerPos.z,
+		(int)playerPosChunkSpace.x, (int)playerPosChunkSpace.y, (int)playerPosChunkSpace.z);
 	ImGui::Text("Active Chunks: %i", m_activeChunks.size());
 	ImGui::Text("Render Distance: %i", m_renderDist);
 	ImGui::End();

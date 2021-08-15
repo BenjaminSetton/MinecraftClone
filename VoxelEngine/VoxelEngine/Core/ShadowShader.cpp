@@ -27,7 +27,10 @@ void ShadowShader::Initialize(DirectX::XMFLOAT3 lightDirection, DirectX::XMMATRI
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	BlockVertex* vertexBufferPtr;
 
-	XMMATRIX viewMatrix = XMMatrixTranspose(XMMatrixLookAtLH({ 0.0f, 10.0f, 0.0f, 0.0f }, XMLoadFloat3(&lightDirection), { 0.0f, 1.0f, 0.0f, 1.0f }));
+	XMMATRIX viewMatrix = 
+		XMMatrixTranspose(
+			XMMatrixInverse(nullptr,
+				XMMatrixLookAtLH({ -4.0f, 14.0f, -10.0f, 0.0f }, XMLoadFloat3(&lightDirection), { 0.0f, 1.0f, 0.0f, 1.0f })));
 
 	m_lightViewMatrix = viewMatrix;
 	m_ortho = XMMatrixTranspose(OM);
@@ -202,7 +205,7 @@ void ShadowShader::CreateDepthBuffer(const uint32_t width, const uint32_t height
 	depthBufferDesc.Height = height;
 	depthBufferDesc.MipLevels = 1;
 	depthBufferDesc.ArraySize = 1;
-	depthBufferDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+	depthBufferDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
 	depthBufferDesc.SampleDesc.Count = 1;
 	depthBufferDesc.SampleDesc.Quality = 0;
 	depthBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -244,7 +247,7 @@ void ShadowShader::CreateDepthBuffer(const uint32_t width, const uint32_t height
 	// Initialize the depth stencil view.
 	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
 	ZeroMemory(&depthStencilViewDesc, sizeof(depthStencilViewDesc));
-	depthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	depthStencilViewDesc.Texture2D.MipSlice = 0;
 
@@ -255,7 +258,7 @@ void ShadowShader::CreateDepthBuffer(const uint32_t width, const uint32_t height
 	// Create the shadow map SRV
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 	ZeroMemory(&srvDesc, sizeof(srvDesc));
-	srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
 	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Texture2D.MipLevels = 1;
 
@@ -278,7 +281,7 @@ void ShadowShader::BindObjects()
 {
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
-	context->ClearDepthStencilView(m_depthView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	context->ClearDepthStencilView(m_depthView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	// Set the depth stencil state.
 	context->OMSetDepthStencilState(m_depthState, 1);
@@ -286,9 +289,6 @@ void ShadowShader::BindObjects()
 
 	// Now set the matrix constant buffer in the vertex shader with the updated values.
 	context->VSSetConstantBuffers(0, 1, &m_matrixBuffer);
-
-	// Bind the SRV (textures) to the pixel shader Texture2D slot
-	//context->PSSetShaderResources(0, 1, nullptr);
 
 	// Set the vertex input layout.
 	context->IASetInputLayout(m_inputLayout);

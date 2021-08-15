@@ -26,6 +26,9 @@ float4 main(VertexOut input) : SV_TARGET
     
     float bias = 0.001f;
     
+    // Sample the block texture
+    float4 diffuse = blockTexture.Sample(sampWrap, input.uv);
+    
     input.lightPos.xyz /= input.lightPos.w; // Re-homogenize the coordinates
     float2 shadowUV;
     shadowUV.x = input.lightPos.x * 0.5f + 0.5f;
@@ -35,13 +38,11 @@ float4 main(VertexOut input) : SV_TARGET
     {
         float mapDepth = shadowMapTexture.Sample(sampClamp, shadowUV).x;
         float pointDepth = input.lightPos.z - bias;
-        if (mapDepth < pointDepth) return ambientLight; // Pixel is shadowed
+        if (mapDepth < pointDepth) return ambientLight * diffuse; // Pixel is shadowed
         // else pixel is not shadowed and we calculate the pixel color
     }
     
     
-    // Sample the block texture
-    float4 diffuse = blockTexture.Sample(sampWrap, input.uv);
     
     float4 lightIntensity = saturate(dot(normalize(-lightDir), input.norm));
     

@@ -8,7 +8,7 @@
 using namespace DirectX;
 
 DebugCamera::DebugCamera() : 
-	m_movementSpeed(7.0f), m_rotationSpeed(1.0f), Camera()
+	m_movementSpeed(7.0f), m_rotationSpeed(5.0f), Camera()
 {}
 
 void DebugCamera::Update(float dt)
@@ -44,9 +44,9 @@ void DebugCamera::Update(float dt)
 	if(Input::IsMouseDown(MouseCode::LBUTTON))
 	{
 		// Rotation around the X axis (look up/down)
-		deltaRotation.m128_f32[0] = Input::GetMouseDeltaY() * dt * m_rotationSpeed;
+		deltaRotation.m128_f32[0] = Input::GetMouseDeltaY() * m_rotationSpeed * 0.001f;
 		// Rotation around the Y axis (look left/right)
-		deltaRotation.m128_f32[1] = Input::GetMouseDeltaX() * dt * m_rotationSpeed;
+		deltaRotation.m128_f32[1] = Input::GetMouseDeltaX() * m_rotationSpeed * 0.001f;
 	}
 
 
