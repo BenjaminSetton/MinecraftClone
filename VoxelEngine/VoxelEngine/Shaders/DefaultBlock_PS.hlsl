@@ -25,7 +25,7 @@ float4 main(VertexOut input) : SV_TARGET
     float4 ambientLight = { 0.15f, 0.15f, 0.15f, 1.0f };
     float4 color = ambientLight;
     
-    float bias = 0.001f;
+    float bias = 0.002f;
     
     // Sample the block texture
     float4 diffuse = blockTexture.Sample(sampWrap, input.uv);

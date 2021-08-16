@@ -15,7 +15,7 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 
 	bool initResult;
 
-	XMFLOAT3 lightDirection = { 1.0f, -1.0f, 0.0f };
+	XMFLOAT3 lightDirection = { 1.0f, -0.45f, 0.0f };
 
 	initResult = D3D::Initialize(screenWidth, screenHeight, hwnd, VSYNC_ENABLED, FULL_SCREEN, SCREEN_FAR, SCREEN_NEAR);
 	if (!initResult) return false;

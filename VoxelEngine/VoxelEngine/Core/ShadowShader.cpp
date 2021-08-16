@@ -27,9 +27,14 @@ void ShadowShader::Initialize(DirectX::XMFLOAT3 lightDirection,
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	BlockVertex* vertexBufferPtr;
 
+	XMFLOAT4 camPos = { -100.0f, 50.0f, -15.0f, 1.0f};
 	XMMATRIX viewMatrix = 
-		XMMatrixInverse(nullptr,
-			XMMatrixLookAtLH({ -4.0f, 16.0f, -10.0f, 1.0f }, XMLoadFloat3(&lightDirection), { 0.0f, 1.0f, 0.0f, 0.0f }));
+			XMMatrixLookAtLH
+			(
+				XMLoadFloat4(&camPos), 
+				{camPos.x + lightDirection.x, camPos.y + lightDirection.y, camPos.z + lightDirection.z, 1.0f},
+				{ 0.0f, 1.0f, 0.0f, 1.0f }
+			);
 
 	m_lightViewMatrix = viewMatrix;
 
@@ -314,7 +319,7 @@ void ShadowShader::UpdateViewMatrix(DirectX::XMMATRIX viewMatrix)
 	matrixBufferPtr = (MatrixBuffer*)mappedResource.pData;
 	matrixBufferPtr->worldMatrix = XMMatrixIdentity();
 	matrixBufferPtr->viewMatrix = XMMatrixTranspose(viewMatrix);
-	matrixBufferPtr->orthoMatrix = XMMatrixTranspose(D3D::GetOrthoMatrix());
+	matrixBufferPtr->orthoMatrix = XMMatrixTranspose(D3D::GetProjectionMatrix());
 
 	context->Unmap(m_matrixBuffer, 0);
 }
