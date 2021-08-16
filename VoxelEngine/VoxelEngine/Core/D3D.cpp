@@ -242,7 +242,10 @@ bool D3D::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd,
 		(float)screenWidth / screenHeight, screenNear, screenFar);
 
 	// Create an orthographic projection matrix for 2D rendering.
-	m_orthoMatrix = XMMatrixOrthographicLH(static_cast<float>(screenWidth), static_cast<float>(screenHeight), screenNear, screenFar);
+	m_orthoMatrix = XMMatrixOrthographicOffCenterLH(
+		(-screenWidth / 20.0f), (screenWidth / 20.0f), 
+		(-screenHeight / 20.0f), (screenHeight / 20.0f),
+		screenNear, screenFar);
 	
 	// Initialize the world matrix to the identity matrix.
 	m_worldMatrix = XMMatrixIdentity();

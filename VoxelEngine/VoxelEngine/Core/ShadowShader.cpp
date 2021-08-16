@@ -27,7 +27,7 @@ void ShadowShader::Initialize(DirectX::XMFLOAT3 lightDirection,
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	BlockVertex* vertexBufferPtr;
 
-	XMFLOAT4 camPos = { -100.0f, 50.0f, -15.0f, 1.0f};
+	XMFLOAT4 camPos = { -4.0f, 50.0f, -10.0f, 1.0f};
 	XMMATRIX viewMatrix = 
 			XMMatrixLookAtLH
 			(
