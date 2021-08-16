@@ -17,7 +17,7 @@ void ShadowShader::CreateObjects(const WCHAR* vsFilename, const WCHAR* psFilenam
 	CreateD3DObjects();
 }
 
-void ShadowShader::Initialize(DirectX::XMFLOAT3 lightDirection, DirectX::XMMATRIX OM,
+void ShadowShader::Initialize(DirectX::XMFLOAT3 lightDirection,
 	const uint32_t width, const uint32_t height)
 {
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
@@ -28,12 +28,10 @@ void ShadowShader::Initialize(DirectX::XMFLOAT3 lightDirection, DirectX::XMMATRI
 	BlockVertex* vertexBufferPtr;
 
 	XMMATRIX viewMatrix = 
-		XMMatrixTranspose(
-			XMMatrixInverse(nullptr,
-				XMMatrixLookAtLH({ -4.0f, 14.0f, -10.0f, 0.0f }, XMLoadFloat3(&lightDirection), { 0.0f, 1.0f, 0.0f, 1.0f })));
+		XMMatrixInverse(nullptr,
+			XMMatrixLookAtLH({ -4.0f, 16.0f, -10.0f, 1.0f }, XMLoadFloat3(&lightDirection), { 0.0f, 1.0f, 0.0f, 0.0f }));
 
 	m_lightViewMatrix = viewMatrix;
-	m_ortho = XMMatrixTranspose(OM);
 
 	CreateDepthBuffer(width, height);
 
@@ -45,8 +43,8 @@ void ShadowShader::Initialize(DirectX::XMFLOAT3 lightDirection, DirectX::XMMATRI
 	matrixBufferPtr = (MatrixBuffer*)mappedResource.pData;
 	// Copy the matrices into the constant buffer.
 	matrixBufferPtr->worldMatrix = XMMatrixIdentity();
-	matrixBufferPtr->viewMatrix = viewMatrix;
-	matrixBufferPtr->orthoMatrix = m_ortho;
+	matrixBufferPtr->viewMatrix = XMMatrixTranspose(viewMatrix);
+	matrixBufferPtr->orthoMatrix = XMMatrixTranspose(D3D::GetOrthoMatrix());
 	// Unlock the matrix constant buffer.
 	context->Unmap(m_matrixBuffer, 0);
 #pragma endregion
@@ -205,7 +203,7 @@ void ShadowShader::CreateDepthBuffer(const uint32_t width, const uint32_t height
 	depthBufferDesc.Height = height;
 	depthBufferDesc.MipLevels = 1;
 	depthBufferDesc.ArraySize = 1;
-	depthBufferDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
+	depthBufferDesc.Format = DXGI_FORMAT_R32_TYPELESS;
 	depthBufferDesc.SampleDesc.Count = 1;
 	depthBufferDesc.SampleDesc.Quality = 0;
 	depthBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -247,7 +245,7 @@ void ShadowShader::CreateDepthBuffer(const uint32_t width, const uint32_t height
 	// Initialize the depth stencil view.
 	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
 	ZeroMemory(&depthStencilViewDesc, sizeof(depthStencilViewDesc));
-	depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
 	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	depthStencilViewDesc.Texture2D.MipSlice = 0;
 
@@ -258,7 +256,7 @@ void ShadowShader::CreateDepthBuffer(const uint32_t width, const uint32_t height
 	// Create the shadow map SRV
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 	ZeroMemory(&srvDesc, sizeof(srvDesc));
-	srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+	srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
 	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Texture2D.MipLevels = 1;
 
@@ -316,7 +314,7 @@ void ShadowShader::UpdateViewMatrix(DirectX::XMMATRIX viewMatrix)
 	matrixBufferPtr = (MatrixBuffer*)mappedResource.pData;
 	matrixBufferPtr->worldMatrix = XMMatrixIdentity();
 	matrixBufferPtr->viewMatrix = XMMatrixTranspose(viewMatrix);
-	matrixBufferPtr->orthoMatrix = m_ortho;
+	matrixBufferPtr->orthoMatrix = XMMatrixTranspose(D3D::GetOrthoMatrix());
 
 	context->Unmap(m_matrixBuffer, 0);
 }

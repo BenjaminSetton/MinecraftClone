@@ -15,13 +15,13 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 
 	bool initResult;
 
-	XMFLOAT3 lightDirection = { 1.0f, -1.0f, -1.0f };
+	XMFLOAT3 lightDirection = { 1.0f, -1.0f, 0.0f };
 
 	initResult = D3D::Initialize(screenWidth, screenHeight, hwnd, VSYNC_ENABLED, FULL_SCREEN, SCREEN_FAR, SCREEN_NEAR);
 	if (!initResult) return false;
 
 	m_debugCam = new DebugCamera;
-	m_debugCam->SetPosition({-4.0f, 14.0f, -10.0f});
+	m_debugCam->SetPosition({-4.0f, 30.0f, -10.0f});
 	m_debugCam->ConstructMatrix();
 
 	// Create and initialize the texture manager
@@ -34,7 +34,7 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	// Create the shadow shader class
 	m_shadowShader = new ShadowShader;
 	m_shadowShader->CreateObjects(L"./Shaders/ShadowMap_VS.hlsl", L"./Shaders/ShadowMap_PS.hlsl");
-	m_shadowShader->Initialize(lightDirection, D3D::GetOrthoMatrix(), screenWidth, screenHeight);
+	m_shadowShader->Initialize(lightDirection, screenWidth, screenHeight);
 
 
 	// Create the chunk shader class object
@@ -48,12 +48,20 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	m_imGuiLayer = new ImGuiLayer;
 	m_imGuiLayer->Initialize(hwnd, D3D::GetDevice(), D3D::GetDeviceContext());
 
+	m_texViewer = new TextureViewer(nullptr, 5, 5, 0.25f);
+
 	return true;
 }
 
 void Graphics::Shutdown()
 {
 	ChunkManager::Shutdown();
+
+	if(m_texViewer)
+	{
+		delete m_texViewer;
+		m_texViewer = nullptr;
+	}
 
 	if(m_imGuiLayer)
 	{
@@ -124,6 +132,7 @@ bool Graphics::Frame(const float dt)
 			// Render the shadow map
 			m_shadowShader->Render();
 
+			m_texViewer->SetTexture(m_shadowShader->GetShadowMap());
 
 			ID3D11ShaderResourceView* srvs[] =
 			{
@@ -133,8 +142,12 @@ bool Graphics::Frame(const float dt)
 			// Send the chunks to the shader and render
 			m_chunkShader->UpdateViewMatrices(m_debugCam->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
 			m_chunkShader->Render(srvs);
+
+			// Render the texture viewer quad
+			m_texViewer->Render();
 		}
 	}
+
 
 
 	// End the ImGui frame

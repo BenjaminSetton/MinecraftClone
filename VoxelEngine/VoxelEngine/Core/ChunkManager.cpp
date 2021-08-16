@@ -167,7 +167,7 @@ void ChunkManager::Update(const DirectX::XMFLOAT3 playerPos)
 	
 
 	ImGui::Begin("Debug Panel");
-	ImGui::Text("Player Position: %2.3f, %2.3f, %2.3f (%i, %i, %i)", 
+	ImGui::Text("Player Position: %2.2f, %2.2f, %2.2f (%i, %i, %i)", 
 		playerPos.x, playerPos.y, playerPos.z,
 		(int)playerPosChunkSpace.x, (int)playerPosChunkSpace.y, (int)playerPosChunkSpace.z);
 	ImGui::Text("Active Chunks: %i", m_activeChunks.size());

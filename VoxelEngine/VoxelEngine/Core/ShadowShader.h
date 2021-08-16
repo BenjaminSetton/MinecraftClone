@@ -15,7 +15,7 @@ public:
 
 	void CreateObjects(const WCHAR* vsFilename, const WCHAR* psFilename);
 
-	void Initialize(DirectX::XMFLOAT3 lightDirection, DirectX::XMMATRIX OM, const uint32_t width,
+	void Initialize(DirectX::XMFLOAT3 lightDirection, const uint32_t width,
 		const uint32_t height);
 
 	void Render();
@@ -66,7 +66,6 @@ private:
 	ID3D11InputLayout* m_inputLayout = nullptr;
 
 	DirectX::XMMATRIX m_lightViewMatrix;
-	DirectX::XMMATRIX m_ortho;
 
 };
 

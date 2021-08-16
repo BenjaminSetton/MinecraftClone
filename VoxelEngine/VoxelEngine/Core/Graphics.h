@@ -10,6 +10,7 @@
 
 #include "../Core/TextureManager.h"
 #include "../Utility/ImGuiLayer.h"
+#include "TextureViewer.h"
 
 // idk why it makes me include this here..again
 #include <windows.h>
@@ -48,6 +49,8 @@ private:
 	TextureManager* m_textureManager = nullptr;
 
 	ImGuiLayer* m_imGuiLayer = nullptr;
+
+	TextureViewer* m_texViewer = nullptr;
 };
 
 #endif

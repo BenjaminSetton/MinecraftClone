@@ -3,6 +3,8 @@
 #include "Application.h"
 #include "./Events/KeyCodes.h"
 
+HWND Application::m_hwnd = HWND();
+
 // Windows procedure
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -154,6 +156,8 @@ void Application::InitializeWindows(UINT& screenWidth, UINT& screenHeight)
 	// Give the application a name.
 	m_applicationName = L"Voxel Engine";
 
+	ApplicationHandle = this;
+
 	// Setup the windows class
 	WNDCLASSEX wc;
 	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC | CS_DBLCLKS;
@@ -291,6 +295,22 @@ LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT msg, WPARAM wparam,
 	}
 	}
 
+}
+
+const uint32_t Application::GetWindowWidth()
+{
+	WINDOWINFO wi;
+	wi.cbSize = sizeof(WINDOWINFO);
+	GetWindowInfo(m_hwnd, &wi);
+	return wi.rcClient.right - wi.rcClient.left;
+}
+
+const uint32_t Application::GetWindowHeight()
+{
+	WINDOWINFO wi;
+	wi.cbSize = sizeof(WINDOWINFO);
+	GetWindowInfo(m_hwnd, &wi);
+	return wi.rcClient.bottom - wi.rcClient.top;
 }
 
 void Application::ShutdownWindows()

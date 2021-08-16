@@ -21,6 +21,7 @@ struct VertexOut
 
 float4 main(VertexOut input) : SV_TARGET
 {
+    
     float4 ambientLight = { 0.15f, 0.15f, 0.15f, 1.0f };
     float4 color = ambientLight;
     
@@ -32,12 +33,14 @@ float4 main(VertexOut input) : SV_TARGET
     input.lightPos.xyz /= input.lightPos.w; // Re-homogenize the coordinates
     float2 shadowUV;
     shadowUV.x = input.lightPos.x * 0.5f + 0.5f;
-    shadowUV.y = input.lightPos.y * 0.5f + 0.5f;
+    shadowUV.y = -input.lightPos.y * 0.5f + 0.5f;
     
     if (saturate(shadowUV.x) == shadowUV.x && saturate(shadowUV.y) == shadowUV.y) // if inside UV domain
     {
         float mapDepth = shadowMapTexture.Sample(sampClamp, shadowUV).x;
         float pointDepth = input.lightPos.z - bias;
+        
+        
         if (mapDepth < pointDepth) return ambientLight * diffuse; // Pixel is shadowed
         // else pixel is not shadowed and we calculate the pixel color
     }

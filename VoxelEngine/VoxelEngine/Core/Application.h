@@ -34,6 +34,10 @@ public:
 
 	LRESULT CALLBACK MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam);
 
+	static const uint32_t GetWindowWidth();
+
+	static const uint32_t GetWindowHeight();
+
 private:
 
 	bool Frame();
@@ -43,9 +47,10 @@ private:
 	void ShutdownWindows();
 
 
+	static HWND m_hwnd;
+
 	LPCWSTR m_applicationName;
 	HINSTANCE m_hinstance;
-	HWND m_hwnd;
 
 	Input* m_Input;
 	Graphics* m_Graphics;

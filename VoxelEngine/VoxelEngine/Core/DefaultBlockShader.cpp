@@ -29,8 +29,8 @@ void DefaultBlockShader::Initialize(XMMATRIX camViewMatrix, XMMATRIX camProjecti
 	LightBuffer* lightBufferPtr;
 	BlockVertex* vertexBufferPtr;
 
-	m_camPM = XMMatrixTranspose(camProjectionMatrix);
-	m_lightPM = XMMatrixTranspose(lightProjectionMatrix);
+	m_camPM = camProjectionMatrix;
+	m_lightPM = lightProjectionMatrix;
 
 #pragma region WVP_MATRICES
 	// Lock the matrix constant buffer so it can be written to.
@@ -41,9 +41,9 @@ void DefaultBlockShader::Initialize(XMMATRIX camViewMatrix, XMMATRIX camProjecti
 	// Copy the matrices into the constant buffer.
 	matrixBufferPtr->worldMatrix = XMMatrixIdentity();
 	matrixBufferPtr->viewMatrix = XMMatrixTranspose(camViewMatrix);
-	matrixBufferPtr->projectionMatrix = m_camPM;
+	matrixBufferPtr->projectionMatrix = XMMatrixTranspose(m_camPM);
 	matrixBufferPtr->lightViewMatrix = XMMatrixTranspose(camViewMatrix);
-	matrixBufferPtr->lightProjectionMatrix = m_lightPM;
+	matrixBufferPtr->lightProjectionMatrix = XMMatrixTranspose(m_lightPM);
 	// Unlock the matrix constant buffer.
 	context->Unmap(m_matrixBuffer, 0);
 #pragma endregion
@@ -303,9 +303,9 @@ void DefaultBlockShader::UpdateViewMatrices(DirectX::XMMATRIX viewMatrix, Direct
 	matrixBufferPtr = (MatrixBuffer*)mappedResource.pData;
 	matrixBufferPtr->worldMatrix = XMMatrixIdentity();
 	matrixBufferPtr->viewMatrix = XMMatrixTranspose(viewMatrix);
-	matrixBufferPtr->projectionMatrix = m_camPM;
-	matrixBufferPtr->lightViewMatrix = lightViewMatrix;
-	matrixBufferPtr->lightProjectionMatrix = m_lightPM;
+	matrixBufferPtr->projectionMatrix = XMMatrixTranspose(m_camPM);
+	matrixBufferPtr->lightViewMatrix = XMMatrixTranspose(lightViewMatrix);
+	matrixBufferPtr->lightProjectionMatrix = XMMatrixTranspose(m_lightPM);
 
 	context->Unmap(m_matrixBuffer, 0);
 }
