@@ -114,6 +114,9 @@
     <ClCompile Include="Core\TextureViewer.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="Core\DayNightCycle.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utility\Clock.h">
@@ -216,6 +219,9 @@
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Core\TextureViewer.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\DayNightCycle.h">
       <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>

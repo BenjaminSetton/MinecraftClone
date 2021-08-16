@@ -22,7 +22,7 @@ public:
 
 	void Shutdown();
 
-	void UpdateViewMatrix(DirectX::XMMATRIX viewMatrix);
+	void UpdateLightMatrix();
 
 	ID3D11ShaderResourceView* GetShadowMap();
 

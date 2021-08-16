@@ -3,6 +3,7 @@
 #include "D3D.h"
 
 #include "../Utility/Utility.h"
+#include "DayNightCycle.h"
 
 using namespace DirectX;
 
@@ -308,4 +309,26 @@ void DefaultBlockShader::UpdateViewMatrices(DirectX::XMMATRIX viewMatrix, Direct
 	matrixBufferPtr->lightProjectionMatrix = XMMatrixTranspose(m_lightPM);
 
 	context->Unmap(m_matrixBuffer, 0);
+}
+
+void DefaultBlockShader::UpdateLightMatrix()
+{
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	LightBuffer* lightBufferPtr;
+	ID3D11DeviceContext* context = D3D::GetDeviceContext();
+
+	XMFLOAT3 lightDir = DayNightCycle::GetLightDirection();
+	XMFLOAT4 lightColor = DayNightCycle::GetLightColor();
+
+	// Lock the matrix constant buffer so it can be written to.
+	HRESULT hr = context->Map(m_lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	VX_ASSERT(!FAILED(hr));
+	// Get a pointer to the data in the constant buffer.
+	lightBufferPtr = (LightBuffer*)mappedResource.pData;
+	// Copy the matrices into the constant buffer.
+	lightBufferPtr->lightDir = lightDir;
+	lightBufferPtr->lightCol = lightColor;
+	lightBufferPtr->padding = 0.0f;
+	// Unlock the matrix constant buffer.
+	context->Unmap(m_lightBuffer, 0);
 }

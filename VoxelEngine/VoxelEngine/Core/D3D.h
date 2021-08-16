@@ -31,10 +31,10 @@ public:
 	static ID3D11DeviceContext* GetDeviceContext();
 	static IDXGISwapChain* GetSwapChain();
 
-	static const DirectX::XMMATRIX GetWorldMatrix();
+	static DirectX::XMMATRIX GetWorldMatrix();
+	static DirectX::XMMATRIX GetProjectionMatrix();
+	static DirectX::XMMATRIX GetOrthoMatrix();
 
-	static const DirectX::XMMATRIX GetProjectionMatrix();
-	static const DirectX::XMMATRIX GetOrthoMatrix();
 	static ID3D11RenderTargetView* GetRenderTargetView();
 
 	static void GetVideoCardInfo(char*, int&);

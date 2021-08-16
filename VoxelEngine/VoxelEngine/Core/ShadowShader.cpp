@@ -3,6 +3,7 @@
 #include "../Utility/Utility.h"
 
 #include "D3D.h"
+#include "DayNightCycle.h"
 
 using namespace DirectX;
 
@@ -17,8 +18,7 @@ void ShadowShader::CreateObjects(const WCHAR* vsFilename, const WCHAR* psFilenam
 	CreateD3DObjects();
 }
 
-void ShadowShader::Initialize(DirectX::XMFLOAT3 lightDirection,
-	const uint32_t width, const uint32_t height)
+void ShadowShader::Initialize(DirectX::XMFLOAT3 lightDirection, const uint32_t width, const uint32_t height)
 {
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
@@ -304,13 +304,27 @@ void ShadowShader::BindObjects()
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
-void ShadowShader::UpdateViewMatrix(DirectX::XMMATRIX viewMatrix)
+void ShadowShader::UpdateLightMatrix()
 {
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
 	HRESULT hr;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	MatrixBuffer* matrixBufferPtr;
+
+
+	// Create the new view matrix
+	XMFLOAT3 lightDirection = DayNightCycle::GetLightDirection();
+	XMFLOAT4 camPos = { -4.0f, 50.0f, -10.0f, 1.0f };
+	XMMATRIX viewMatrix =
+		XMMatrixLookAtLH
+		(
+			XMLoadFloat4(&camPos),
+			{ camPos.x + lightDirection.x, camPos.y + lightDirection.y, camPos.z + lightDirection.z, 1.0f },
+			{ 0.0f, 1.0f, 0.0f, 1.0f }
+	);
+
+	m_lightViewMatrix = viewMatrix;
 
 	// Lock the matrix constant buffer so it can be written to.
 	hr = context->Map(m_matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
@@ -319,7 +333,7 @@ void ShadowShader::UpdateViewMatrix(DirectX::XMMATRIX viewMatrix)
 	matrixBufferPtr = (MatrixBuffer*)mappedResource.pData;
 	matrixBufferPtr->worldMatrix = XMMatrixIdentity();
 	matrixBufferPtr->viewMatrix = XMMatrixTranspose(viewMatrix);
-	matrixBufferPtr->orthoMatrix = XMMatrixTranspose(D3D::GetProjectionMatrix());
+	matrixBufferPtr->orthoMatrix = XMMatrixTranspose(D3D::GetOrthoMatrix());
 
 	context->Unmap(m_matrixBuffer, 0);
 }

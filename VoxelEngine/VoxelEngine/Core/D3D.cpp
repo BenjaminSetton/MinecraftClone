@@ -358,10 +358,10 @@ ID3D11DeviceContext* D3D::GetDeviceContext() { return m_deviceContext; }
 
 IDXGISwapChain* D3D::GetSwapChain() { return m_swapChain; }
 
-const XMMATRIX D3D::GetWorldMatrix() { return m_worldMatrix; }
+XMMATRIX D3D::GetWorldMatrix() { return m_worldMatrix; }
+XMMATRIX D3D::GetProjectionMatrix() { return m_projectionMatrix; }
+XMMATRIX D3D::GetOrthoMatrix() { return m_orthoMatrix; }
 
-const XMMATRIX D3D::GetProjectionMatrix() { return m_projectionMatrix; }
-const XMMATRIX D3D::GetOrthoMatrix() { return m_orthoMatrix; }
 ID3D11RenderTargetView* D3D::GetRenderTargetView() { return m_renderTargetView; }
 
 void D3D::GetVideoCardInfo(char* videoCardDescription, int& videoCardMemory)

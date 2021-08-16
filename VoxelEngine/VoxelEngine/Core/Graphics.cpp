@@ -102,6 +102,7 @@ void Graphics::Shutdown()
 
 bool Graphics::Frame(const float dt)
 {
+
 	// Debugging stats
 	int numChunks = 0;
 
@@ -111,23 +112,29 @@ bool Graphics::Frame(const float dt)
 	{
 		VX_PROFILE_FUNC();
 
-		// Update the debug camera's position
-		m_debugCam->Update(dt);
-
-		// Update the active chunks
-		ChunkManager::Update(m_debugCam->GetPosition());
-
 		// Check to toggle wireframe state
 		if (Input::IsKeyDown(KeyCode::E)) D3D::SetWireframeRasterState(true);
 		else if (Input::IsKeyDown(KeyCode::R)) D3D::SetWireframeRasterState(false);
 
+		// Update the debug camera's position
+		m_debugCam->Update(dt);
+
+		// Update the day/night cycle
+		DayNightCycle::Update(dt);
+
+		// Update the active chunks
+		ChunkManager::Update(m_debugCam->GetPosition());
+
+
 		// Begin the D3D scene
-
-
 		D3D::BeginScene(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
 
 		{
 			VX_PROFILE_SCOPE_MSG("Render Loop");
+
+			// Update the position and color of the light/sun
+			m_shadowShader->UpdateLightMatrix();
+			m_chunkShader->UpdateLightMatrix();
 
 			// Render the shadow map
 			m_shadowShader->Render();
@@ -146,9 +153,8 @@ bool Graphics::Frame(const float dt)
 			// Render the texture viewer quad
 			m_texViewer->Render();
 		}
+
 	}
-
-
 
 	// End the ImGui frame
 	D3D::ClearDepthBuffer(1.0f); // Clear the depth buffer so GUI draws on top of everything

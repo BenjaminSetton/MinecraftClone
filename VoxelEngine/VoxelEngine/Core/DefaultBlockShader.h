@@ -32,6 +32,8 @@ public:
 
 	void UpdateViewMatrices(DirectX::XMMATRIX camViewMatrix, DirectX::XMMATRIX lightViewMatrix);
 
+	void UpdateLightMatrix();
+
 
 private:
 
