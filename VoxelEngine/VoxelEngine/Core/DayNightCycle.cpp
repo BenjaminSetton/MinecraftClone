@@ -11,7 +11,7 @@ using namespace DirectX;
 XMFLOAT3 DayNightCycle::m_lightPos = { 0.0f, 0.0f, 0.0f };
 XMFLOAT3 DayNightCycle::m_lightDir = {-1, 0, 0 };
 XMFLOAT4 DayNightCycle::m_lightColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-float DayNightCycle::m_cycleDuration = 60.0f;
+float DayNightCycle::m_cycleDuration = 30.0f;
 DayNightCycle::Cycle DayNightCycle::m_cycle = Cycle::DAY;
 DayNightCycle::Time DayNightCycle::m_time = Time::SUNRISE;
 
@@ -31,23 +31,29 @@ float DayNightCycle::m_elapsedTime = 0.0f;
 
 void DayNightCycle::Update(const float& dt)
 {
+	static bool timeChanged = false;
+
 	m_elapsedTime += dt;
-	if (m_elapsedTime >= m_cycleDuration) m_elapsedTime -= m_cycleDuration;
+
+	// There was a change in Cycle (night->day or day->night)
+	if (m_elapsedTime >= m_cycleDuration)
+	{
+		m_elapsedTime -= m_cycleDuration;
+		m_cycle = m_cycle == Cycle::DAY ? Cycle::NIGHT : Cycle::DAY;
+		timeChanged = true;
+	}
 
 	float timePct = m_elapsedTime / m_cycleDuration; // Ranges from 0-1
 	
-	// Set the light pos
-	m_lightDir = { -cos(2.0f * XM_PI * timePct), -(sin(2.0f * XM_PI * timePct)), 0 };
+	// Set the light pos - sun rises east, sets west
+	m_lightDir = { -cos(XM_PI * timePct), -(abs(sin(XM_PI * timePct))), 0 };
 
-	float normDot = (XMVector3Dot(XMLoadFloat3(&m_lightDir), { 0.0f, 1.0f, 0.0f }).m128_f32[0]);
+	XMVECTOR dirToDot = {m_lightDir.x, -m_lightDir.y, m_lightDir.z, 1.0f};
+	float normDot = (XMVector3Dot(dirToDot, { 0.0f, 1.0f, 0.0f }).m128_f32[0]);
 
-	if(m_lightDir.y < 0) // There was a change in Cycle (night->day or day->night)
+	if(timeChanged)
 	{ 
-		m_lightDir.y *= -1.0f;
 		m_lightDir.x *= -1.0f;
-
-		// Change variables
-		m_cycle = m_cycle == Cycle::DAY ? Cycle::NIGHT : Cycle::DAY;
 		
 		if(m_cycle == Cycle::DAY)
 		{
@@ -61,12 +67,13 @@ void DayNightCycle::Update(const float& dt)
 			else if (normDot < 1.0f - SUNSET_THRESHHOLD) m_time = Time::NIGHTTIME;
 			else m_time = Time::MIDNIGHT;
 		}
+		timeChanged = false;
 	}
 
 	// Set the light color - interpolate between midnight and midday
 
-	XMFLOAT4 startColor;
-	XMFLOAT4 endColor;
+	XMFLOAT4 startColor = {};
+	XMFLOAT4 endColor = {};
 
 	// Interpolate from SUNRISE to DAYTIME
 	if(m_time == Time::SUNRISE)
@@ -98,9 +105,12 @@ void DayNightCycle::Update(const float& dt)
 
 	// IMGUI DEBUG PANEL
 	ImGui::Begin("Day/Night Cycle Debug");
-	ImGui::Text("Light Position: %2.2f, %2.2f, %2.2f", m_lightPos.x, m_lightPos.y, m_lightPos.z);
 	ImGui::Text("Light Direction: %2.2f, %2.2f, %2.2f", m_lightDir.x, m_lightDir.y, m_lightDir.z);
+	ImGui::Text("Light Position: %2.2f, %2.2f, %2.2f", m_lightPos.x, m_lightPos.y, m_lightPos.z);
 	ImGui::Text("Light Color: %2.2f, %2.2f, %2.2f, 1.0", m_lightColor.x, m_lightColor.y, m_lightColor.z);
+	const char* time = m_cycle == Cycle::DAY ? "Day" : "Night";
+	ImGui::Text("Time Elapsed: %2.3f seconds (%1.2f)", m_elapsedTime, timePct);
+	ImGui::Text(time);
 	ImGui::End();
 }
 
