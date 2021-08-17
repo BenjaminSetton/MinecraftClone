@@ -5,8 +5,6 @@
 
 #include "Events/KeyCodes.h"
 
-#include "../../imgui/imgui.h"
-
 using namespace DirectX;
 
 DebugCamera::DebugCamera() : 
@@ -79,10 +77,6 @@ void DebugCamera::Update(float dt)
 	float epsilon = 0.0025f;
 	XMVECTOR zAxis = m_worldMatrix.r[2];
 	XMVECTOR upVec = { 0.0f, 1.0f, 0.0f, 0.0f };
-
-	ImGui::Begin("Debug Camera");
-	ImGui::Text("Z Axis: %2.3f, %2.3f, %2.3f", zAxis.m128_f32[0], zAxis.m128_f32[1], zAxis.m128_f32[2]);
-	ImGui::End();
 
 
 	if(abs(zAxis.m128_f32[1]) + epsilon < 1.0f)

@@ -15,8 +15,6 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 
 	bool initResult;
 
-	XMFLOAT3 lightDirection = { 1.0f, -0.45f, 0.0f };
-
 	initResult = D3D::Initialize(screenWidth, screenHeight, hwnd, VSYNC_ENABLED, FULL_SCREEN, SCREEN_FAR, SCREEN_NEAR);
 	if (!initResult) return false;
 
@@ -34,21 +32,20 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	// Create the shadow shader class
 	m_shadowShader = new ShadowShader;
 	m_shadowShader->CreateObjects(L"./Shaders/ShadowMap_VS.hlsl", L"./Shaders/ShadowMap_PS.hlsl");
-	m_shadowShader->Initialize(lightDirection, screenWidth, screenHeight);
+	m_shadowShader->Initialize(screenWidth, screenHeight);
 
 
 	// Create the chunk shader class object
 	m_chunkShader = new DefaultBlockShader;
 	m_chunkShader->CreateObjects(L"./Shaders/DefaultBlock_VS.hlsl", L"./Shaders/DefaultBlock_PS.hlsl");
-	m_chunkShader->Initialize(m_debugCam->GetViewMatrix(), D3D::GetProjectionMatrix(), 
-		m_shadowShader->GetLightViewMatrix(), D3D::GetOrthoMatrix(), lightDirection, { 1.0f, 1.0f, 1.0f, 1.0f });
+	m_chunkShader->Initialize(m_debugCam->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
 	
 
 	// Create and initialize the ImGuiLayer
 	m_imGuiLayer = new ImGuiLayer;
 	m_imGuiLayer->Initialize(hwnd, D3D::GetDevice(), D3D::GetDeviceContext());
 
-	m_texViewer = new TextureViewer(nullptr, 5, 5, 0.25f);
+	m_texViewer = new TextureViewer(nullptr, 5, 5, 0.20f);
 
 	return true;
 }

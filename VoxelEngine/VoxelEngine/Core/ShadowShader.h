@@ -15,8 +15,7 @@ public:
 
 	void CreateObjects(const WCHAR* vsFilename, const WCHAR* psFilename);
 
-	void Initialize(DirectX::XMFLOAT3 lightDirection, const uint32_t width,
-		const uint32_t height);
+	void Initialize(const uint32_t width, const uint32_t height);
 
 	void Render();
 

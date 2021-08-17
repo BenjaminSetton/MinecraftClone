@@ -18,7 +18,7 @@ void ShadowShader::CreateObjects(const WCHAR* vsFilename, const WCHAR* psFilenam
 	CreateD3DObjects();
 }
 
-void ShadowShader::Initialize(DirectX::XMFLOAT3 lightDirection, const uint32_t width, const uint32_t height)
+void ShadowShader::Initialize(const uint32_t width, const uint32_t height)
 {
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
@@ -26,6 +26,7 @@ void ShadowShader::Initialize(DirectX::XMFLOAT3 lightDirection, const uint32_t w
 	MatrixBuffer* matrixBufferPtr;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	BlockVertex* vertexBufferPtr;
+	XMFLOAT3 lightDirection = DayNightCycle::GetLightDirection();
 
 	XMFLOAT4 camPos = { -4.0f, 50.0f, -10.0f, 1.0f};
 	XMMATRIX viewMatrix = 

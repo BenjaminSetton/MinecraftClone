@@ -22,9 +22,7 @@ public:
 
 	void CreateObjects(const WCHAR* vsFilename, const WCHAR* psFilename);
 
-	void Initialize(DirectX::XMMATRIX camViewMatrix, DirectX::XMMATRIX camprojectionMatrix, 
-		DirectX::XMMATRIX lightViewMatrix, DirectX::XMMATRIX lightProjectionMatrix,
-		DirectX::XMFLOAT3 lightDir, DirectX::XMFLOAT4 lightCol);
+	void Initialize(DirectX::XMMATRIX camViewMatrix, DirectX::XMMATRIX lightViewMatrix);
 	
 	void Render(ID3D11ShaderResourceView* const* srvs);
 

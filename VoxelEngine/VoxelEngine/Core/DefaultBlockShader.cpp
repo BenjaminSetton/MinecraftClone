@@ -18,9 +18,7 @@ void DefaultBlockShader::CreateObjects(const WCHAR* vsFilename, const WCHAR* psF
 	CreateD3DObjects();
 }
 
-void DefaultBlockShader::Initialize(XMMATRIX camViewMatrix, XMMATRIX camProjectionMatrix,
-	XMMATRIX lightViewMatrix, XMMATRIX lightProjectionMatrix,
-	XMFLOAT3 lightDir, XMFLOAT4 lightCol)
+void DefaultBlockShader::Initialize(XMMATRIX camViewMatrix, XMMATRIX lightViewMatrix)
 {
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
@@ -30,8 +28,8 @@ void DefaultBlockShader::Initialize(XMMATRIX camViewMatrix, XMMATRIX camProjecti
 	LightBuffer* lightBufferPtr;
 	BlockVertex* vertexBufferPtr;
 
-	m_camPM = camProjectionMatrix;
-	m_lightPM = lightProjectionMatrix;
+	m_camPM = D3D::GetProjectionMatrix();
+	m_lightPM = D3D::GetOrthoMatrix();
 
 #pragma region WVP_MATRICES
 	// Lock the matrix constant buffer so it can be written to.
@@ -56,8 +54,8 @@ void DefaultBlockShader::Initialize(XMMATRIX camViewMatrix, XMMATRIX camProjecti
 	// Get a pointer to the data in the constant buffer.
 	lightBufferPtr = (LightBuffer*)mappedResource.pData;
 	// Copy the matrices into the constant buffer.
-	lightBufferPtr->lightDir = lightDir;
-	lightBufferPtr->lightCol = lightCol;
+	lightBufferPtr->lightDir = DayNightCycle::GetLightDirection();
+	lightBufferPtr->lightCol = DayNightCycle::GetLightColor();
 	lightBufferPtr->padding = 0.0f;
 	// Unlock the matrix constant buffer.
 	context->Unmap(m_lightBuffer, 0);
