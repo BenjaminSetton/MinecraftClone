@@ -216,6 +216,7 @@
     <ClCompile Include="Core\DayNightCycle.cpp" />
     <ClCompile Include="Core\DebugCamera.cpp" />
     <ClCompile Include="Core\DefaultBlockShader.cpp" />
+    <ClCompile Include="Core\DirectionalLight.cpp" />
     <ClCompile Include="Core\Graphics.cpp" />
     <ClCompile Include="Core\main.cpp" />
     <ClCompile Include="Core\ShadowShader.cpp" />
@@ -254,6 +255,7 @@
     <ClInclude Include="Core\DayNightCycle.h" />
     <ClInclude Include="Core\DebugCamera.h" />
     <ClInclude Include="Core\DefaultBlockShader.h" />
+    <ClInclude Include="Core\DirectionalLight.h" />
     <ClInclude Include="Core\Events\Event.h" />
     <ClInclude Include="Core\Events\IEvent.h" />
     <ClInclude Include="Core\Events\KeyboardEvent.h" />

@@ -2,10 +2,18 @@
 #define _DAY_NIGHT_CYCLE_H
 
 #include <DirectXMath.h>
+#include "DirectionalLight.h"
 
 class DayNightCycle
 {
 public:
+
+	enum class CelestialBody
+	{
+		SUN = 0,
+		MOON
+	};
+
 	enum class Cycle
 	{
 		DAY,
@@ -26,25 +34,37 @@ public:
 
 	static const Cycle GetCycle();
 	static const Time GetTime();
-	static const DirectX::XMFLOAT3 GetLightPosition();
-	static const DirectX::XMFLOAT3 GetLightDirection();
-	static const DirectX::XMFLOAT4 GetLightColor();
+	static const DirectX::XMFLOAT3 GetLightPosition(const CelestialBody body);
+	static const DirectX::XMFLOAT3 GetLightDirection(const CelestialBody body);
+	static const DirectX::XMFLOAT4 GetLightColor(const CelestialBody body);
+	static const float GetLightAmbient(const CelestialBody body);
 
 private:
 
-	static DirectX::XMFLOAT3 m_lightPos;
-	static DirectX::XMFLOAT3 m_lightDir;
-	static DirectX::XMFLOAT4 m_lightColor;
+	static DirectX::XMFLOAT3 m_sunPos;
+	static DirectX::XMFLOAT3 m_moonPos;
+	static float m_sunAmbient;
+	static float m_moonAmbient;
+
+	static DirectionalLight m_sun;
+	static DirectionalLight m_moon;
+
 	static float m_cycleDuration;
 	static Cycle m_cycle;
 	static Time m_time;
 
 	// For internal use only
 	static float m_elapsedTime;
-	static DirectX::XMFLOAT4 m_sunriseColor;
-	static DirectX::XMFLOAT4 m_middayColor;
-	static DirectX::XMFLOAT4 m_sunsetColor;
-	static DirectX::XMFLOAT4 m_midnightColor;
+
+	// Sun colors
+	static DirectX::XMFLOAT4 m_sSunriseColor;
+	static DirectX::XMFLOAT4 m_sMiddayColor;
+	static DirectX::XMFLOAT4 m_sSunsetColor;
+
+	// Moon colors
+	static DirectX::XMFLOAT4 m_mSunsetColor;
+	static DirectX::XMFLOAT4 m_mMidnightColor;
+	static DirectX::XMFLOAT4 m_mSunriseColor;
 };
 
 #endif
