@@ -43,28 +43,15 @@ private:
 
 	static DirectX::XMFLOAT3 m_sunPos;
 	static DirectX::XMFLOAT3 m_moonPos;
-	static float m_sunAmbient;
-	static float m_moonAmbient;
 
 	static DirectionalLight m_sun;
 	static DirectionalLight m_moon;
 
-	static float m_cycleDuration;
 	static Cycle m_cycle;
 	static Time m_time;
 
 	// For internal use only
 	static float m_elapsedTime;
-
-	// Sun colors
-	static DirectX::XMFLOAT4 m_sSunriseColor;
-	static DirectX::XMFLOAT4 m_sMiddayColor;
-	static DirectX::XMFLOAT4 m_sSunsetColor;
-
-	// Moon colors
-	static DirectX::XMFLOAT4 m_mSunsetColor;
-	static DirectX::XMFLOAT4 m_mMidnightColor;
-	static DirectX::XMFLOAT4 m_mSunriseColor;
 };
 
 #endif
