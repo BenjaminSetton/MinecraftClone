@@ -47,9 +47,9 @@ private:
 
 	struct LightBuffer
 	{
-		DirectX::XMFLOAT3 lightDir;
-		DirectX::XMFLOAT4 lightCol;
-		float padding;
+		DirectX::XMFLOAT3 lightDir[2];
+		DirectX::XMFLOAT4 lightCol[2];
+		float lightAmbient[2];
 	};
 
 

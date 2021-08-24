@@ -54,9 +54,12 @@ void DefaultBlockShader::Initialize(XMMATRIX camViewMatrix, XMMATRIX lightViewMa
 	// Get a pointer to the data in the constant buffer.
 	lightBufferPtr = (LightBuffer*)mappedResource.pData;
 	// Copy the matrices into the constant buffer.
-	lightBufferPtr->lightDir = DayNightCycle::GetLightDirection();
-	lightBufferPtr->lightCol = DayNightCycle::GetLightColor();
-	lightBufferPtr->padding = 0.0f;
+	lightBufferPtr->lightDir[0] = DayNightCycle::GetLightDirection(DayNightCycle::CelestialBody::SUN);
+	lightBufferPtr->lightDir[1] = DayNightCycle::GetLightDirection(DayNightCycle::CelestialBody::MOON);
+	lightBufferPtr->lightCol[0] = DayNightCycle::GetLightColor(DayNightCycle::CelestialBody::SUN);
+	lightBufferPtr->lightCol[1] = DayNightCycle::GetLightColor(DayNightCycle::CelestialBody::MOON);
+	lightBufferPtr->lightAmbient[0] = DayNightCycle::GetLightAmbient(DayNightCycle::CelestialBody::SUN);
+	lightBufferPtr->lightAmbient[1] = DayNightCycle::GetLightAmbient(DayNightCycle::CelestialBody::MOON);
 	// Unlock the matrix constant buffer.
 	context->Unmap(m_lightBuffer, 0);
 #pragma endregion
@@ -165,7 +168,7 @@ void DefaultBlockShader::CreateD3DObjects()
 	lightBufferDesc.MiscFlags = 0;
 	lightBufferDesc.StructureByteStride = 0;
 
-	// Create the matrix constant buffer pointer so we can access the vertex shader constant buffer from within this class.
+	// Create the light constant buffer pointer so we can access the vertex shader constant buffer from within this class.
 	hr = device->CreateBuffer(&lightBufferDesc, NULL, &m_lightBuffer);
 	VX_ASSERT(!FAILED(hr));
 
@@ -315,8 +318,8 @@ void DefaultBlockShader::UpdateLightMatrix()
 	LightBuffer* lightBufferPtr;
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
-	XMFLOAT3 lightDir = DayNightCycle::GetLightDirection();
-	XMFLOAT4 lightColor = DayNightCycle::GetLightColor();
+	XMFLOAT3 lightDir = DayNightCycle::GetLightDirection(DayNightCycle::CelestialBody::SUN);
+	XMFLOAT4 lightColor = DayNightCycle::GetLightColor(DayNightCycle::CelestialBody::SUN);
 
 	// Lock the matrix constant buffer so it can be written to.
 	HRESULT hr = context->Map(m_lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
@@ -324,9 +327,12 @@ void DefaultBlockShader::UpdateLightMatrix()
 	// Get a pointer to the data in the constant buffer.
 	lightBufferPtr = (LightBuffer*)mappedResource.pData;
 	// Copy the matrices into the constant buffer.
-	lightBufferPtr->lightDir = lightDir;
-	lightBufferPtr->lightCol = lightColor;
-	lightBufferPtr->padding = 0.0f;
+	lightBufferPtr->lightDir[0] = DayNightCycle::GetLightDirection(DayNightCycle::CelestialBody::SUN);
+	lightBufferPtr->lightDir[1] = DayNightCycle::GetLightDirection(DayNightCycle::CelestialBody::MOON);
+	lightBufferPtr->lightCol[0] = DayNightCycle::GetLightColor(DayNightCycle::CelestialBody::SUN);
+	lightBufferPtr->lightCol[1] = DayNightCycle::GetLightColor(DayNightCycle::CelestialBody::MOON);
+	lightBufferPtr->lightAmbient[0] = DayNightCycle::GetLightAmbient(DayNightCycle::CelestialBody::SUN);
+	lightBufferPtr->lightAmbient[1] = DayNightCycle::GetLightAmbient(DayNightCycle::CelestialBody::MOON);
 	// Unlock the matrix constant buffer.
 	context->Unmap(m_lightBuffer, 0);
 }

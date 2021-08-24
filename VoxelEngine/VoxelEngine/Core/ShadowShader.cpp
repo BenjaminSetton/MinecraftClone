@@ -26,7 +26,7 @@ void ShadowShader::Initialize(const uint32_t width, const uint32_t height)
 	MatrixBuffer* matrixBufferPtr;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	BlockVertex* vertexBufferPtr;
-	XMFLOAT3 lightDirection = DayNightCycle::GetLightDirection();
+	XMFLOAT3 lightDirection = DayNightCycle::GetLightDirection(DayNightCycle::CelestialBody::SUN);
 
 	XMFLOAT4 camPos = { -4.0f, 50.0f, -10.0f, 1.0f};
 	XMMATRIX viewMatrix = 
@@ -315,7 +315,7 @@ void ShadowShader::UpdateLightMatrix()
 
 
 	// Create the new view matrix
-	XMFLOAT3 lightDirection = DayNightCycle::GetLightDirection();
+	XMFLOAT3 lightDirection = DayNightCycle::GetLightDirection(DayNightCycle::CelestialBody::SUN);
 	XMFLOAT4 camPos = { -4.0f, 50.0f, -10.0f, 1.0f };
 	XMMATRIX viewMatrix =
 		XMMatrixLookAtLH
