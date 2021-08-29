@@ -54,12 +54,14 @@ void DefaultBlockShader::Initialize(XMMATRIX camViewMatrix, XMMATRIX lightViewMa
 	// Get a pointer to the data in the constant buffer.
 	lightBufferPtr = (LightBuffer*)mappedResource.pData;
 	// Copy the matrices into the constant buffer.
-	lightBufferPtr->lightDir[0] = DayNightCycle::GetLightDirection(DayNightCycle::CelestialBody::SUN);
-	lightBufferPtr->lightDir[1] = DayNightCycle::GetLightDirection(DayNightCycle::CelestialBody::MOON);
+	XMFLOAT3 sunDir = DayNightCycle::GetLightDirection(DayNightCycle::CelestialBody::SUN);
+	lightBufferPtr->lightDir[0] = { sunDir.x, sunDir.y, sunDir.z, 0.0f };
+	XMFLOAT3 moonDir = DayNightCycle::GetLightDirection(DayNightCycle::CelestialBody::MOON);
+	lightBufferPtr->lightDir[1] = { moonDir.x, moonDir.y, moonDir.z, 0.0f };
 	lightBufferPtr->lightCol[0] = DayNightCycle::GetLightColor(DayNightCycle::CelestialBody::SUN);
 	lightBufferPtr->lightCol[1] = DayNightCycle::GetLightColor(DayNightCycle::CelestialBody::MOON);
-	lightBufferPtr->lightAmbient[0] = DayNightCycle::GetLightAmbient(DayNightCycle::CelestialBody::SUN);
-	lightBufferPtr->lightAmbient[1] = DayNightCycle::GetLightAmbient(DayNightCycle::CelestialBody::MOON);
+	lightBufferPtr->lightAmbient[0].x = DayNightCycle::GetLightAmbient(DayNightCycle::CelestialBody::SUN);
+	lightBufferPtr->lightAmbient[1].x = DayNightCycle::GetLightAmbient(DayNightCycle::CelestialBody::MOON);
 	// Unlock the matrix constant buffer.
 	context->Unmap(m_lightBuffer, 0);
 #pragma endregion
@@ -327,12 +329,14 @@ void DefaultBlockShader::UpdateLightMatrix()
 	// Get a pointer to the data in the constant buffer.
 	lightBufferPtr = (LightBuffer*)mappedResource.pData;
 	// Copy the matrices into the constant buffer.
-	lightBufferPtr->lightDir[0] = DayNightCycle::GetLightDirection(DayNightCycle::CelestialBody::SUN);
-	lightBufferPtr->lightDir[1] = DayNightCycle::GetLightDirection(DayNightCycle::CelestialBody::MOON);
+	XMFLOAT3 sunDir = DayNightCycle::GetLightDirection(DayNightCycle::CelestialBody::SUN);
+	lightBufferPtr->lightDir[0] = { sunDir.x, sunDir.y, sunDir.z, 0.0f };
+	XMFLOAT3 moonDir = DayNightCycle::GetLightDirection(DayNightCycle::CelestialBody::MOON);
+	lightBufferPtr->lightDir[1] = { moonDir.x, moonDir.y, moonDir.z, 0.0f };
 	lightBufferPtr->lightCol[0] = DayNightCycle::GetLightColor(DayNightCycle::CelestialBody::SUN);
 	lightBufferPtr->lightCol[1] = DayNightCycle::GetLightColor(DayNightCycle::CelestialBody::MOON);
-	lightBufferPtr->lightAmbient[0] = DayNightCycle::GetLightAmbient(DayNightCycle::CelestialBody::SUN);
-	lightBufferPtr->lightAmbient[1] = DayNightCycle::GetLightAmbient(DayNightCycle::CelestialBody::MOON);
+	lightBufferPtr->lightAmbient[0].x = DayNightCycle::GetLightAmbient(DayNightCycle::CelestialBody::SUN);
+	lightBufferPtr->lightAmbient[1].x = DayNightCycle::GetLightAmbient(DayNightCycle::CelestialBody::MOON);
 	// Unlock the matrix constant buffer.
 	context->Unmap(m_lightBuffer, 0);
 }

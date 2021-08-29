@@ -10,7 +10,7 @@ constexpr float BODY_POS_SCALE = 50.0f;
 
 // Sun colors
 constexpr DirectX::XMFLOAT4 ce_sSunriseColor = { 1.0f, 0.549f, 0.0f, 1.0f };
-constexpr DirectX::XMFLOAT4 ce_sMiddayColor = { 0.991f, 0.913f, 0.76f, 1.0f};
+constexpr DirectX::XMFLOAT4 ce_sMiddayColor = { 0.991f, 0.913f, 0.89f, 1.0f};
 constexpr DirectX::XMFLOAT4 ce_sSunsetColor = { 0.992f, 0.369f, 0.325f, 1.0f };
 
 // Moon colors
@@ -19,7 +19,7 @@ constexpr DirectX::XMFLOAT4 ce_mMidnightColor = { 0.082f, 0.157f, 0.322f, 1.0f }
 constexpr DirectX::XMFLOAT4 ce_mSunriseColor = { 0.169f, 0.189f, 0.387f, 1.0f };
 
 // Ambient values
-constexpr float ce_sunAmbient = 0.15f;
+constexpr float ce_sunAmbient = 0.2f;
 constexpr float ce_moonAmbient = 0.07f;
 
 constexpr float ce_cycleDuration = 30.0f;
@@ -54,8 +54,8 @@ void DayNightCycle::Update(const float& dt)
 	float timePct = m_elapsedTime / ce_cycleDuration; // Ranges from 0-1
 	
 	// Set the light dir - sun rises east, sets west
-	XMFLOAT3 sunDir = { -cos(XM_PI * timePct), -(abs(sin(XM_PI * timePct))), 0 };
-	XMFLOAT3 moonDir = { -sunDir.x, -sunDir.y, sunDir.z };
+	XMFLOAT3 sunDir = { -cos(XM_PI * timePct), -(abs(sin(XM_PI * timePct))), 0.3f };
+	XMFLOAT3 moonDir = { -sunDir.x, -sunDir.y, -sunDir.z };
 
 	// Set the light directions
 	m_sun.SetDirection(sunDir);
@@ -65,8 +65,8 @@ void DayNightCycle::Update(const float& dt)
 	m_sunPos = { sunDir.x * BODY_POS_SCALE, sunDir.y * BODY_POS_SCALE, sunDir.z * BODY_POS_SCALE };
 	m_moonPos = { -moonDir.x * BODY_POS_SCALE, -moonDir.y * BODY_POS_SCALE, moonDir.z * BODY_POS_SCALE };
 
-	XMVECTOR dirToDot = {sunDir.x, abs(sunDir.y), sunDir.z, 1.0f};
-	float normDot = (XMVector3Dot(dirToDot, { 0.0f, 1.0f, 0.0f }).m128_f32[0]);
+	XMVECTOR dirToDot = { sunDir.x, abs(sunDir.y) };
+	float normDot = (XMVector2Dot(dirToDot, { 0.0f, 1.0f }).m128_f32[0]);
 
 	if(timeChanged)
 	{
@@ -95,6 +95,8 @@ void DayNightCycle::Update(const float& dt)
 
 	XMFLOAT4 blackCol = { 0.0f, 0.0f, 0.0f, 1.0f };
 
+
+	int conversionPower = 5;
 	switch (m_time)
 	{
 
@@ -104,8 +106,7 @@ void DayNightCycle::Update(const float& dt)
 		endSunColor = ce_sMiddayColor;
 
 		XMFLOAT4 sunCol;
-		//XMFLOAT4 moonCol;
-		DirectX::XMStoreFloat4(&sunCol, XMVectorLerp(XMLoadFloat4(&startSunColor), XMLoadFloat4(&endSunColor), normDot));
+		DirectX::XMStoreFloat4(&sunCol, XMVectorLerp(XMLoadFloat4(&startSunColor), XMLoadFloat4(&endSunColor), powf(normDot, 1.0f / conversionPower)));
 		m_sun.SetColor(sunCol);
 		m_moon.SetColor(blackCol);
 		
@@ -117,7 +118,7 @@ void DayNightCycle::Update(const float& dt)
 		endSunColor = ce_sMiddayColor;
 
 		XMFLOAT4 sunCol;
-		XMStoreFloat4(&sunCol, XMVectorLerp(XMLoadFloat4(&startSunColor), XMLoadFloat4(&endSunColor), normDot));
+		XMStoreFloat4(&sunCol, XMVectorLerp(XMLoadFloat4(&startSunColor), XMLoadFloat4(&endSunColor), powf(normDot, conversionPower)));
 		m_sun.SetColor(sunCol);
 		m_moon.SetColor(blackCol);
 

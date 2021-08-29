@@ -6,9 +6,9 @@ SamplerState sampClamp;
 
 cbuffer LightBuffer
 {
-    float3 lightDir[2];
+    float4 lightDir[2];
     float4 lightCol[2];
-    float lightAmbient[2];
+    float4 lightAmbient[2];
 };
 
 struct VertexOut
@@ -21,14 +21,15 @@ struct VertexOut
 
 float4 main(VertexOut input) : SV_TARGET
 {
-    float4 color = { 0.0f, 0.0f, 0.0f, 1.0f };
     
-    float4 shadowFactor = { 0.15f, 0.15f, 0.15f, 1.0f };
+    float4 diffuseAmbient = { 0.10f, 0.10f, 0.10f, 1.0f };
     
     float bias = 0.001f;
     
     // Sample the block texture
     float4 diffuse = blockTexture.Sample(sampWrap, input.uv);
+    
+    float4 finalColor = diffuse * diffuseAmbient;
     
     input.lightPos.xyz /= input.lightPos.w; // Re-homogenize the coordinates
     float2 shadowUV;
@@ -41,23 +42,24 @@ float4 main(VertexOut input) : SV_TARGET
         float pointDepth = input.lightPos.z - bias;
         
         
-        if (mapDepth < pointDepth) return shadowFactor * diffuse; // Pixel is shadowed
+        if (mapDepth < pointDepth) return finalColor; // Pixel is shadowed
         // else pixel is not shadowed and we calculate the pixel color
     }
+    
     
     // Calculate the light's intensity
     [unroll]
     for (int i = 0; i < 2; i++)
     {
-        float4 lightIntensity = saturate(dot(normalize(-lightDir[i]), input.norm));
-        //lightIntensity = max(0.45f, lightIntensity);
+        float4 lightIntensity = saturate(dot(normalize(-lightDir[i].xyz), input.norm));
     
         // Calculate the final color
-        color += lightCol[i] * lightIntensity;
+        float4 lightContribution = lightCol[i] * lightIntensity + lightAmbient[i].x;
+        finalColor += lightContribution;
         
     }
     
-    color *= diffuse;
+    finalColor *= diffuse;
     
-    return color;
+    return finalColor;
 }
