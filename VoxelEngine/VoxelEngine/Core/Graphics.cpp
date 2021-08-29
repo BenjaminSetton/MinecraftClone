@@ -134,7 +134,7 @@ bool Graphics::Frame(const float dt)
 			m_chunkShader->UpdateLightMatrix();
 
 			// Render the shadow map
-			m_shadowShader->Render();
+			//m_shadowShader->Render();
 
 			m_texViewer->SetTexture(m_shadowShader->GetShadowMap());
 
