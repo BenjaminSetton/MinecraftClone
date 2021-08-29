@@ -140,7 +140,7 @@ bool Graphics::Frame(const float dt)
 
 			ID3D11ShaderResourceView* srvs[] =
 			{
-				m_textureManager->GetTexture(std::string("SEAFLOOR_TEX")),
+				m_textureManager->GetTexture(std::string("TEXTUREATLAS_TEX")),
 				m_shadowShader->GetShadowMap()
 			};
 			// Send the chunks to the shader and render

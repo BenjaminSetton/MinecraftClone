@@ -9,7 +9,7 @@ void TextureManager::Init(ID3D11Device* device)
 	HRESULT hr;
 	// TODO: Initialize all textures and add them to the map
 	ID3D11ShaderResourceView* seafloorTex = nullptr;
-	CreateTextureAndAddToMap(device, L"./Assets/Textures/seafloor.dds", seafloorTex, std::string("SEAFLOOR_TEX"));
+	CreateTextureAndAddToMap(device, L"./Assets/Textures/VETextureAtlas.dds", seafloorTex, std::string("TEXTUREATLAS_TEX"));
 	
 }
 

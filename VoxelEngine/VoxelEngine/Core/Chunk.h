@@ -41,7 +41,8 @@ private:
 
 private:
 
-	void AppendBlockFaceToArray(const BlockFace face, uint32_t& index, const DirectX::XMFLOAT3& blockPos, BlockVertex* blockArray);
+	void AppendBlockFaceToArray(const BlockFace& face, const BlockType& type, uint32_t& index, const DirectX::XMFLOAT3& blockPos, 
+		BlockVertex* blockArray);
 
 	void ResetFaces();
 

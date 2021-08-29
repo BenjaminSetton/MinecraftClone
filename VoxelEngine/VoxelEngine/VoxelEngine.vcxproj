@@ -248,6 +248,7 @@
     <ClInclude Include="..\imgui\imstb_truetype.h" />
     <ClInclude Include="Core\Application.h" />
     <ClInclude Include="Core\Block.h" />
+    <ClInclude Include="Core\BlockUVs.h" />
     <ClInclude Include="Core\Camera.h" />
     <ClInclude Include="Core\Chunk.h" />
     <ClInclude Include="Core\ChunkManager.h" />
