@@ -11,4 +11,6 @@
 // My file includes
 #include "../Utility/Clock.h"
 #include "../Utility/ScopeTimer.h"
+#include "../Core/BlockUVs.h"
+#include "../Utility/DebugRenderer.h"
 

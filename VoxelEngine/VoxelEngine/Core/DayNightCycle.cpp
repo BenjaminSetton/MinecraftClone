@@ -3,6 +3,7 @@
 #include "../Utility/Utility.h"
 
 #include "../../imgui/imgui.h"
+#include "../Utility/DebugRenderer.h"
 
 constexpr float SUNRISE_THRESHHOLD = 0.1f;
 constexpr float SUNSET_THRESHHOLD = 0.1f;
@@ -46,28 +47,13 @@ DayNightCycle::Cycle DayNightCycle::m_cycle = Cycle::DAY;
 DayNightCycle::Time DayNightCycle::m_time = Time::SUNRISE;
 
 float DayNightCycle::m_elapsedTime = 0.0f;
-float DayNightCycle::m_inflexionTime = 0.0f;
 
 
 void DayNightCycle::Update(const float& dt)
 {
-	//static float timePct = 0.0f;
-	bool inflexionHappened = false;
-
 	ImGui::Begin("Day/Night Cycle Debug");
 
-	//ImGui::SliderFloat("TimePct", &timePct, 0.0f, 2.0f, "%2.2f", 1.0f);
-
 	m_elapsedTime += dt;
-	m_inflexionTime += dt;
-
-	// There was a change in Cycle (night->day or day->night)
-
-	if(m_inflexionTime >= 0.5f)
-	{
-		inflexionHappened = true;
-		m_inflexionTime -= 0.5f;
-	}
 
 	if(m_elapsedTime >= ce_cycleDuration * 2.0f)
 	{
@@ -131,6 +117,7 @@ void DayNightCycle::Update(const float& dt)
 
 
 	// IMGUI DEBUG PANEL
+#pragma region _IMGUI_DEBUG
 	XMFLOAT4 sunColor = m_sun.GetColor();
 	XMFLOAT4 moonColor = m_moon.GetColor();
 
@@ -144,9 +131,7 @@ void DayNightCycle::Update(const float& dt)
 
 	ImGui::Text("Moon Color "); ImGui::SameLine();
 	ImGui::ColorButton("Moon Color", { moonColor.x, moonColor.y, moonColor.z, 1.0f }, ImGuiColorEditFlags_NoAlpha);
-
-	ImGui::Text("NormDot: %2.2f", normDot);
-	ImGui::Text("LerpRatio: %2.2f", lerpRatio);
+	
 	ImGui::Text("Time Elapsed: %2.3f seconds (%1.2f)", m_elapsedTime, timePct * 100.0f);
 	const char* cycle = m_cycle == Cycle::DAY ? "Day" : "Night";
 	ImGui::Text(cycle);
@@ -174,6 +159,21 @@ void DayNightCycle::Update(const float& dt)
 	}
 	ImGui::Text(time);
 	ImGui::End();
+#pragma endregion
+
+#pragma region _DEBUG_RENDERER
+
+	XMFLOAT3 startPos = { -4.0f, 16.0f, 0.0f };
+	float lineLength = 5.0f;
+	DebugLine::AddLine(startPos, {startPos.x + (sunDir.x * lineLength), 
+		startPos.y + (sunDir.y * lineLength), startPos.z + (sunDir.z * lineLength) },
+		{1.0f, 0.0f, 0.0f, 1.0f});
+
+	DebugLine::AddLine(startPos, {startPos.x + (moonDir.x * lineLength), 
+	startPos.y + (moonDir.y * lineLength), startPos.z + (moonDir.z * lineLength) },
+	{0.0f, 0.0f, 1.0f, 1.0f});
+
+#pragma endregion
 
 }
 

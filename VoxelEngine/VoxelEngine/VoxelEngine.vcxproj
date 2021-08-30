@@ -215,6 +215,7 @@
     <ClCompile Include="Core\D3D.cpp" />
     <ClCompile Include="Core\DayNightCycle.cpp" />
     <ClCompile Include="Core\DebugCamera.cpp" />
+    <ClCompile Include="Core\DebugRendererShader.cpp" />
     <ClCompile Include="Core\DefaultBlockShader.cpp" />
     <ClCompile Include="Core\DirectionalLight.cpp" />
     <ClCompile Include="Core\Graphics.cpp" />
@@ -231,6 +232,7 @@
       </PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Utility\Clock.cpp" />
+    <ClCompile Include="Utility\DebugRenderer.cpp" />
     <ClCompile Include="Utility\ImGuiLayer.cpp" />
     <ClCompile Include="Utility\Input.cpp" />
     <ClCompile Include="Utility\Log.cpp" />
@@ -255,6 +257,7 @@
     <ClInclude Include="Core\D3D.h" />
     <ClInclude Include="Core\DayNightCycle.h" />
     <ClInclude Include="Core\DebugCamera.h" />
+    <ClInclude Include="Core\DebugRendererShader.h" />
     <ClInclude Include="Core\DefaultBlockShader.h" />
     <ClInclude Include="Core\DirectionalLight.h" />
     <ClInclude Include="Core\Events\Event.h" />
@@ -269,6 +272,7 @@
     <ClInclude Include="Misc\pch.h" />
     <ClInclude Include="Utility\Clock.h" />
     <ClInclude Include="Utility\DDSTextureLoader.h" />
+    <ClInclude Include="Utility\DebugRenderer.h" />
     <ClInclude Include="Utility\ImGuiLayer.h" />
     <ClInclude Include="Utility\Input.h" />
     <ClInclude Include="Utility\Log.h" />
@@ -277,6 +281,22 @@
     <ClInclude Include="Utility\Utility.h" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Shaders\DebugRenderer_PS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\DebugRenderer_VS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.0</ShaderModel>
+    </FxCompile>
     <FxCompile Include="Shaders\DefaultBlock_PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>

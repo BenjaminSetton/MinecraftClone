@@ -52,7 +52,6 @@ private:
 
 	// For internal use only
 	static float m_elapsedTime;
-	static float m_inflexionTime;
 };
 
 #endif

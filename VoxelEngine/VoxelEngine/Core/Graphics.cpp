@@ -39,6 +39,11 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	m_chunkShader = new DefaultBlockShader;
 	m_chunkShader->CreateObjects(L"./Shaders/DefaultBlock_VS.hlsl", L"./Shaders/DefaultBlock_PS.hlsl");
 	m_chunkShader->Initialize(m_debugCam->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
+
+	// Create the debug renderer class object
+	m_debugShader = new DebugRendererShader;
+	m_debugShader->CreateObjects(L"./Shaders/DebugRenderer_VS.hlsl", L"./Shaders/DebugRenderer_PS.hlsl");
+	m_debugShader->Initialize(m_debugCam->GetViewMatrix());
 	
 
 	// Create and initialize the ImGuiLayer
@@ -65,6 +70,13 @@ void Graphics::Shutdown()
 		m_imGuiLayer->Shutdown();
 		delete m_imGuiLayer;
 		m_imGuiLayer = nullptr;
+	}
+
+	if(m_debugShader)
+	{
+		m_debugShader->Shutdown();
+		delete m_debugShader;
+		m_debugShader = nullptr;
 	}
 
 	if(m_shadowShader)
@@ -99,7 +111,6 @@ void Graphics::Shutdown()
 
 bool Graphics::Frame(const float dt)
 {
-
 	// Debugging stats
 	int numChunks = 0;
 
@@ -134,7 +145,7 @@ bool Graphics::Frame(const float dt)
 			m_chunkShader->UpdateLightMatrix();
 
 			// Render the shadow map
-			//m_shadowShader->Render();
+			m_shadowShader->Render();
 
 			m_texViewer->SetTexture(m_shadowShader->GetShadowMap());
 
@@ -146,6 +157,10 @@ bool Graphics::Frame(const float dt)
 			// Send the chunks to the shader and render
 			m_chunkShader->UpdateViewMatrices(m_debugCam->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
 			m_chunkShader->Render(srvs);
+
+			// Render all debug lines and spheres
+			m_debugShader->UpdateViewMatrix(m_debugCam->GetViewMatrix());
+			m_debugShader->Render();
 
 			// Render the texture viewer quad
 			m_texViewer->Render();

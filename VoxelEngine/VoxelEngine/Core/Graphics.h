@@ -7,6 +7,7 @@
 
 #include "DefaultBlockShader.h"
 #include "ShadowShader.h"
+#include "DebugRendererShader.h"
 
 #include "../Core/TextureManager.h"
 #include "../Utility/ImGuiLayer.h"
@@ -47,6 +48,7 @@ private:
 
 	DefaultBlockShader* m_chunkShader = nullptr;
 	ShadowShader* m_shadowShader = nullptr;
+	DebugRendererShader* m_debugShader = nullptr;
 
 	TextureManager* m_textureManager = nullptr;
 

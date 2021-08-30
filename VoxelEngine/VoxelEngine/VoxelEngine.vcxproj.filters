@@ -120,6 +120,12 @@
     <ClCompile Include="Core\DirectionalLight.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="Core\DebugRendererShader.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility\DebugRenderer.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utility\Clock.h">
@@ -233,6 +239,12 @@
     <ClInclude Include="Core\BlockUVs.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="Core\DebugRendererShader.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\DebugRenderer.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\DefaultBlock_VS.hlsl">
@@ -251,6 +263,12 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\TextureViewer_PS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\DebugRenderer_VS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\DebugRenderer_PS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
