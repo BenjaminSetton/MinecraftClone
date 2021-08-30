@@ -10,14 +10,21 @@ constexpr float SUNSET_THRESHHOLD = 0.1f;
 constexpr float BODY_POS_SCALE = 50.0f;
 
 // Sun colors
-constexpr DirectX::XMFLOAT4 ce_sSunriseColor = { 1.0f, 0.549f, 0.0f, 1.0f };
-constexpr DirectX::XMFLOAT4 ce_sMiddayColor = { 0.991f, 0.913f, 0.89f, 1.0f};
-constexpr DirectX::XMFLOAT4 ce_sSunsetColor = { 0.992f, 0.369f, 0.325f, 1.0f };
+constexpr DirectX::XMFLOAT4 ce_sunColors[4] =
+{
+	{ 1.0f, 0.549f, 0.0f, 1.0f },		// SUNRISE
+	{ 0.991f, 0.913f, 0.89f, 1.0f },	// MIDDAY
+	{ 0.992f, 0.369f, 0.325f, 1.0f },	// SUNSET
+	{ 0.0f, 0.0f, 0.0f, 1.0f }			// MIDNIGHT
+};
 
-// Moon colors
-constexpr DirectX::XMFLOAT4 ce_mSunsetColor = { 0.202f, 0.277f, 0.420f, 1.0f };
-constexpr DirectX::XMFLOAT4 ce_mMidnightColor = { 0.082f, 0.157f, 0.322f, 1.0f };
-constexpr DirectX::XMFLOAT4 ce_mSunriseColor = { 0.169f, 0.189f, 0.387f, 1.0f };
+constexpr DirectX::XMFLOAT4 ce_moonColors[4] =
+{
+	{ 0.169f, 0.189f, 0.387f, 1.0f },	// SUNRISE
+	{ 0.0f, 0.0f, 0.0f, 1.0f },			// MIDDAY
+	{ 0.202f, 0.277f, 0.420f, 1.0f },	// SUNSET
+	{ 0.082f, 0.157f, 0.322f, 1.0f }	// MIDNIGHT
+};
 
 // Ambient values
 constexpr float ce_sunAmbient = 0.2f;
@@ -106,95 +113,21 @@ void DayNightCycle::Update(const float& dt)
 
 
 	// Set the light color - interpolate between midnight and midday
+	int startIndex, endIndex = 0;
+	float lerpRatio;
 
-	XMFLOAT4 startSunColor = {};
-	XMFLOAT4 endSunColor = {};
-	XMFLOAT4 startMoonColor = {};
-	XMFLOAT4 endMoonColor = {};
+	startIndex = static_cast<int>(timePct / 0.5f);
+	endIndex = startIndex + 1 >= 4 ? 0 : startIndex + 1;
+	lerpRatio = (timePct / 0.5f) - static_cast<int>(timePct / 0.5f);
 
-	XMFLOAT4 blackCol = { 0.0f, 0.0f, 0.0f, 1.0f };
+	XMFLOAT4 sunCol;
+	DirectX::XMStoreFloat4(&sunCol, XMVectorLerp(XMLoadFloat4(&ce_sunColors[startIndex]), XMLoadFloat4(&ce_sunColors[endIndex]), lerpRatio));
+	m_sun.SetColor(sunCol);
 
+	XMFLOAT4 moonCol;
+	DirectX::XMStoreFloat4(&moonCol, XMVectorLerp(XMLoadFloat4(&ce_moonColors[startIndex]), XMLoadFloat4(&ce_moonColors[endIndex]), lerpRatio));
+	m_moon.SetColor(moonCol);
 
-	int conversionPower = 5;
-	switch (m_time)
-	{
-
-	case Time::SUNRISE: // Sunrise -> Midday
-	{
-		startSunColor = ce_sSunriseColor;
-		endSunColor = ce_sMiddayColor;
-
-		startMoonColor = ce_mSunriseColor;
-		endMoonColor = blackCol;
-
-		XMFLOAT4 sunCol;
-		DirectX::XMStoreFloat4(&sunCol, XMVectorLerp(XMLoadFloat4(&startSunColor), XMLoadFloat4(&endSunColor), powf(normDot, 1.0f / conversionPower)));
-
-		XMFLOAT4 moonCol;
-		DirectX::XMStoreFloat4(&moonCol, XMVectorLerp(XMLoadFloat4(&startMoonColor), XMLoadFloat4(&endMoonColor), normDot));
-		
-		m_sun.SetColor(sunCol);
-		m_moon.SetColor(moonCol);
-		
-		break;
-	}
-	case Time::MIDDAY: // Midday -> Sunset
-	{
-		startSunColor = ce_sSunsetColor;
-		endSunColor = ce_sMiddayColor;
-
-		startMoonColor = blackCol;
-		endMoonColor = ce_mSunsetColor;
-
-		XMFLOAT4 sunCol;
-		XMStoreFloat4(&sunCol, XMVectorLerp(XMLoadFloat4(&startSunColor), XMLoadFloat4(&endSunColor), powf(normDot, conversionPower)));
-
-		XMFLOAT4 moonCol;
-		XMStoreFloat4(&moonCol, XMVectorLerp(XMLoadFloat4(&startMoonColor), XMLoadFloat4(&endMoonColor), normDot));
-		
-		m_sun.SetColor(sunCol);
-		m_moon.SetColor(moonCol);
-
-		break;
-	}
-	case Time::SUNSET: // Sunset -> Midnight
-	{
-		startMoonColor = ce_mSunsetColor;
-		endMoonColor = ce_mMidnightColor;
-
-		startSunColor = ce_sSunsetColor;
-		endSunColor = blackCol;
-
-		XMFLOAT4 moonCol;
-		DirectX::XMStoreFloat4(&moonCol, XMVectorLerp(XMLoadFloat4(&startMoonColor), XMLoadFloat4(&endMoonColor), normDot));
-
-		XMFLOAT4 sunCol;
-		DirectX::XMStoreFloat4(&sunCol, XMVectorLerp(XMLoadFloat4(&startSunColor), XMLoadFloat4(&endSunColor), normDot));
-		
-		m_sun.SetColor(sunCol);
-		m_moon.SetColor(moonCol);
-		break;
-	}
-	case Time::MIDNIGHT: // Midnight -> Sunrise
-	{
-		startMoonColor = ce_mSunriseColor;
-		endMoonColor = ce_mMidnightColor;
-
-		startSunColor = ce_sSunriseColor;
-		endSunColor = blackCol;
-
-		XMFLOAT4 moonCol;
-		DirectX::XMStoreFloat4(&moonCol, XMVectorLerp(XMLoadFloat4(&startMoonColor), XMLoadFloat4(&endMoonColor), pow(normDot, conversionPower)));
-
-		XMFLOAT4 sunCol;
-		DirectX::XMStoreFloat4(&sunCol, XMVectorLerp(XMLoadFloat4(&startSunColor), XMLoadFloat4(&endSunColor), pow(normDot, conversionPower)));
-		
-		m_sun.SetColor(sunCol);
-		m_moon.SetColor(moonCol);
-		break;
-	}
-
-	}
 
 
 	// IMGUI DEBUG PANEL
@@ -213,8 +146,8 @@ void DayNightCycle::Update(const float& dt)
 	ImGui::ColorButton("Moon Color", { moonColor.x, moonColor.y, moonColor.z, 1.0f }, ImGuiColorEditFlags_NoAlpha);
 
 	ImGui::Text("NormDot: %2.2f", normDot);
-	ImGui::Text("TimePct: %2.2f", timePct);
-	ImGui::Text("Time Elapsed: %2.3f seconds (%1.2f\%)", m_elapsedTime, timePct * 100.0f);
+	ImGui::Text("LerpRatio: %2.2f", lerpRatio);
+	ImGui::Text("Time Elapsed: %2.3f seconds (%1.2f)", m_elapsedTime, timePct * 100.0f);
 	const char* cycle = m_cycle == Cycle::DAY ? "Day" : "Night";
 	ImGui::Text(cycle);
 	const char* time = "";
