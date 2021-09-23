@@ -185,7 +185,8 @@ void DebugRendererShader::UpdateVertexBuffer()
 
 	//context->Unmap(m_vertexBuffer, 0);
 
-	context->UpdateSubresource(m_vertexBuffer, 0, nullptr, DebugLine::GetLineVerts(), 0, 0);
+	const DebugLine::ColoredVertex* data = DebugLine::GetLineVerts();
+	context->UpdateSubresource(m_vertexBuffer, 0, nullptr, data, (UINT)0, (UINT)0);
 
 
 	// Bind the vertex buffer

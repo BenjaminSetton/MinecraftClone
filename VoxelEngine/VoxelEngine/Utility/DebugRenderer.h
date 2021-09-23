@@ -23,7 +23,7 @@ public:
 
 	static void ClearLines();
 
-	static ColoredVertex* GetLineVerts();
+	static const ColoredVertex* GetLineVerts();
 
 	static size_t GetLineVertCount();
 

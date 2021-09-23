@@ -34,7 +34,7 @@ void DebugLine::ClearLines()
 	line_vert_count = 0;
 }
 
-DebugLine::ColoredVertex* DebugLine::GetLineVerts()
+const DebugLine::ColoredVertex* DebugLine::GetLineVerts()
 {
 	return line_verts.data();
 }
