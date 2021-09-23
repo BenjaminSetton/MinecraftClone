@@ -60,7 +60,7 @@ VARNAME(log).End();
 #define CONCAT(a, b)
 #define VARNAME(var)
 
-#define BIT(x)
+#define BIT(x) (1 << x)
 
 // Assert defines
 #define VX_ASSERT(cond)

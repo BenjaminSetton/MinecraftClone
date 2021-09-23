@@ -77,7 +77,9 @@ void DefaultBlockShader::Render(ID3D11ShaderResourceView* const* srvs)
 
 	BindObjects(srvs);
 
-	for(auto chunk : ChunkManager::GetChunkVector())
+	ChunkManager::CheckOutChunkVector();
+	auto chunkVec = ChunkManager::GetChunkVector();
+	for(auto chunk : chunkVec)
 	{
 		// Update the vertex buffer
 		BindVertexBuffer(chunk);
@@ -89,6 +91,7 @@ void DefaultBlockShader::Render(ID3D11ShaderResourceView* const* srvs)
 		debugVerts += numVerts;
 		numDrawCalls++;
 	}
+	ChunkManager::ReturnChunkVector();
 
 	ImGui::Begin("Debug Panel");
 	ImGui::Text("Vertex Count: %i", debugVerts);

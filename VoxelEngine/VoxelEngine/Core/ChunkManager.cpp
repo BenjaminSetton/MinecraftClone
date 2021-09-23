@@ -5,7 +5,6 @@
 #include "../../imgui/imgui.h"
 #include "Chunk.h"
 
-
 ///
 /// TODO:
 /// 
@@ -19,10 +18,22 @@ using namespace DirectX;
 
 std::vector<Chunk*> ChunkManager::m_activeChunks = std::vector<Chunk*>();
 uint16_t ChunkManager::m_renderDist = 8;
+bool ChunkManager::m_runUpdater = true;
+XMFLOAT3 ChunkManager::m_playerPos = { 0.0f, 0.0f, 0.0f };
+
+std::vector<XMFLOAT3> ChunkManager::m_newChunkList = std::vector<XMFLOAT3>();
+std::vector<uint32_t> ChunkManager::m_deletedChunkList = std::vector<uint32_t>();
+std::thread* ChunkManager::m_updaterThread = nullptr;
+std::mutex ChunkManager::m_canAccessVec;
 
 
 void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 {
+	// Isn't strictly necessary b/c it's inited as a static variable
+	m_runUpdater = true;
+
+	m_playerPos = playerPosWS;
+
 	m_activeChunks.reserve(pow(2 * m_renderDist + 1, 2));
 
 	XMFLOAT3 playerPosCS = WorldToChunkSpace(playerPosWS);
@@ -48,23 +59,36 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 		// Consider adding multi-threading to speed up load time
 		for (uint16_t iter = 0; iter < m_activeChunks.size(); iter++) m_activeChunks[iter]->InitializeVertexBuffer();
 	}
+
+
+	// Start the updater thread
+	m_updaterThread = new std::thread(UpdaterEntryPoint);
 }
 
 void ChunkManager::Shutdown()
 {
+	m_runUpdater = false;
+	if(m_updaterThread->joinable())
+	{
+		m_updaterThread->join();
+	}
+	else
+	{
+		VX_ASSERT(false, "Fatal error joining thread");
+	}
+	delete m_updaterThread;
+
 	m_activeChunks.clear();
 }
 
 // Method implementations
 
-void ChunkManager::Update(const DirectX::XMFLOAT3 playerPos)
+void ChunkManager::Update()
 {
-	VX_PROFILE_FUNC();
-
-	std::vector<Chunk*> newChunkList;
+	//VX_PROFILE_FUNC();
 
 	// Chunk coord
-	XMFLOAT3 playerPosChunkSpace = WorldToChunkSpace(playerPos);
+	XMFLOAT3 playerPosChunkSpace = WorldToChunkSpace(m_playerPos);
 
 
 	// 1. Unload chunks outside of render distance
@@ -83,10 +107,11 @@ void ChunkManager::Update(const DirectX::XMFLOAT3 playerPos)
 
 		// 1. Unload chunks if they are too far away from "player"
 		if (chunkDistFromPlayer.x > m_renderDist || chunkDistFromPlayer.z > m_renderDist)
-			UnloadChunk(i--);
+			m_deletedChunkList.push_back(i);
+			//UnloadChunk(i--);
 
 	}
-	
+
 
 	// 2. Load chunks if they are inside render distance
 
@@ -102,8 +127,7 @@ void ChunkManager::Update(const DirectX::XMFLOAT3 playerPos)
 			if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
 			else
 			{
-				Chunk* newChunk = LoadChunk(newChunkPosCS);
-				newChunkList.push_back(newChunk);
+				m_newChunkList.push_back(newChunkPosCS);
 			}
 
 		}
@@ -121,19 +145,24 @@ void ChunkManager::Update(const DirectX::XMFLOAT3 playerPos)
 			if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
 			else
 			{
-				Chunk* newChunk = LoadChunk(newChunkPosCS);
-				newChunkList.push_back(newChunk);
+				m_newChunkList.push_back(newChunkPosCS);
 			}
 
 		}
 	}
-	
 
-
-	// 3. Force all new chunks and their neighbors to initialize their buffers
-	for (uint16_t i = 0; i < newChunkList.size(); i++)
+	// 3. Delete / unload out-of-render-distance chunks
+	uint32_t indexCorrection = 0;
+	m_canAccessVec.lock();
+	for (auto chunkIndex : m_deletedChunkList)
 	{
-		Chunk* newChunk = newChunkList[i];
+		UnloadChunk(chunkIndex - indexCorrection++);
+	}
+
+	// 4. Load new chunks and force all their neighbors to initialize or re-initialize their buffers
+	for (uint16_t i = 0; i < m_newChunkList.size(); i++)
+	{
+		Chunk* newChunk = LoadChunk(m_newChunkList[i]);
 		XMFLOAT3 chunkPosCS = newChunk->GetPosition();
 
 		// Left neighbor
@@ -164,21 +193,17 @@ void ChunkManager::Update(const DirectX::XMFLOAT3 playerPos)
 		// Current chunk
 		newChunk->InitializeVertexBuffer();
 	}
-	
+	m_canAccessVec.unlock();
 
-	ImGui::Begin("Debug Panel");
-	ImGui::Text("Player Position: %2.2f, %2.2f, %2.2f (%i, %i, %i)", 
-		playerPos.x, playerPos.y, playerPos.z,
-		(int)playerPosChunkSpace.x, (int)playerPosChunkSpace.y, (int)playerPosChunkSpace.z);
-	ImGui::Text("Active Chunks: %i", m_activeChunks.size());
-	ImGui::Text("Render Distance: %i", m_renderDist);
-	ImGui::End();
+	// Clear the temp new/deleted vectors
+	m_newChunkList.clear();
+	m_deletedChunkList.clear();
 }
 
 Chunk* ChunkManager::LoadChunk(const XMFLOAT3 chunkCS) 
 {
 	Chunk* chunk = new Chunk(chunkCS);
-	m_activeChunks.emplace_back(chunk); 
+	m_activeChunks.emplace_back(chunk);
 
 	return chunk;
 }
@@ -215,23 +240,28 @@ void ChunkManager::UnloadChunk(Chunk* chunk)
 
 void ChunkManager::UnloadChunk(const uint16_t& index)
 {
-	Chunk* chunk = m_activeChunks[index];
-
-	// Delete chunk instance
-	delete chunk;
+	delete m_activeChunks[index];
 	m_activeChunks.erase(m_activeChunks.begin() + index);
-
 }
 
-const uint16_t ChunkManager::GetNumActiveChunks() { return m_activeChunks.size(); }
+const uint16_t ChunkManager::GetNumActiveChunks()
+{
+	std::lock_guard<std::mutex> guard(m_canAccessVec);
+	return m_activeChunks.size();
+}
 
 
 Chunk* ChunkManager::GetChunkAtIndex(const uint16_t index)
 {
+	std::lock_guard<std::mutex> guard(m_canAccessVec);
 	if (index < m_activeChunks.size())
+	{
 		return m_activeChunks[index];
+	}
 	else
+	{
 		return nullptr;
+	}
 }
 
 Chunk* ChunkManager::GetChunkAtPos(const DirectX::XMFLOAT3 posCS)
@@ -256,7 +286,31 @@ Chunk* ChunkManager::GetChunkAtPos(const DirectX::XMFLOAT3 posCS)
 	else return m_activeChunks[index];
 }
 
-std::vector<Chunk*>& ChunkManager::GetChunkVector() { return m_activeChunks; }
+std::vector<Chunk*>& ChunkManager::GetChunkVector() 
+{
+	return m_activeChunks;
+}
+
+void ChunkManager::UpdaterEntryPoint()
+{
+	// "Infinite" while loop; only break out if ChunkManager is shut down...
+	while(m_runUpdater)
+	{
+		Update();
+	}
+}
+
+void ChunkManager::SetPlayerPos(DirectX::XMFLOAT3 playerPos) { m_playerPos = playerPos; }
+
+void ChunkManager::CheckOutChunkVector()
+{
+	m_canAccessVec.lock();
+}
+
+void ChunkManager::ReturnChunkVector()
+{
+	m_canAccessVec.unlock();
+}
 
 XMFLOAT3 ChunkManager::WorldToChunkSpace(const XMFLOAT3& pos)
 {

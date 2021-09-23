@@ -127,12 +127,11 @@ bool Graphics::Frame(const float dt)
 		// Update the debug camera's position
 		m_debugCam->Update(dt);
 
+		// Update the position for the updater thread
+		ChunkManager::SetPlayerPos(m_debugCam->GetPosition());
+
 		// Update the day/night cycle
 		DayNightCycle::Update(dt);
-
-		// Update the active chunks
-		ChunkManager::Update(m_debugCam->GetPosition());
-
 
 		// Begin the D3D scene
 		D3D::BeginScene(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
@@ -166,6 +165,15 @@ bool Graphics::Frame(const float dt)
 			m_texViewer->Render();
 		}
 
+		XMFLOAT3 playerPos = m_debugCam->GetPosition();
+		XMFLOAT3 playerPosChunkSpace = ChunkManager::WorldToChunkSpace(playerPos);
+		ImGui::Begin("Debug Panel");
+		ImGui::Text("Player Position: %2.2f, %2.2f, %2.2f (%i, %i, %i)",
+			playerPos.x, playerPos.y, playerPos.z,
+			(int)playerPosChunkSpace.x, (int)playerPosChunkSpace.y, (int)playerPosChunkSpace.z);
+		ImGui::Text("Active Chunks: %i", ChunkManager::GetNumActiveChunks());
+		ImGui::Text("Render Distance: %i", 8);
+		ImGui::End();
 	}
 
 	// End the ImGui frame

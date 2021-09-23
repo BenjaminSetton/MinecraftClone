@@ -66,7 +66,9 @@ void ShadowShader::Render()
 
 	BindObjects();
 
-	for (auto chunk : ChunkManager::GetChunkVector())
+	ChunkManager::CheckOutChunkVector();
+	auto chunkVec = ChunkManager::GetChunkVector();
+	for (auto chunk : chunkVec)
 	{
 		// Update the vertex buffer
 		BindVertexBuffer(chunk);
@@ -74,6 +76,7 @@ void ShadowShader::Render()
 		// Render the chunk
 		context->Draw(chunk->GetVertexCount(), 0);
 	}
+	ChunkManager::ReturnChunkVector();
 }
 
 void ShadowShader::Shutdown()

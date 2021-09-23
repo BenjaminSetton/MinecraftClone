@@ -2,6 +2,8 @@
 #define _CHUNKMANAGER_H
 
 #include <vector>
+#include <thread>
+#include <mutex>
 
 #include "Chunk.h"
 
@@ -13,8 +15,6 @@ public:
 	static void Initialize(const DirectX::XMFLOAT3 playerPosWS);
 
 	static void Shutdown();
-
-	static void Update(const DirectX::XMFLOAT3 pos);
 
 	static Chunk* LoadChunk(const DirectX::XMFLOAT3 chunkCS);
 
@@ -28,13 +28,24 @@ public:
 	// Returns chunk at "pos" CHUNK SPACE
 	static Chunk* GetChunkAtPos(const DirectX::XMFLOAT3 pos);
 
+	// For EXTERNAL use only, don't use this method internally!!
 	static std::vector<Chunk*>& GetChunkVector();
 
-private:
+	static void UpdaterEntryPoint();
+
+	static void SetPlayerPos(DirectX::XMFLOAT3 playerPos);
+
+	static void CheckOutChunkVector();
+
+	static void ReturnChunkVector();
 
 	// Helper methods. Consider moving to a Utility library
 	static DirectX::XMFLOAT3 WorldToChunkSpace(const DirectX::XMFLOAT3& pos);
 	static DirectX::XMFLOAT3 ChunkToWorldSpace(const DirectX::XMFLOAT3& pos);
+
+private:
+
+	static void Update();
 
 	static void ResetChunkMemory(const uint16_t index);
 
@@ -46,6 +57,16 @@ private:
 	// NOTE! Temporarily stored here
 	// Consider moving to another "settings" or "game" class
 	static uint16_t m_renderDist;
+
+	// Dictates whether the updater thread is free to run Update()
+	static std::mutex m_canAccessVec;
+	static std::thread* m_updaterThread;
+	static bool m_runUpdater;
+
+	static std::vector<DirectX::XMFLOAT3> m_newChunkList;
+	static std::vector<uint32_t> m_deletedChunkList;
+
+	static DirectX::XMFLOAT3 m_playerPos;
 
 };
 

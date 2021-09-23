@@ -172,17 +172,20 @@ void DebugRendererShader::UpdateVertexBuffer()
 {
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	DebugLine::ColoredVertex* vertexBufferPtr;
+	DebugLine::ColoredVertex** vertexBufferPtr;
 
 	// Update the vertex buffer
 
-	HRESULT hr = context->Map(m_vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	VX_ASSERT(!FAILED(hr));
+	//HRESULT hr = context->Map(m_vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	//VX_ASSERT(!FAILED(hr));
 
-	vertexBufferPtr = (DebugLine::ColoredVertex*)mappedResource.pData;
-	vertexBufferPtr = DebugLine::GetLineVerts();
+	//vertexBufferPtr = (DebugLine::ColoredVertex**)mappedResource.pData;
+	//DebugLine::ColoredVertex* verts = DebugLine::GetLineVerts();
+	//vertexBufferPtr = &verts;
 
-	context->Unmap(m_vertexBuffer, 0);
+	//context->Unmap(m_vertexBuffer, 0);
+
+	context->UpdateSubresource(m_vertexBuffer, 0, nullptr, DebugLine::GetLineVerts(), 0, 0);
 
 
 	// Bind the vertex buffer
