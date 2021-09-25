@@ -126,6 +126,9 @@
     <ClCompile Include="Utility\DebugRenderer.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
+    <ClCompile Include="Core\FrustumCulling.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utility\Clock.h">
@@ -244,6 +247,9 @@
     </ClInclude>
     <ClInclude Include="Utility\DebugRenderer.h">
       <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\FrustumCulling.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -218,6 +218,7 @@
     <ClCompile Include="Core\DebugRendererShader.cpp" />
     <ClCompile Include="Core\DefaultBlockShader.cpp" />
     <ClCompile Include="Core\DirectionalLight.cpp" />
+    <ClCompile Include="Core\FrustumCulling.cpp" />
     <ClCompile Include="Core\Graphics.cpp" />
     <ClCompile Include="Core\main.cpp" />
     <ClCompile Include="Core\ShadowShader.cpp" />
@@ -265,6 +266,7 @@
     <ClInclude Include="Core\Events\KeyboardEvent.h" />
     <ClInclude Include="Core\Events\KeyCodes.h" />
     <ClInclude Include="Core\Events\MouseEvent.h" />
+    <ClInclude Include="Core\FrustumCulling.h" />
     <ClInclude Include="Core\Graphics.h" />
     <ClInclude Include="Core\ShadowShader.h" />
     <ClInclude Include="Core\TextureManager.h" />
