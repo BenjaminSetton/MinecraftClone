@@ -3,6 +3,7 @@
 #include "ChunkManager.h"
 #include "../Utility/Utility.h"
 #include "../../imgui/imgui.h"
+#include "FrustumCulling.h"
 #include "Chunk.h"
 
 ///
@@ -47,9 +48,12 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 			// A coordinate in chunk space
 			XMFLOAT3 newChunkPosCS = { playerPosCS.x + x, 0, playerPosCS.z + z };
 
-			// Create a new chunk
-			m_activeChunks.emplace_back(new Chunk(newChunkPosCS));
-			iter++;
+			// Create a new chunk if within view frustum
+			if (FrustumCulling::CalculateChunkPosAgainstFrustum(ChunkToWorldSpace(newChunkPosCS)))
+			{
+				m_activeChunks.emplace_back(new Chunk(newChunkPosCS));
+				iter++;
+			}
 		}
 	}
 
@@ -106,9 +110,11 @@ void ChunkManager::Update()
 		};
 
 		// 1. Unload chunks if they are too far away from "player"
-		if (chunkDistFromPlayer.x > m_renderDist || chunkDistFromPlayer.z > m_renderDist)
+		if (chunkDistFromPlayer.x > m_renderDist || chunkDistFromPlayer.z > m_renderDist
+			|| !FrustumCulling::CalculateChunkPosAgainstFrustum(ChunkToWorldSpace(chunkPosChunkSpace)))
+		{
 			m_deletedChunkList.push_back(i);
-			//UnloadChunk(i--);
+		}
 
 	}
 
@@ -127,7 +133,9 @@ void ChunkManager::Update()
 			if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
 			else
 			{
-				m_newChunkList.push_back(newChunkPosCS);
+				// If chunk is within frustum
+				if (FrustumCulling::CalculateChunkPosAgainstFrustum(ChunkToWorldSpace(newChunkPosCS)));
+					m_newChunkList.push_back(newChunkPosCS);
 			}
 
 		}
@@ -145,7 +153,9 @@ void ChunkManager::Update()
 			if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
 			else
 			{
-				m_newChunkList.push_back(newChunkPosCS);
+				// If chunk is within frustum
+				if(FrustumCulling::CalculateChunkPosAgainstFrustum(ChunkToWorldSpace(newChunkPosCS)));
+					m_newChunkList.push_back(newChunkPosCS);
 			}
 
 		}
@@ -162,6 +172,7 @@ void ChunkManager::Update()
 	// 4. Load new chunks and force all their neighbors to initialize or re-initialize their buffers
 	for (uint16_t i = 0; i < m_newChunkList.size(); i++)
 	{
+		// If "New Chunk" is not in frustum view, don't LoadChunk
 		Chunk* newChunk = LoadChunk(m_newChunkList[i]);
 		XMFLOAT3 chunkPosCS = newChunk->GetPosition();
 

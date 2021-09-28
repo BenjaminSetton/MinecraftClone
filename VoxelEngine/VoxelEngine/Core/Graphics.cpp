@@ -6,21 +6,30 @@
 #include "../Utility/Input.h"
 
 #include "ChunkManager.h"
+#include "FrustumCulling.h"
 
 using namespace DirectX;
 
 
 bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd)
 {
-
 	bool initResult;
 
 	initResult = D3D::Initialize(screenWidth, screenHeight, hwnd, VSYNC_ENABLED, FULL_SCREEN, SCREEN_FAR, SCREEN_NEAR);
 	if (!initResult) return false;
 
+	m_screenWidth = screenWidth;
+	m_screenHeight = screenHeight;
+
 	m_debugCam = new DebugCamera;
 	m_debugCam->SetPosition({-4.0f, 30.0f, -10.0f});
 	m_debugCam->ConstructMatrix();
+
+	m_frustumCam = new FrustumCamera;
+	m_frustumCam->SetPosition({ -15.0f, 20.0f, 15.0f });
+	m_frustumCam->ConstructMatrix();
+	FrustumCulling::CalculateFrustum(XM_PIDIV4, (float)screenWidth / screenHeight,
+		SCREEN_NEAR, SCREEN_FAR, m_frustumCam->GetWorldMatrix());
 
 	// Create and initialize the texture manager
 	m_textureManager = new TextureManager;
@@ -50,7 +59,7 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	m_imGuiLayer = new ImGuiLayer;
 	m_imGuiLayer->Initialize(hwnd, D3D::GetDevice(), D3D::GetDeviceContext());
 
-	m_texViewer = new TextureViewer(nullptr, 5, 5, 0.20f);
+	m_texViewer = new TextureViewer(nullptr, 5, 5, 0.15f);
 
 	return true;
 }
@@ -126,6 +135,11 @@ bool Graphics::Frame(const float dt)
 
 		// Update the debug camera's position
 		m_debugCam->Update(dt);
+		m_frustumCam->Update(dt);
+
+		FrustumCulling::CalculateFrustum(XM_PIDIV4, (float)m_screenWidth / m_screenHeight, 
+			SCREEN_NEAR, SCREEN_FAR, m_frustumCam->GetWorldMatrix());
+		FrustumCulling::Debug_DrawFrustum();
 
 		// Update the position for the updater thread
 		ChunkManager::SetPlayerPos(m_debugCam->GetPosition());

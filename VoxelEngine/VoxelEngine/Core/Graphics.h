@@ -4,6 +4,7 @@
 // TODO: Include CAMERA_CLASS, SHADERS, and other necessary classes used for rendering
 #include "D3D.h"
 #include "DebugCamera.h"
+#include "FrustumCamera.h"
 
 #include "DefaultBlockShader.h"
 #include "ShadowShader.h"
@@ -45,6 +46,7 @@ public:
 private:
 
 	DebugCamera* m_debugCam = nullptr;
+	FrustumCamera* m_frustumCam = nullptr;
 
 	DefaultBlockShader* m_chunkShader = nullptr;
 	ShadowShader* m_shadowShader = nullptr;
@@ -55,6 +57,9 @@ private:
 	ImGuiLayer* m_imGuiLayer = nullptr;
 
 	TextureViewer* m_texViewer = nullptr;
+
+	// Temporary
+	int m_screenWidth, m_screenHeight;
 };
 
 #endif

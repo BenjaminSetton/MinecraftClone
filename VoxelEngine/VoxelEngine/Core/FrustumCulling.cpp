@@ -1,15 +1,20 @@
 #include "../Misc/pch.h"
 #include "FrustumCulling.h"
+#include "../Utility/DebugRenderer.h"
 
 using namespace DirectX;
+
+
+Frustum FrustumCulling::m_frustum = Frustum();
+
 
 void FrustumCulling::SetFrustum(const Frustum& frustum) { m_frustum = frustum; }
 const Frustum FrustumCulling::GetFrustum() { return m_frustum; }
 
-bool FrustumCulling::CalculateChunkAgainstFrustum(Chunk* chunk)
+bool FrustumCulling::CalculateChunkPosAgainstFrustum(const XMFLOAT3 chunkPosWS)
 {
 	// Convert Chunk* to AABB to test against frustum
-	AABB aabb = ConvertChunkToAABB(chunk);
+	AABB aabb = ConvertChunkPosToAABB(chunkPosWS);
 
 	// Test the AABB against the frustum and return the result
 #ifdef PASS_STRADDLING_CHUNKS 1
@@ -56,26 +61,29 @@ void FrustumCulling::CalculateFrustum(float FOV, float aspectRatio, float nearPl
 	XMVECTOR botRightFar = farCenter + (zeroVector - (viewMatrix.r[1] * halfHeightFar) + viewMatrix.r[0] * halfWidthFar);
 	XMVECTOR botLeftFar = farCenter + (zeroVector - (viewMatrix.r[1] * halfHeightFar) - viewMatrix.r[0] * halfWidthFar);
 
-	//Near plane
 	m_frustum.planes[Frustum_Planes::FRONT] = CalculatePlaneFromPoints(topLeftNear, topRightNear, botRightNear);
-	//Far plane
 	m_frustum.planes[Frustum_Planes::BACK] = CalculatePlaneFromPoints(botRightFar, topRightFar, topLeftFar);
-	//Left plane
 	m_frustum.planes[Frustum_Planes::LEFT] = CalculatePlaneFromPoints(botLeftFar, topLeftFar, topLeftNear);
-	//Right plane
 	m_frustum.planes[Frustum_Planes::RIGHT] = CalculatePlaneFromPoints(botRightFar, botRightNear, topRightNear);
-	//Up plane
 	m_frustum.planes[Frustum_Planes::TOP] = CalculatePlaneFromPoints(topLeftFar, topRightFar, topRightNear);
-	//Down plane
 	m_frustum.planes[Frustum_Planes::BOTTOM] = CalculatePlaneFromPoints(botRightFar, botLeftFar, botLeftNear);
+
+	m_frustum.vertices[Frustum_Vertices::BLF] = botLeftFar;
+	m_frustum.vertices[Frustum_Vertices::BLN] = botLeftNear;
+	m_frustum.vertices[Frustum_Vertices::BRF] = botRightFar;
+	m_frustum.vertices[Frustum_Vertices::BRN] = botRightNear;
+	m_frustum.vertices[Frustum_Vertices::TLF] = topLeftFar;
+	m_frustum.vertices[Frustum_Vertices::TLN] = topLeftNear;
+	m_frustum.vertices[Frustum_Vertices::TRF] = topRightFar;
+	m_frustum.vertices[Frustum_Vertices::TRN] = topRightNear;
 }
 
-const AABB FrustumCulling::ConvertChunkToAABB(Chunk* _chunk)
+
+const AABB FrustumCulling::ConvertChunkPosToAABB(const XMFLOAT3 chunkPosWS)
 {
-	XMFLOAT3 chunkPos = _chunk->GetPosition();
 	AABB aabb;
-	aabb.center = { chunkPos.x + CHUNK_SIZE / 2.0f, chunkPos.y - CHUNK_SIZE / 2.0f, chunkPos.z + CHUNK_SIZE / 2.0f };
-	aabb.extent = { chunkPos.x - aabb.center.x, chunkPos.y - aabb.center.y, chunkPos.z - aabb.center.z };
+	aabb.center = { chunkPosWS.x + CHUNK_SIZE / 2.0f, chunkPosWS.y - CHUNK_SIZE / 2.0f, chunkPosWS.z + CHUNK_SIZE / 2.0f };
+	aabb.extent = { chunkPosWS.x - aabb.center.x, chunkPosWS.y - aabb.center.y, chunkPosWS.z - aabb.center.z };
 	return aabb;
 }
 
@@ -111,4 +119,34 @@ Plane FrustumCulling::CalculatePlaneFromPoints(const XMVECTOR& a, const XMVECTOR
 	plane.point = XMVector3Dot(normal, b).m128_f32[0];
 
 	return plane;
+}
+
+void FrustumCulling::Debug_DrawFrustum()
+{
+	XMFLOAT4 lineColor = { 0.0f, 1.0f, 0.0f, 1.0f };
+
+	XMFLOAT3 tln, trn, bln, brn, tlf, trf, blf, brf;
+	XMStoreFloat3(&tln, m_frustum.vertices[Frustum_Vertices::TLN]);
+	XMStoreFloat3(&trn, m_frustum.vertices[Frustum_Vertices::TRN]);
+	XMStoreFloat3(&bln, m_frustum.vertices[Frustum_Vertices::BLN]);
+	XMStoreFloat3(&brn, m_frustum.vertices[Frustum_Vertices::BRN]);
+	XMStoreFloat3(&tlf, m_frustum.vertices[Frustum_Vertices::TLF]);
+	XMStoreFloat3(&trf, m_frustum.vertices[Frustum_Vertices::TRF]);
+	XMStoreFloat3(&blf, m_frustum.vertices[Frustum_Vertices::BLF]);
+	XMStoreFloat3(&brf, m_frustum.vertices[Frustum_Vertices::BRF]);
+
+	DebugLine::AddLine(tln, tlf, lineColor);
+	DebugLine::AddLine(trn, trf, lineColor);
+	DebugLine::AddLine(bln, blf, lineColor);
+	DebugLine::AddLine(brn, brf, lineColor);
+
+	DebugLine::AddLine(tln, trn, lineColor);
+	DebugLine::AddLine(trn, brn, lineColor);
+	DebugLine::AddLine(brn, bln, lineColor);
+	DebugLine::AddLine(bln, tln, lineColor);
+
+	DebugLine::AddLine(tlf, trf, lineColor);
+	DebugLine::AddLine(trf, brf, lineColor);
+	DebugLine::AddLine(brf, blf, lineColor);
+	DebugLine::AddLine(blf, tlf, lineColor);
 }
