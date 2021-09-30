@@ -12,8 +12,6 @@ public:
 	~FrustumCamera() = default;
 
 	virtual void Update(float deltaTime) override;
-	
-	DirectX::XMMATRIX GetWorldMatrix();
 
 private:
 

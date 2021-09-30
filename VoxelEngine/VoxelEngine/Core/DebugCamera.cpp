@@ -17,10 +17,13 @@ void DebugCamera::Update(float dt)
 	XMVECTOR deltaTranslation = { 0, 0, 0, 1 };
 	XMVECTOR deltaRotation = { 0.0f, 0.0f, 0.0f };
 
+	XMMATRIX worldMatrix = GetWorldMatrix();
+
+
 	XMVECTOR prevX, prevY, prevZ;
-	prevX = m_worldMatrix.r[0];
-	prevY = m_worldMatrix.r[1];
-	prevZ = m_worldMatrix.r[2];
+	prevX = worldMatrix.r[0];
+	prevY = worldMatrix.r[1];
+	prevZ = worldMatrix.r[2];
 
 	//Gather input from Input class
 
@@ -63,43 +66,43 @@ void DebugCamera::Update(float dt)
 	);
 
 	// Calculate the new world matrix
-	m_worldMatrix.r[3] = { 0, 0, 0, 1.0f };
-	m_worldMatrix = m_worldMatrix * rotYMatrix;
-	m_worldMatrix = rotXMatrix * m_worldMatrix;
+	worldMatrix.r[3] = { 0, 0, 0, 1.0f };
+	worldMatrix = worldMatrix * rotYMatrix;
+	worldMatrix = rotXMatrix * worldMatrix;
 
-	m_worldMatrix.r[3] = { prevPos.x, prevPos.y, prevPos.z, 1.0f };
-	m_worldMatrix = translationMatrix * m_worldMatrix;
+	worldMatrix.r[3] = { prevPos.x, prevPos.y, prevPos.z, 1.0f };
+	worldMatrix = translationMatrix * worldMatrix;
 
 
 	// TODO: Orthonormalize the camera world matrix in order to prevent it from flipping
 
 	// Get the Z axis
 	float epsilon = 0.0025f;
-	XMVECTOR zAxis = m_worldMatrix.r[2];
+	XMVECTOR zAxis = worldMatrix.r[2];
 	XMVECTOR upVec = { 0.0f, 1.0f, 0.0f, 0.0f };
 
 
 	if(abs(zAxis.m128_f32[1]) + epsilon < 1.0f)
 	{
 		// Calculate the X (right) axis
-		m_worldMatrix.r[0] = XMVector3Normalize(XMVector3Cross(upVec, zAxis));
+		worldMatrix.r[0] = XMVector3Normalize(XMVector3Cross(upVec, zAxis));
 		// Calculate the Y (up) axis
-		m_worldMatrix.r[1] = XMVector3Normalize(XMVector3Cross(zAxis, m_worldMatrix.r[0]));
+		worldMatrix.r[1] = XMVector3Normalize(XMVector3Cross(zAxis, worldMatrix.r[0]));
 	}
 	else
 	{
-		m_worldMatrix.r[0] = prevX;
-		m_worldMatrix.r[1] = prevY;
-		m_worldMatrix.r[2] = prevZ;
+		worldMatrix.r[0] = prevX;
+		worldMatrix.r[1] = prevY;
+		worldMatrix.r[2] = prevZ;
 	}
 
 
 	// Update the position and rotation camera values
 	m_position = 
 	{
-		m_worldMatrix.r[3].m128_f32[0],
-		m_worldMatrix.r[3].m128_f32[1],
-		m_worldMatrix.r[3].m128_f32[2]
+		worldMatrix.r[3].m128_f32[0],
+		worldMatrix.r[3].m128_f32[1],
+		worldMatrix.r[3].m128_f32[2]
 	};
 
 	m_rotation =
@@ -109,4 +112,6 @@ void DebugCamera::Update(float dt)
 		m_rotation.x + deltaRotation.m128_f32[2]
 	};
 
+	// Re-assign the view matrix with all the changes
+	m_viewMatrix = XMMatrixInverse(nullptr, worldMatrix);
 }

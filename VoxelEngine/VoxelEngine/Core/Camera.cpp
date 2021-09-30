@@ -11,7 +11,7 @@ Camera::Camera()
 {
 	m_position = { 0.0f, 0.0f, 0.0f };
 	m_rotation = { 0.0f, 0.0f, 0.0f };
-	m_worldMatrix = XMMatrixIdentity();
+	m_viewMatrix = XMMatrixIdentity();
 }
 
 void Camera::ConstructMatrix()
@@ -37,7 +37,7 @@ void Camera::ConstructMatrix()
 	lookAt += position;
 
 	// Finally create the view matrix from the three updated vectors.
-	m_worldMatrix = XMMatrixLookAtLH(position, lookAt, up);
+	m_viewMatrix = XMMatrixLookAtLH(position, lookAt, up);
 
 	return;
 }
@@ -48,4 +48,6 @@ void Camera::SetPosition(const DirectX::XMFLOAT3 pos) { m_position = pos; }
 DirectX::XMFLOAT3 Camera::GetRotation() { return m_rotation; }
 void Camera::SetRotation(const DirectX::XMFLOAT3 rot) { m_rotation = rot; }
 
-DirectX::XMMATRIX Camera::GetViewMatrix() { return XMMatrixInverse(nullptr, m_worldMatrix); }
+DirectX::XMMATRIX Camera::GetViewMatrix() { return m_viewMatrix; }
+
+DirectX::XMMATRIX Camera::GetWorldMatrix() { return XMMatrixInverse(nullptr, m_viewMatrix); }

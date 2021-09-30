@@ -20,8 +20,8 @@ public:
 	DirectX::XMFLOAT3 GetRotation();
 	void SetRotation(const DirectX::XMFLOAT3 rot);
 
-	// Inverts the camera's world matrix to create a view matrix
 	DirectX::XMMATRIX GetViewMatrix();
+	DirectX::XMMATRIX GetWorldMatrix();
 
 	virtual void Update(float deltaTime) = 0;
 
@@ -30,7 +30,7 @@ protected:
 	DirectX::XMFLOAT3 m_position;
 	DirectX::XMFLOAT3 m_rotation; // Stores pitch, yaw and roll
 
-	DirectX::XMMATRIX m_worldMatrix;
+	DirectX::XMMATRIX m_viewMatrix;
 };
 
 

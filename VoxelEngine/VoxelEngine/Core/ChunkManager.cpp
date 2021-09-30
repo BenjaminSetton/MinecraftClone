@@ -9,7 +9,6 @@
 ///
 /// TODO:
 /// 
-///		Consider loading/unloading chunks in a separate thread
 ///		Consider using an unordered map to speed up chunk searching
 /// 
 
@@ -109,9 +108,12 @@ void ChunkManager::Update()
 			abs(chunkPosChunkSpace.z - playerPosChunkSpace.z),
 		};
 
+		//FrustumCulling::CalculateChunkPosAgainstFrustum(ChunkToWorldSpace(chunkPosChunkSpace));
+		FrustumCulling::CalculateChunkPosAgainstFrustum(ChunkToWorldSpace({ 0.0f, 0.0f, 0.0f }));
+
 		// 1. Unload chunks if they are too far away from "player"
 		if (chunkDistFromPlayer.x > m_renderDist || chunkDistFromPlayer.z > m_renderDist
-			|| !FrustumCulling::CalculateChunkPosAgainstFrustum(ChunkToWorldSpace(chunkPosChunkSpace)))
+			/*|| !FrustumCulling::CalculateChunkPosAgainstFrustum(ChunkToWorldSpace(chunkPosChunkSpace))*/)
 		{
 			m_deletedChunkList.push_back(i);
 		}
@@ -134,8 +136,8 @@ void ChunkManager::Update()
 			else
 			{
 				// If chunk is within frustum
-				if (FrustumCulling::CalculateChunkPosAgainstFrustum(ChunkToWorldSpace(newChunkPosCS)));
-					m_newChunkList.push_back(newChunkPosCS);
+				//if (FrustumCulling::CalculateChunkPosAgainstFrustum(ChunkToWorldSpace(newChunkPosCS)));
+				m_newChunkList.push_back(newChunkPosCS);
 			}
 
 		}
@@ -154,8 +156,8 @@ void ChunkManager::Update()
 			else
 			{
 				// If chunk is within frustum
-				if(FrustumCulling::CalculateChunkPosAgainstFrustum(ChunkToWorldSpace(newChunkPosCS)));
-					m_newChunkList.push_back(newChunkPosCS);
+				//if(FrustumCulling::CalculateChunkPosAgainstFrustum(ChunkToWorldSpace(newChunkPosCS)));
+				m_newChunkList.push_back(newChunkPosCS);
 			}
 
 		}

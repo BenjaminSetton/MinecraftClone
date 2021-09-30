@@ -83,13 +83,15 @@ public:
 	// Returns FALSE is not visible
 	static bool CalculateChunkPosAgainstFrustum(const DirectX::XMFLOAT3 chunkPosWS);
 
-	static void CalculateFrustum(float FOV, float aspectRatio, float nearPlane, float farPlane, const DirectX::XMMATRIX& viewMatrix);
+	static void CalculateFrustum(float FOV, float aspectRatio, float nearPlane, float farPlane, const DirectX::XMMATRIX& viewMatrix, const DirectX::XMFLOAT3& camPos);
 
 	static void Debug_DrawFrustum();
 
-private:
+	static void Debug_DrawAABB(const AABB& aabb);
 
 	static const AABB ConvertChunkPosToAABB(const DirectX::XMFLOAT3 chunkPosWS);
+private:
+
 
 	static int TestAABBAgainstPlane(const AABB& aabb, const Plane& plane);
 

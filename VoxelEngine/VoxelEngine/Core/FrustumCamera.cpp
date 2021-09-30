@@ -17,10 +17,12 @@ void FrustumCamera::Update(float dt)
 	XMVECTOR deltaTranslation = { 0, 0, 0, 1 };
 	XMVECTOR deltaRotation = { 0.0f, 0.0f, 0.0f };
 
+	XMMATRIX worldMatrix = GetWorldMatrix();
+
 	XMVECTOR prevX, prevY, prevZ;
-	prevX = m_worldMatrix.r[0];
-	prevY = m_worldMatrix.r[1];
-	prevZ = m_worldMatrix.r[2];
+	prevX = worldMatrix.r[0];
+	prevY = worldMatrix.r[1];
+	prevZ = worldMatrix.r[2];
 
 	//Gather input from Input class
 
@@ -38,9 +40,9 @@ void FrustumCamera::Update(float dt)
 	//
 	// Rotation around the Y axis (look left/right)
 	if (Input::IsKeyDown(KeyCode::LEFT)) // LEFT
-		deltaRotation.m128_f32[1] -= m_rotationSpeed * 0.001f;
-	if (Input::IsKeyDown(KeyCode::RIGHT)) // RIGHT
 		deltaRotation.m128_f32[1] += m_rotationSpeed * 0.001f;
+	if (Input::IsKeyDown(KeyCode::RIGHT)) // RIGHT
+		deltaRotation.m128_f32[1] -= m_rotationSpeed * 0.001f;
 
 
 	// Build the rotation and translation matrices
@@ -51,18 +53,18 @@ void FrustumCamera::Update(float dt)
 	);
 
 	// Calculate the new world matrix
-	m_worldMatrix.r[3] = { 0, 0, 0, 1.0f };
-	m_worldMatrix = m_worldMatrix * rotYMatrix;
+	worldMatrix.r[3] = { 0, 0, 0, 1.0f };
+	worldMatrix = worldMatrix * rotYMatrix;
 
-	m_worldMatrix.r[3] = { prevPos.x, prevPos.y, prevPos.z, 1.0f };
-	m_worldMatrix = translationMatrix * m_worldMatrix;
+	worldMatrix.r[3] = { prevPos.x, prevPos.y, prevPos.z, 1.0f };
+	worldMatrix = translationMatrix * worldMatrix;
 
 	// Update the position and rotation camera values
 	m_position =
 	{
-		m_worldMatrix.r[3].m128_f32[0],
-		m_worldMatrix.r[3].m128_f32[1],
-		m_worldMatrix.r[3].m128_f32[2]
+		worldMatrix.r[3].m128_f32[0],
+		worldMatrix.r[3].m128_f32[1],
+		worldMatrix.r[3].m128_f32[2]
 	};
 
 	m_rotation =
@@ -71,6 +73,7 @@ void FrustumCamera::Update(float dt)
 		m_rotation.x + deltaRotation.m128_f32[1],
 		m_rotation.x + deltaRotation.m128_f32[2]
 	};
-}
 
-DirectX::XMMATRIX FrustumCamera::GetWorldMatrix() { return m_worldMatrix; }
+	// Re-assign the view matrix with all the changes
+	m_viewMatrix = XMMatrixInverse(nullptr, worldMatrix);
+}

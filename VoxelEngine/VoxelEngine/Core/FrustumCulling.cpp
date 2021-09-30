@@ -16,14 +16,17 @@ bool FrustumCulling::CalculateChunkPosAgainstFrustum(const XMFLOAT3 chunkPosWS)
 	// Convert Chunk* to AABB to test against frustum
 	AABB aabb = ConvertChunkPosToAABB(chunkPosWS);
 
+	// Debug only
+	//Debug_DrawAABB(aabb);
+
 	// Test the AABB against the frustum and return the result
 #ifdef PASS_STRADDLING_CHUNKS 1
-	if (TestAABBAgainstPlane(aabb, m_frustum.planes[Frustum_Planes::BACK]) < 0) return false;
-	if (TestAABBAgainstPlane(aabb, m_frustum.planes[Frustum_Planes::BOTTOM]) < 0) return false;
-	if (TestAABBAgainstPlane(aabb, m_frustum.planes[Frustum_Planes::FRONT]) < 0) return false;
-	if (TestAABBAgainstPlane(aabb, m_frustum.planes[Frustum_Planes::LEFT]) < 0) return false;
-	if (TestAABBAgainstPlane(aabb, m_frustum.planes[Frustum_Planes::RIGHT]) < 0) return false;
-	if (TestAABBAgainstPlane(aabb, m_frustum.planes[Frustum_Planes::TOP]) < 0) return false;
+	if (TestAABBAgainstPlane(aabb, m_frustum.planes[Frustum_Planes::BACK])		< 0) return false;
+	if (TestAABBAgainstPlane(aabb, m_frustum.planes[Frustum_Planes::BOTTOM])	< 0) return false;
+	if (TestAABBAgainstPlane(aabb, m_frustum.planes[Frustum_Planes::FRONT])		< 0) return false;
+	if (TestAABBAgainstPlane(aabb, m_frustum.planes[Frustum_Planes::LEFT])		< 0) return false;
+	if (TestAABBAgainstPlane(aabb, m_frustum.planes[Frustum_Planes::RIGHT])		< 0) return false;
+	if (TestAABBAgainstPlane(aabb, m_frustum.planes[Frustum_Planes::TOP])		< 0) return false;
 	return true;
 #elif
 	if (TestAABBAgainstPlane(aabb, m_frustum.planes[Frustum_Planes::BACK]) > 0) return false;
@@ -36,9 +39,9 @@ bool FrustumCulling::CalculateChunkPosAgainstFrustum(const XMFLOAT3 chunkPosWS)
 #endif
 }
 
-void FrustumCulling::CalculateFrustum(float FOV, float aspectRatio, float nearPlane, float farPlane, const DirectX::XMMATRIX& viewMatrix)
+void FrustumCulling::CalculateFrustum(float FOV, float aspectRatio, float nearPlane, float farPlane, const XMMATRIX& viewMatrix, const XMFLOAT3& camPos)
 {
-	XMVECTOR cameraPos = viewMatrix.r[3];
+	XMVECTOR cameraPos = XMLoadFloat3(&camPos);
 
 	//Project the centers outward
 	XMVECTOR nearCenter = cameraPos + viewMatrix.r[2] * nearPlane;
@@ -61,10 +64,10 @@ void FrustumCulling::CalculateFrustum(float FOV, float aspectRatio, float nearPl
 	XMVECTOR botRightFar = farCenter + (zeroVector - (viewMatrix.r[1] * halfHeightFar) + viewMatrix.r[0] * halfWidthFar);
 	XMVECTOR botLeftFar = farCenter + (zeroVector - (viewMatrix.r[1] * halfHeightFar) - viewMatrix.r[0] * halfWidthFar);
 
-	m_frustum.planes[Frustum_Planes::FRONT] = CalculatePlaneFromPoints(topLeftNear, topRightNear, botRightNear);
+	m_frustum.planes[Frustum_Planes::FRONT] = CalculatePlaneFromPoints(botRightNear, topLeftNear, topRightNear);
 	m_frustum.planes[Frustum_Planes::BACK] = CalculatePlaneFromPoints(botRightFar, topRightFar, topLeftFar);
 	m_frustum.planes[Frustum_Planes::LEFT] = CalculatePlaneFromPoints(botLeftFar, topLeftFar, topLeftNear);
-	m_frustum.planes[Frustum_Planes::RIGHT] = CalculatePlaneFromPoints(botRightFar, botRightNear, topRightNear);
+	m_frustum.planes[Frustum_Planes::RIGHT] = CalculatePlaneFromPoints(topRightNear, topRightFar, botRightFar);
 	m_frustum.planes[Frustum_Planes::TOP] = CalculatePlaneFromPoints(topLeftFar, topRightFar, topRightNear);
 	m_frustum.planes[Frustum_Planes::BOTTOM] = CalculatePlaneFromPoints(botRightFar, botLeftFar, botLeftNear);
 
@@ -82,8 +85,8 @@ void FrustumCulling::CalculateFrustum(float FOV, float aspectRatio, float nearPl
 const AABB FrustumCulling::ConvertChunkPosToAABB(const XMFLOAT3 chunkPosWS)
 {
 	AABB aabb;
-	aabb.center = { chunkPosWS.x + CHUNK_SIZE / 2.0f, chunkPosWS.y - CHUNK_SIZE / 2.0f, chunkPosWS.z + CHUNK_SIZE / 2.0f };
-	aabb.extent = { chunkPosWS.x - aabb.center.x, chunkPosWS.y - aabb.center.y, chunkPosWS.z - aabb.center.z };
+	aabb.center = { chunkPosWS.x + CHUNK_SIZE / 2.0f, chunkPosWS.y + CHUNK_SIZE / 2.0f, chunkPosWS.z + CHUNK_SIZE / 2.0f };
+	aabb.extent = { 8.0f, 8.0f, 8.0f };
 	return aabb;
 }
 
@@ -149,4 +152,109 @@ void FrustumCulling::Debug_DrawFrustum()
 	DebugLine::AddLine(trf, brf, lineColor);
 	DebugLine::AddLine(brf, blf, lineColor);
 	DebugLine::AddLine(blf, tlf, lineColor);
+
+	// Frustum normals
+	XMFLOAT4 nrmStartCol = { 1.0f, 0.0f, 0.0f, 1.0f };
+	XMFLOAT4 nrmEndCol = { 0.0f, 0.0f, 1.0f, 1.0f };
+
+	Plane currPlane = m_frustum.planes[Frustum_Planes::TOP];
+	XMFLOAT3 planeMidpoint;
+	XMFLOAT3 endPoint;
+	XMStoreFloat3(&planeMidpoint, {
+		(m_frustum.vertices[Frustum_Vertices::TLN] +
+		m_frustum.vertices[Frustum_Vertices::TRN] +
+		((m_frustum.vertices[Frustum_Vertices::TLF] - m_frustum.vertices[Frustum_Vertices::TLN]) / 100.0f + m_frustum.vertices[Frustum_Vertices::TLN]) +
+		((m_frustum.vertices[Frustum_Vertices::TRF] - m_frustum.vertices[Frustum_Vertices::TRN]) / 100.0f + m_frustum.vertices[Frustum_Vertices::TRN]))
+					 / 4.0f });
+	XMStoreFloat3(&endPoint, XMLoadFloat3(&planeMidpoint) + XMLoadFloat3(&currPlane.normal));
+	DebugLine::AddLine(planeMidpoint, endPoint, nrmStartCol, nrmEndCol);
+
+	currPlane = m_frustum.planes[Frustum_Planes::BOTTOM];
+	XMStoreFloat3(&planeMidpoint, {
+		(m_frustum.vertices[Frustum_Vertices::BLN] +
+		m_frustum.vertices[Frustum_Vertices::BRN] +
+		((m_frustum.vertices[Frustum_Vertices::BLF] - m_frustum.vertices[Frustum_Vertices::BLN]) / 100.0f + m_frustum.vertices[Frustum_Vertices::BLN]) +
+		((m_frustum.vertices[Frustum_Vertices::BRF] - m_frustum.vertices[Frustum_Vertices::BRN]) / 100.0f + m_frustum.vertices[Frustum_Vertices::BRN]))
+					 / 4.0f });
+	XMStoreFloat3(&endPoint, XMLoadFloat3(&planeMidpoint) + XMLoadFloat3(&currPlane.normal));
+	DebugLine::AddLine(planeMidpoint, endPoint, nrmStartCol, nrmEndCol);
+
+	currPlane = m_frustum.planes[Frustum_Planes::LEFT];
+	XMStoreFloat3(&planeMidpoint, {
+		(m_frustum.vertices[Frustum_Vertices::BLN] +
+		m_frustum.vertices[Frustum_Vertices::TLN] +
+		((m_frustum.vertices[Frustum_Vertices::BLF] - m_frustum.vertices[Frustum_Vertices::BLN]) / 100.0f + m_frustum.vertices[Frustum_Vertices::BLN]) +
+		((m_frustum.vertices[Frustum_Vertices::TLF] - m_frustum.vertices[Frustum_Vertices::TLN]) / 100.0f + m_frustum.vertices[Frustum_Vertices::TLN]))
+					 / 4.0f });
+	XMStoreFloat3(&endPoint, XMLoadFloat3(&planeMidpoint) + XMLoadFloat3(&currPlane.normal));
+	DebugLine::AddLine(planeMidpoint, endPoint, nrmStartCol, nrmEndCol);
+
+	currPlane = m_frustum.planes[Frustum_Planes::RIGHT];
+	XMStoreFloat3(&planeMidpoint, {
+		(m_frustum.vertices[Frustum_Vertices::BRN] +
+		m_frustum.vertices[Frustum_Vertices::TRN] +
+		((m_frustum.vertices[Frustum_Vertices::BRF] - m_frustum.vertices[Frustum_Vertices::BRN]) / 100.0f + m_frustum.vertices[Frustum_Vertices::BRN]) +
+		((m_frustum.vertices[Frustum_Vertices::TRF] - m_frustum.vertices[Frustum_Vertices::TRN]) / 100.0f + m_frustum.vertices[Frustum_Vertices::TRN]))
+					 / 4.0f });
+	XMStoreFloat3(&endPoint, XMLoadFloat3(&planeMidpoint) + XMLoadFloat3(&currPlane.normal));
+	DebugLine::AddLine(planeMidpoint, endPoint, nrmStartCol, nrmEndCol);
+
+	currPlane = m_frustum.planes[Frustum_Planes::FRONT];
+	XMStoreFloat3(&planeMidpoint, {
+		(m_frustum.vertices[Frustum_Vertices::TLN] +
+		m_frustum.vertices[Frustum_Vertices::TRN] +
+		m_frustum.vertices[Frustum_Vertices::BRN] +
+		m_frustum.vertices[Frustum_Vertices::BLN])
+					 / 4.0f });
+	XMStoreFloat3(&endPoint, XMLoadFloat3(&planeMidpoint) + XMLoadFloat3(&currPlane.normal));
+	DebugLine::AddLine(planeMidpoint, endPoint, nrmStartCol, nrmEndCol);
+
+	currPlane = m_frustum.planes[Frustum_Planes::BACK];
+	XMStoreFloat3(&planeMidpoint, {
+		(m_frustum.vertices[Frustum_Vertices::TLF] +
+		m_frustum.vertices[Frustum_Vertices::TRF] +
+		m_frustum.vertices[Frustum_Vertices::BRF] +
+		m_frustum.vertices[Frustum_Vertices::BLF])
+					 / 4.0f });
+	XMStoreFloat3(&endPoint, XMLoadFloat3(&planeMidpoint) + XMLoadFloat3(&currPlane.normal));
+	DebugLine::AddLine(planeMidpoint, endPoint, nrmStartCol, nrmEndCol);
+}
+
+void FrustumCulling::Debug_DrawAABB(const AABB& aabb)
+{
+	XMFLOAT4 lineCol = { 1.0f, 0.0f, 0.0f, 1.0f };
+	XMFLOAT3 center = aabb.center;
+	XMFLOAT3 extent = aabb.extent;
+	XMFLOAT3 tln = { center.x - extent.x, center.y + extent.y, center.z - extent.z };
+	XMFLOAT3 trn = { center.x + extent.x, center.y + extent.y, center.z - extent.z };
+	XMFLOAT3 bln = { center.x - extent.x, center.y - extent.y, center.z - extent.z };
+	XMFLOAT3 brn = { center.x + extent.x, center.y - extent.y, center.z - extent.z };
+	XMFLOAT3 tlf = { center.x - extent.x, center.y + extent.y, center.z + extent.z };
+	XMFLOAT3 trf = { center.x + extent.x, center.y + extent.y, center.z + extent.z };
+	XMFLOAT3 blf = { center.x - extent.x, center.y - extent.y, center.z + extent.z };
+	XMFLOAT3 brf = { center.x + extent.x, center.y - extent.y, center.z + extent.z };
+
+	// FRONT FACE
+	DebugLine::AddLine(tln, trn, lineCol);
+	DebugLine::AddLine(trn, brn, lineCol);
+	DebugLine::AddLine(brn, bln, lineCol);
+	DebugLine::AddLine(bln, tln, lineCol);
+
+	// BACK FACE
+	DebugLine::AddLine(tlf, trf, lineCol);
+	DebugLine::AddLine(trf, brf, lineCol);
+	DebugLine::AddLine(brf, blf, lineCol);
+	DebugLine::AddLine(blf, tlf, lineCol);
+
+	// TOP FACE
+	DebugLine::AddLine(tln, trn, lineCol);
+	DebugLine::AddLine(trn, trf, lineCol);
+	DebugLine::AddLine(trf, tlf, lineCol);
+	DebugLine::AddLine(tlf, tln, lineCol);
+
+	// BOTTOM FACE
+	DebugLine::AddLine(bln, brn, lineCol);
+	DebugLine::AddLine(brn, brf, lineCol);
+	DebugLine::AddLine(brf, blf, lineCol);
+	DebugLine::AddLine(blf, bln, lineCol);
 }
