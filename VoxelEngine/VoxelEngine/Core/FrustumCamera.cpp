@@ -37,6 +37,7 @@ void FrustumCamera::Update(float dt)
 	//
 	//	THERE IS AN ISSUE WITH WINDOW RESIZING/FRAMERATE WHERE
 	//	CAMREA ROTATION SPEEDS UP OR SLOWS DOWN
+	//	AND IS SUPER LAGGY
 	//
 	// Rotation around the Y axis (look left/right)
 	if (Input::IsKeyDown(KeyCode::LEFT)) // LEFT

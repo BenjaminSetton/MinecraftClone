@@ -29,7 +29,7 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	m_frustumCam->SetPosition({ -15.0f, 20.0f, 15.0f });
 	m_frustumCam->ConstructMatrix();
 	FrustumCulling::CalculateFrustum(XM_PIDIV4, (float)screenWidth / screenHeight,
-		SCREEN_NEAR, SCREEN_FAR, m_frustumCam->GetViewMatrix(), m_frustumCam->GetPosition());
+		SCREEN_NEAR, SCREEN_FAR, m_debugCam->GetWorldMatrix(), m_debugCam->GetPosition());
 
 	// Create and initialize the texture manager
 	m_textureManager = new TextureManager;
@@ -138,7 +138,7 @@ bool Graphics::Frame(const float dt)
 		m_frustumCam->Update(dt);
 
 		FrustumCulling::CalculateFrustum(XM_PIDIV4, (float)m_screenWidth / m_screenHeight, 
-			SCREEN_NEAR, SCREEN_FAR, m_frustumCam->GetViewMatrix(), m_frustumCam->GetPosition());
+			SCREEN_NEAR, SCREEN_FAR, m_debugCam->GetWorldMatrix(), m_debugCam->GetPosition());
 
 		// DEBUG ONLY
 		FrustumCulling::Debug_DrawFrustum();

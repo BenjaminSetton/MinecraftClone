@@ -4,6 +4,10 @@
 
 #include "../Utility/Utility.h"
 #include "DayNightCycle.h"
+#include "FrustumCulling.h"
+
+// ImGui Debug
+#include "../../imgui/imgui.h"
 
 using namespace DirectX;
 
@@ -70,6 +74,12 @@ void DefaultBlockShader::Initialize(XMMATRIX camViewMatrix, XMMATRIX lightViewMa
 
 void DefaultBlockShader::Render(ID3D11ShaderResourceView* const* srvs)
 {
+	// DEBUG BOOLEAN
+	static bool temp_enableFrustumCulling = true;
+	ImGui::Begin("Debug Panel");
+	ImGui::Checkbox("Enable Frustum Culling", &temp_enableFrustumCulling);
+	ImGui::End();
+
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
 	int debugVerts = 0;
@@ -81,6 +91,10 @@ void DefaultBlockShader::Render(ID3D11ShaderResourceView* const* srvs)
 	auto chunkVec = ChunkManager::GetChunkVector();
 	for(auto chunk : chunkVec)
 	{
+		if(temp_enableFrustumCulling)
+			// Cull chunks outside view frustum
+			if (!FrustumCulling::CalculateChunkPosAgainstFrustum(ChunkManager::ChunkToWorldSpace(chunk->GetPosition()))) continue;
+
 		// Update the vertex buffer
 		BindVertexBuffer(chunk);
 	

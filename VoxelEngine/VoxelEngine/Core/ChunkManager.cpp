@@ -3,7 +3,6 @@
 #include "ChunkManager.h"
 #include "../Utility/Utility.h"
 #include "../../imgui/imgui.h"
-#include "FrustumCulling.h"
 #include "Chunk.h"
 
 ///
@@ -47,12 +46,8 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 			// A coordinate in chunk space
 			XMFLOAT3 newChunkPosCS = { playerPosCS.x + x, 0, playerPosCS.z + z };
 
-			// Create a new chunk if within view frustum
-			if (FrustumCulling::CalculateChunkPosAgainstFrustum(ChunkToWorldSpace(newChunkPosCS)))
-			{
-				m_activeChunks.emplace_back(new Chunk(newChunkPosCS));
-				iter++;
-			}
+			m_activeChunks.emplace_back(new Chunk(newChunkPosCS));
+			iter++;
 		}
 	}
 
@@ -108,12 +103,8 @@ void ChunkManager::Update()
 			abs(chunkPosChunkSpace.z - playerPosChunkSpace.z),
 		};
 
-		//FrustumCulling::CalculateChunkPosAgainstFrustum(ChunkToWorldSpace(chunkPosChunkSpace));
-		FrustumCulling::CalculateChunkPosAgainstFrustum(ChunkToWorldSpace({ 0.0f, 0.0f, 0.0f }));
-
 		// 1. Unload chunks if they are too far away from "player"
-		if (chunkDistFromPlayer.x > m_renderDist || chunkDistFromPlayer.z > m_renderDist
-			/*|| !FrustumCulling::CalculateChunkPosAgainstFrustum(ChunkToWorldSpace(chunkPosChunkSpace))*/)
+		if (chunkDistFromPlayer.x > m_renderDist || chunkDistFromPlayer.z > m_renderDist)
 		{
 			m_deletedChunkList.push_back(i);
 		}
@@ -135,8 +126,6 @@ void ChunkManager::Update()
 			if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
 			else
 			{
-				// If chunk is within frustum
-				//if (FrustumCulling::CalculateChunkPosAgainstFrustum(ChunkToWorldSpace(newChunkPosCS)));
 				m_newChunkList.push_back(newChunkPosCS);
 			}
 
@@ -155,8 +144,6 @@ void ChunkManager::Update()
 			if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
 			else
 			{
-				// If chunk is within frustum
-				//if(FrustumCulling::CalculateChunkPosAgainstFrustum(ChunkToWorldSpace(newChunkPosCS)));
 				m_newChunkList.push_back(newChunkPosCS);
 			}
 

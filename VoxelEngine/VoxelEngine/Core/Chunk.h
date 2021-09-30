@@ -21,7 +21,7 @@ public:
 
 	Block* GetBlock(unsigned int x, unsigned int y, unsigned int z);
 
-	// Returns chunks' position in WORLD SPACE
+	// Returns chunks' position in CHUNK SPACE
 	const DirectX::XMFLOAT3 GetPosition();
 
 	const uint32_t GetFaceCount();
