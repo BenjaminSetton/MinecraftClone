@@ -11,7 +11,6 @@ using namespace DirectX;
 
 constexpr float SUNRISE_THRESHHOLD = 0.1f;
 constexpr float SUNSET_THRESHHOLD = 0.1f;
-
 constexpr float BODY_POS_SCALE = 50.0f;
 
 // Sun colors
@@ -33,7 +32,6 @@ constexpr XMFLOAT4 ce_moonColors[4] =
 
 constexpr XMFLOAT4 ce_skyColors[4] =
 {
-	//6.3, 6.3, 27.5
 	{ 1.0f, 0.549f, 0.0f, 1.0f },		// SUNRISE
 	{ 0.529f, 0.807f, 0.922, 1.0f },	// MIDDAY
 	{ 0.992f, 0.369f, 0.325f, 1.0f },	// SUNSET

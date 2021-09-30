@@ -165,8 +165,11 @@ bool Graphics::Frame(const float dt)
 			m_shadowShader->UpdateLightMatrix();
 			m_chunkShader->UpdateLightMatrix();
 
-			// Render the shadow map
-			m_shadowShader->Render();
+			{
+				VX_PROFILE_SCOPE_MSG("[RENDER] Shadow Pass");
+				// Render the shadow map
+				m_shadowShader->Render();
+			}
 
 			m_texViewer->SetTexture(m_shadowShader->GetShadowMap());
 
@@ -175,16 +178,27 @@ bool Graphics::Frame(const float dt)
 				m_textureManager->GetTexture(std::string("TEXTUREATLAS_TEX")),
 				m_shadowShader->GetShadowMap()
 			};
-			// Send the chunks to the shader and render
-			m_chunkShader->UpdateViewMatrices(m_debugCam->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
-			m_chunkShader->Render(srvs);
 
-			// Render all debug lines and spheres
-			m_debugShader->UpdateViewMatrix(m_debugCam->GetViewMatrix());
-			m_debugShader->Render();
 
-			// Render the texture viewer quad
-			m_texViewer->Render();
+			{
+				VX_PROFILE_SCOPE_MSG("[RENDER] Chunk");
+				// Send the chunks to the shader and render
+				m_chunkShader->UpdateViewMatrices(m_debugCam->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
+				m_chunkShader->Render(srvs);
+			}
+
+			{
+				VX_PROFILE_SCOPE_MSG("[RENDER] Debug");
+				// Render all debug lines and spheres
+				//m_debugShader->UpdateViewMatrix(m_debugCam->GetViewMatrix());
+				//m_debugShader->Render();
+			}
+
+			{
+				VX_PROFILE_SCOPE_MSG("[RENDER] Texture Viewer")
+				// Render the texture viewer quad
+				m_texViewer->Render();
+			}
 		}
 
 		XMFLOAT3 playerPos = m_debugCam->GetPosition();
