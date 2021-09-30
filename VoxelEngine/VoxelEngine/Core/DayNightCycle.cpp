@@ -5,13 +5,17 @@
 #include "../../imgui/imgui.h"
 #include "../Utility/DebugRenderer.h"
 
+
+using namespace DirectX;
+
+
 constexpr float SUNRISE_THRESHHOLD = 0.1f;
 constexpr float SUNSET_THRESHHOLD = 0.1f;
 
 constexpr float BODY_POS_SCALE = 50.0f;
 
 // Sun colors
-constexpr DirectX::XMFLOAT4 ce_sunColors[4] =
+constexpr XMFLOAT4 ce_sunColors[4] =
 {
 	{ 1.0f, 0.549f, 0.0f, 1.0f },		// SUNRISE
 	{ 0.991f, 0.913f, 0.89f, 1.0f },	// MIDDAY
@@ -19,12 +23,21 @@ constexpr DirectX::XMFLOAT4 ce_sunColors[4] =
 	{ 0.0f, 0.0f, 0.0f, 1.0f }			// MIDNIGHT
 };
 
-constexpr DirectX::XMFLOAT4 ce_moonColors[4] =
+constexpr XMFLOAT4 ce_moonColors[4] =
 {
 	{ 0.169f, 0.189f, 0.387f, 1.0f },	// SUNRISE
 	{ 0.0f, 0.0f, 0.0f, 1.0f },			// MIDDAY
 	{ 0.202f, 0.277f, 0.420f, 1.0f },	// SUNSET
 	{ 0.082f, 0.157f, 0.322f, 1.0f }	// MIDNIGHT
+};
+
+constexpr XMFLOAT4 ce_skyColors[4] =
+{
+	//6.3, 6.3, 27.5
+	{ 1.0f, 0.549f, 0.0f, 1.0f },		// SUNRISE
+	{ 0.529f, 0.807f, 0.922, 1.0f },	// MIDDAY
+	{ 0.992f, 0.369f, 0.325f, 1.0f },	// SUNSET
+	{ 0.063f, 0.063f, 0.275f, 1.0f }	// MIDNIGHT
 };
 
 // Ambient values
@@ -36,7 +49,6 @@ constexpr float ce_zOffset = 0.25f;
 
 constexpr float ce_cycleDuration = 30.0f;
 
-using namespace DirectX;
 
 XMFLOAT3 DayNightCycle::m_sunPos = { 0.0f, 0.0f, 0.0f };
 XMFLOAT3 DayNightCycle::m_moonPos = { 0.0f, 0.0f, 0.0f };
@@ -45,6 +57,8 @@ DirectionalLight DayNightCycle::m_sun = DirectionalLight({ -0.5f, -1.0f, 0.0f },
 DirectionalLight DayNightCycle::m_moon = DirectionalLight({ 1.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f, 1.0f });
 DayNightCycle::Cycle DayNightCycle::m_cycle = Cycle::DAY;
 DayNightCycle::Time DayNightCycle::m_time = Time::SUNRISE;
+
+XMFLOAT4 DayNightCycle::m_skyColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 float DayNightCycle::m_elapsedTime = 0.0f;
 
@@ -106,14 +120,18 @@ void DayNightCycle::Update(const float& dt)
 	endIndex = startIndex + 1 >= 4 ? 0 : startIndex + 1;
 	lerpRatio = (timePct / 0.5f) - static_cast<int>(timePct / 0.5f);
 
+	// Set the sun's color
 	XMFLOAT4 sunCol;
 	DirectX::XMStoreFloat4(&sunCol, XMVectorLerp(XMLoadFloat4(&ce_sunColors[startIndex]), XMLoadFloat4(&ce_sunColors[endIndex]), lerpRatio));
 	m_sun.SetColor(sunCol);
 
+	// Set the moon's color
 	XMFLOAT4 moonCol;
 	DirectX::XMStoreFloat4(&moonCol, XMVectorLerp(XMLoadFloat4(&ce_moonColors[startIndex]), XMLoadFloat4(&ce_moonColors[endIndex]), lerpRatio));
 	m_moon.SetColor(moonCol);
 
+	// Set the sky's color
+	DirectX::XMStoreFloat4(&m_skyColor, XMVectorLerp(XMLoadFloat4(&ce_skyColors[startIndex]), XMLoadFloat4(&ce_skyColors[endIndex]), lerpRatio));
 
 
 	// IMGUI DEBUG PANEL
@@ -204,4 +222,6 @@ const float DayNightCycle::GetLightAmbient(const CelestialBody body)
 	if (body == CelestialBody::SUN) return ce_sunAmbient;
 	else return ce_moonAmbient;
 }
+
+const XMFLOAT4 DayNightCycle::GetSkyColor() { return m_skyColor; }
 

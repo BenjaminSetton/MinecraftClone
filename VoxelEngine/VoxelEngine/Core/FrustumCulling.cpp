@@ -16,9 +16,6 @@ bool FrustumCulling::CalculateChunkPosAgainstFrustum(const XMFLOAT3 chunkPosWS)
 	// Convert Chunk* to AABB to test against frustum
 	AABB aabb = ConvertChunkPosToAABB(chunkPosWS);
 
-	// Debug only
-	//Debug_DrawAABB(aabb);
-
 	// Test the AABB against the frustum and return the result
 #ifdef PASS_STRADDLING_CHUNKS 1
 	if (TestAABBAgainstPlane(aabb, m_frustum.planes[Frustum_Planes::BACK])		< 0) return false;

@@ -140,10 +140,14 @@ bool Graphics::Frame(const float dt)
 		FrustumCulling::CalculateFrustum(XM_PIDIV4, (float)m_screenWidth / m_screenHeight, 
 			SCREEN_NEAR, SCREEN_FAR, m_debugCam->GetWorldMatrix(), m_debugCam->GetPosition());
 
-		// DEBUG ONLY
-		FrustumCulling::Debug_DrawFrustum();
-		auto chunkVec = ChunkManager::GetChunkVector();
-		for (auto chunk : chunkVec) FrustumCulling::Debug_DrawAABB(FrustumCulling::ConvertChunkPosToAABB(ChunkManager::ChunkToWorldSpace(chunk->GetPosition())));
+
+		//
+		// !	DEBUG ONLY
+		//
+		// FrustumCulling::Debug_DrawFrustum();
+		// auto chunkVec = ChunkManager::GetChunkVector();
+		// for (auto chunk : chunkVec) FrustumCulling::Debug_DrawAABB(FrustumCulling::ConvertChunkPosToAABB(ChunkManager::ChunkToWorldSpace(chunk->GetPosition())));
+
 
 		// Update the position for the updater thread
 		ChunkManager::SetPlayerPos(m_debugCam->GetPosition());
@@ -152,7 +156,7 @@ bool Graphics::Frame(const float dt)
 		DayNightCycle::Update(dt);
 
 		// Begin the D3D scene
-		D3D::BeginScene(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
+		D3D::BeginScene(DayNightCycle::GetSkyColor());
 
 		{
 			VX_PROFILE_SCOPE_MSG("Render Loop");

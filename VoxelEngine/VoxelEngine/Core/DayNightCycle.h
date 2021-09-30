@@ -39,6 +39,8 @@ public:
 	static const DirectX::XMFLOAT4 GetLightColor(const CelestialBody body);
 	static const float GetLightAmbient(const CelestialBody body);
 
+	static const DirectX::XMFLOAT4 GetSkyColor();
+
 private:
 
 	static DirectX::XMFLOAT3 m_sunPos;
@@ -46,6 +48,8 @@ private:
 
 	static DirectionalLight m_sun;
 	static DirectionalLight m_moon;
+
+	static DirectX::XMFLOAT4 m_skyColor;
 
 	static Cycle m_cycle;
 	static Time m_time;
