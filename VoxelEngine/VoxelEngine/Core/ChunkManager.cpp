@@ -24,6 +24,15 @@ std::vector<uint32_t> ChunkManager::m_deletedChunkList = std::vector<uint32_t>()
 std::thread* ChunkManager::m_updaterThread = nullptr;
 std::mutex ChunkManager::m_canAccessVec;
 
+#define ALLOW_HARD_CODED_MAX_INIT_THREADS 0
+
+#if ALLOW_HARD_CODED_MAX_INIT_THREADS == 1
+const uint32_t g_maxNumThreadsForInit = 5;
+#else
+uint32_t g_maxNumThreadsForInit;
+#endif
+
+
 std::unordered_map<uint64_t, std::weak_ptr<Chunk>> ChunkManager::m_chunkMap = std::unordered_map<uint64_t, std::weak_ptr<Chunk>>();
 
 
@@ -38,27 +47,56 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 
 	XMFLOAT3 playerPosCS = WorldToChunkSpace(playerPosWS);
 
-	// Load all of the initial chunks
-	for (int16_t x = -m_renderDist; x <= m_renderDist; x++)
-	{
-		for (int16_t z = -m_renderDist; z <= m_renderDist; z++)
-		{
-			// A coordinate in chunk space
-			XMFLOAT3 newChunkPosCS = { playerPosCS.x + x, 0, playerPosCS.z + z };
-
-			LoadChunk(newChunkPosCS);
-		}
-	}
+#if ALLOW_HARD_CODED_MAX_INIT_THREADS == 0
+	// hardware_concurrency() will only work for Windows builds...not particularly important
+	// right now but should keep this in mind!
+	g_maxNumThreadsForInit = std::thread::hardware_concurrency();
+#endif
 
 	{
 		VX_PROFILE_SCOPE_MSG_MODE("Initial Chunk Loading", 1);
-		// Initialize all the chunks' buffers
-		for (auto currChunk : m_activeChunks) 
+
+		uint32_t desiredDepthSlicesPerThread, actualDepthSlicesPerThread;
+		desiredDepthSlicesPerThread = actualDepthSlicesPerThread = 2;
+		uint32_t numThreadsToRun = floor((2 * m_renderDist + 1) / desiredDepthSlicesPerThread);
+
+		// If we need more threads to run desired depth slices per thread, cap at map threads and recalculate
+		// actualDepthSlicesPerThread to reflect change in numThreadsToRun
+		if(numThreadsToRun > g_maxNumThreadsForInit)
 		{
-			// Sanity check (this assert should never hit)
-			VX_ASSERT(currChunk);
-			currChunk->InitializeVertexBuffer();
+			numThreadsToRun = g_maxNumThreadsForInit;
+			actualDepthSlicesPerThread = floor((2 * m_renderDist + 1) / numThreadsToRun);
 		}
+
+
+		// [MULTI-THREADED]		Load all of the initial chunks
+		std::vector<std::thread*> chunkLoaderThreads(numThreadsToRun);
+		for (int16_t threadID = 0; threadID < numThreadsToRun; threadID++)
+		{
+			int32_t startingChunk = threadID * actualDepthSlicesPerThread - m_renderDist;
+			int32_t numChunksToInit = threadID == numThreadsToRun - 1 ? actualDepthSlicesPerThread + ((2 * m_renderDist + 1) - numThreadsToRun * actualDepthSlicesPerThread) : actualDepthSlicesPerThread;
+			std::thread* currThread = new std::thread(InitChunksMultithreaded, startingChunk, numChunksToInit, playerPosCS);
+			chunkLoaderThreads[threadID] = currThread;
+		}
+
+		// Join all initer threads before proceeding
+		for (auto thread : chunkLoaderThreads) thread->join();
+		chunkLoaderThreads.clear();
+
+		// [MULTI-THREADED]		Initialize all the chunks' vertex buffers
+		std::vector<std::thread*> vertexBufferThreads(numThreadsToRun);
+		uint32_t numIndicesPerChunk = m_activeChunks.size() / numThreadsToRun;
+		for (int16_t threadID = 0; threadID < numThreadsToRun; threadID++)
+		{
+			uint32_t startingIndex = threadID * numIndicesPerChunk;
+			uint32_t numIndiciesToInit = threadID == numThreadsToRun - 1 ? m_activeChunks.size() - startingIndex : numIndicesPerChunk;
+			std::thread* currThread = new std::thread(InitChunkVertexBuffersMultithreaded, startingIndex, numIndiciesToInit);
+			vertexBufferThreads[threadID] = currThread;
+		}
+
+		// Join all initer threads before proceeding
+		for (auto thread : vertexBufferThreads) thread->join();
+		vertexBufferThreads.clear();
 	}
 
 
@@ -247,7 +285,6 @@ std::shared_ptr<Chunk> ChunkManager::LoadChunk(const XMFLOAT3 chunkCS)
 	std::shared_ptr<Chunk> chunk = std::make_shared<Chunk>(chunkCS);
 	m_activeChunks.emplace_back(chunk);
 
-	// Hash chunk position
 	uint64_t hashKey = GetHashKeyFromChunkPosition(chunkCS);
 	m_chunkMap[hashKey] = static_cast<std::weak_ptr<Chunk>>(chunk);
 
@@ -287,14 +324,14 @@ void ChunkManager::UnloadChunk(const uint16_t& index)
 
 const uint16_t ChunkManager::GetNumActiveChunks()
 {
-	std::lock_guard<std::mutex> guard(m_canAccessVec);
+	//std::lock_guard<std::mutex> guard(m_canAccessVec);
 	return m_activeChunks.size();
 }
 
 
 std::shared_ptr<Chunk> ChunkManager::GetChunkAtIndex(const uint16_t index)
 {
-	std::lock_guard<std::mutex> guard(m_canAccessVec);
+	//std::lock_guard<std::mutex> guard(m_canAccessVec);
 	if (index < m_activeChunks.size())
 	{
 		return m_activeChunks[index];
@@ -360,4 +397,47 @@ uint64_t ChunkManager::GetHashKeyFromChunkPosition(const DirectX::XMFLOAT3& chun
 {
 	// (z + size) * (size << 1)^2 + (y + size) * (size << 1) + (x + size)
 	return (chunkPos.z + CHUNK_SIZE) * DOUBLE_CHUNK_SIZE * DOUBLE_CHUNK_SIZE + (chunkPos.y + CHUNK_SIZE) * DOUBLE_CHUNK_SIZE + (chunkPos.x + CHUNK_SIZE);
+}
+
+void ChunkManager::InitChunksMultithreaded(const int32_t& startChunk, const int32_t& numChunksToInit, const XMFLOAT3& playerPosCS)
+{
+	for(int32_t x = startChunk; x < startChunk + numChunksToInit; x++)
+	{
+		for (int32_t z = -m_renderDist; z <= m_renderDist; z++)
+		{
+			// A coordinate in chunk space
+			XMFLOAT3 newChunkPosCS = { playerPosCS.x + x, 0, playerPosCS.z + z };
+
+			LoadChunkMultithreaded(newChunkPosCS);
+		}
+	}
+}
+
+void ChunkManager::InitChunkVertexBuffersMultithreaded(const uint32_t& startIndex, const uint32_t& numChunksToInit)
+{
+	for(uint32_t index = startIndex; index < startIndex + numChunksToInit; index++)
+	{
+		// Sanity check
+		VX_ASSERT(index < m_activeChunks.size());
+
+		std::shared_ptr<Chunk> currChunk = m_activeChunks[index];
+
+		// Sanity check
+		VX_ASSERT(currChunk);
+
+		currChunk->InitializeVertexBuffer();
+	}
+}
+
+std::shared_ptr<Chunk> ChunkManager::LoadChunkMultithreaded(const DirectX::XMFLOAT3 chunkCS)
+{
+	std::shared_ptr<Chunk> chunk = std::make_shared<Chunk>(chunkCS);
+	uint64_t hashKey = GetHashKeyFromChunkPosition(chunkCS);
+
+	m_canAccessVec.lock();
+	m_activeChunks.emplace_back(chunk);
+	m_chunkMap[hashKey] = static_cast<std::weak_ptr<Chunk>>(chunk);
+	m_canAccessVec.unlock();
+
+	return chunk;
 }

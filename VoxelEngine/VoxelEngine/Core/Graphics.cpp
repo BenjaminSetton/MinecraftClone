@@ -61,9 +61,6 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 
 	m_texViewer = new TextureViewer(nullptr, 5, 5, 0.15f);
 
-	VX_LOG("Testing va_args with char %c", 's');
-	VX_LOG_WARN("Testing a %s in line %u", "warning", __LINE__);
-
 	return true;
 }
 

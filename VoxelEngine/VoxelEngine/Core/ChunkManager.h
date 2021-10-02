@@ -41,6 +41,14 @@ public:
 	static DirectX::XMFLOAT3 WorldToChunkSpace(const DirectX::XMFLOAT3& pos);
 	static DirectX::XMFLOAT3 ChunkToWorldSpace(const DirectX::XMFLOAT3& pos);
 
+
+	// MULTI-THREADED METHODS
+	static void InitChunksMultithreaded(const int32_t &startChunk, const int32_t& numChunksToInit, const DirectX::XMFLOAT3& playerPosCS);
+
+	static void InitChunkVertexBuffersMultithreaded(const uint32_t& startIndex, const uint32_t& numChunksToInit);
+
+	static std::shared_ptr<Chunk> LoadChunkMultithreaded(const DirectX::XMFLOAT3 chunkCS);
+
 private:
 
 	static void Update();
@@ -48,6 +56,7 @@ private:
 	static void ResetChunkMemory(const uint16_t index);
 
 	static uint64_t GetHashKeyFromChunkPosition(const DirectX::XMFLOAT3& chunkPos);
+
 
 private:
 	
