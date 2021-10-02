@@ -4,6 +4,7 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <unordered_map>
 
 #include "Chunk.h"
 
@@ -17,28 +18,23 @@ public:
 
 	static void Shutdown();
 
-	static Chunk* LoadChunk(const DirectX::XMFLOAT3 chunkCS);
+	static std::shared_ptr<Chunk> LoadChunk(const DirectX::XMFLOAT3 chunkCS);
 
-	static void UnloadChunk(Chunk* chunk);
+	static void UnloadChunk(std::shared_ptr<Chunk> chunk);
 	static void UnloadChunk(const uint16_t& index);
 
 	static const uint16_t GetNumActiveChunks();
 
-	static Chunk* GetChunkAtIndex(const uint16_t index);
+	static std::shared_ptr<Chunk> GetChunkAtIndex(const uint16_t index);
 
 	// Returns chunk at "pos" CHUNK SPACE
-	static Chunk* GetChunkAtPos(const DirectX::XMFLOAT3 pos);
+	static std::shared_ptr<Chunk> GetChunkAtPos(const DirectX::XMFLOAT3 pos);
 
-	// For EXTERNAL use only, don't use this method internally!!
-	static std::vector<Chunk*>& GetChunkVector();
+	static std::vector<std::shared_ptr<Chunk>> GetChunkVector();
 
 	static void UpdaterEntryPoint();
 
 	static void SetPlayerPos(DirectX::XMFLOAT3 playerPos);
-
-	static void CheckOutChunkVector();
-
-	static void ReturnChunkVector();
 
 	// Helper methods. Consider moving to a Utility library
 	static DirectX::XMFLOAT3 WorldToChunkSpace(const DirectX::XMFLOAT3& pos);
@@ -50,10 +46,12 @@ private:
 
 	static void ResetChunkMemory(const uint16_t index);
 
+	static uint64_t GetHashKeyFromChunkPosition(const DirectX::XMFLOAT3& chunkPos);
+
 private:
 	
 	// Stores active chunks in CHUNK SPACE
-	static std::vector<Chunk*> m_activeChunks;
+	static std::vector<std::shared_ptr<Chunk>> m_activeChunks;
 
 	// NOTE! Temporarily stored here
 	// Consider moving to another "settings" or "game" class
@@ -68,6 +66,10 @@ private:
 	static std::vector<uint32_t> m_deletedChunkList;
 
 	static DirectX::XMFLOAT3 m_playerPos;
+
+	// Stored as a weak_ptr because it doesn't own Chunk*'s
+	// It just speeds up position lookup for Chunk*'s
+	static std::unordered_map<uint64_t, std::weak_ptr<Chunk>> m_chunkMap;
 
 };
 

@@ -14,8 +14,7 @@
 using namespace DirectX;
 
 // Static variable definitions
-
-std::vector<Chunk*> ChunkManager::m_activeChunks = std::vector<Chunk*>();
+std::vector<std::shared_ptr<Chunk>> ChunkManager::m_activeChunks = std::vector<std::shared_ptr<Chunk>>();
 uint16_t ChunkManager::m_renderDist = 8;
 bool ChunkManager::m_runUpdater = true;
 XMFLOAT3 ChunkManager::m_playerPos = { 0.0f, 0.0f, 0.0f };
@@ -24,6 +23,8 @@ std::vector<XMFLOAT3> ChunkManager::m_newChunkList = std::vector<XMFLOAT3>();
 std::vector<uint32_t> ChunkManager::m_deletedChunkList = std::vector<uint32_t>();
 std::thread* ChunkManager::m_updaterThread = nullptr;
 std::mutex ChunkManager::m_canAccessVec;
+
+std::unordered_map<uint64_t, std::weak_ptr<Chunk>> ChunkManager::m_chunkMap = std::unordered_map<uint64_t, std::weak_ptr<Chunk>>();
 
 
 void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
@@ -59,6 +60,26 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 	}
 
 
+	// TEMP CODE, REMOVE IMMEDIATGELY
+	const int WHD = 3;
+	const int actDepth = WHD << 1;
+	std::vector<int> test;
+	for (int z = -WHD; z < WHD; z++)
+	{
+		for (int y = -WHD; y < WHD; y++)
+		{
+			for (int x = -WHD; x < WHD; x++)
+			{
+				int size = test.size();
+				int toPush = (z + WHD) * actDepth * actDepth + (y + WHD) * actDepth + (x + WHD);
+				test.push_back(toPush);
+				VX_ASSERT(size == toPush);
+			}
+		}
+	}
+	int stopHere = 10;
+
+
 	// Start the updater thread
 	m_updaterThread = new std::thread(UpdaterEntryPoint);
 }
@@ -89,10 +110,29 @@ void ChunkManager::Update()
 	XMFLOAT3 playerPosChunkSpace = WorldToChunkSpace(m_playerPos);
 
 
+	//
+	//	! DEBUG
+	//
+#pragma region _DEBUG
+#define TEST_RATE 100
+	for(uint32_t i = 0; i < TEST_RATE; i++)
+	{
+		const char* newArray = new char[1000];
+
+		// STALL
+		for(uint32_t j = 0; j < TEST_RATE * 2; j++)
+		{
+			// Do something
+		}
+
+		delete[] newArray;
+	}
+#pragma endregion //_DEBUG
+
 	// 1. Unload chunks outside of render distance
 	for (uint32_t i = 0; i < m_activeChunks.size(); i++)
 	{
-		Chunk* chunk = m_activeChunks[i];
+		std::shared_ptr<Chunk> chunk = m_activeChunks[i];
 
 		XMFLOAT3 chunkPosChunkSpace = chunk->GetPosition();
 
@@ -162,32 +202,32 @@ void ChunkManager::Update()
 	for (uint16_t i = 0; i < m_newChunkList.size(); i++)
 	{
 		// If "New Chunk" is not in frustum view, don't LoadChunk
-		Chunk* newChunk = LoadChunk(m_newChunkList[i]);
+		std::shared_ptr<Chunk> newChunk = LoadChunk(m_newChunkList[i]);
 		XMFLOAT3 chunkPosCS = newChunk->GetPosition();
 
 		// Left neighbor
-		Chunk* leftNeighbor = GetChunkAtPos({ chunkPosCS.x - 1, chunkPosCS.y, chunkPosCS.z });
+		std::shared_ptr<Chunk> leftNeighbor = GetChunkAtPos({ chunkPosCS.x - 1, chunkPosCS.y, chunkPosCS.z });
 		if (leftNeighbor) leftNeighbor->InitializeVertexBuffer();
 
 
 		// Right neighbor
-		Chunk* rightNeighbor = GetChunkAtPos({ chunkPosCS.x + 1, chunkPosCS.y, chunkPosCS.z });
+		std::shared_ptr<Chunk> rightNeighbor = GetChunkAtPos({ chunkPosCS.x + 1, chunkPosCS.y, chunkPosCS.z });
 		if (rightNeighbor) rightNeighbor->InitializeVertexBuffer();
 
 		// Top neighbor
-		Chunk* topNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y + 1, chunkPosCS.z });
+		std::shared_ptr<Chunk> topNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y + 1, chunkPosCS.z });
 		if (topNeighbor) topNeighbor->InitializeVertexBuffer();
 
 		// Bottom neighbor
-		Chunk* bottomNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y - 1, chunkPosCS.z });
+		std::shared_ptr<Chunk> bottomNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y - 1, chunkPosCS.z });
 		if (bottomNeighbor) bottomNeighbor->InitializeVertexBuffer();
 
 		// Front neighbor
-		Chunk* frontNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y, chunkPosCS.z - 1 });
+		std::shared_ptr<Chunk> frontNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y, chunkPosCS.z - 1 });
 		if (frontNeighbor) frontNeighbor->InitializeVertexBuffer();
 
 		// Back neighbor
-		Chunk* backNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y, chunkPosCS.z + 1 });
+		std::shared_ptr<Chunk> backNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y, chunkPosCS.z + 1 });
 		if (backNeighbor) backNeighbor->InitializeVertexBuffer();
 
 		// Current chunk
@@ -200,15 +240,19 @@ void ChunkManager::Update()
 	m_deletedChunkList.clear();
 }
 
-Chunk* ChunkManager::LoadChunk(const XMFLOAT3 chunkCS) 
+std::shared_ptr<Chunk> ChunkManager::LoadChunk(const XMFLOAT3 chunkCS) 
 {
-	Chunk* chunk = new Chunk(chunkCS);
+	std::shared_ptr<Chunk> chunk = std::make_shared<Chunk>(chunkCS);
 	m_activeChunks.emplace_back(chunk);
+
+	// Hash chunk position
+	uint64_t hashKey = GetHashKeyFromChunkPosition(chunkCS);
+	m_chunkMap[hashKey] = static_cast<std::weak_ptr<Chunk>>(chunk);
 
 	return chunk;
 }
 
-void ChunkManager::UnloadChunk(Chunk* chunk)
+void ChunkManager::UnloadChunk(std::shared_ptr<Chunk> chunk)
 {
 	///////////////////////////////////////
 	///
@@ -217,43 +261,38 @@ void ChunkManager::UnloadChunk(Chunk* chunk)
 	///////////////////////////////////////
 
 	// TODO: 
-	// - Consider loading/unloading chunks on a separate thread
 	// - Consider deleting un-modified chunks from memory (they can be loaded in again through a seed)
 	// - Modified chunks should be considered as "inactive" when unloaded, removed from
-	//   the m_activeChunks vector and serialized into a txt file
+	//   the m_activeChunks vector and serialized
 	uint16_t index = 0;
 	for(auto& iter : m_activeChunks)
 	{
 		// For now I will just set the chunk as inactive and remove it from the vector
 		if (iter == chunk)
 		{
-			Chunk* chunk = m_activeChunks[index];
-
-			// Delete chunk instance
-			delete chunk;
-			m_activeChunks.erase(m_activeChunks.begin() + index);
+			// Erase chunk instance from vector
+			UnloadChunk(index++);
 		}
-		index++;
 	}
 }
 
 
 void ChunkManager::UnloadChunk(const uint16_t& index)
 {
-	delete m_activeChunks[index];
+	m_chunkMap.erase(GetHashKeyFromChunkPosition(m_activeChunks[index]->GetPosition()));
 	m_activeChunks.erase(m_activeChunks.begin() + index);
 }
 
 const uint16_t ChunkManager::GetNumActiveChunks()
 {
-	std::lock_guard<std::mutex> guard(m_canAccessVec);
+	//std::lock_guard<std::mutex> guard(m_canAccessVec);
 	return m_activeChunks.size();
 }
 
 
-Chunk* ChunkManager::GetChunkAtIndex(const uint16_t index)
+std::shared_ptr<Chunk> ChunkManager::GetChunkAtIndex(const uint16_t index)
 {
-	std::lock_guard<std::mutex> guard(m_canAccessVec);
+	//std::lock_guard<std::mutex> guard(m_canAccessVec);
 	if (index < m_activeChunks.size())
 	{
 		return m_activeChunks[index];
@@ -264,29 +303,17 @@ Chunk* ChunkManager::GetChunkAtIndex(const uint16_t index)
 	}
 }
 
-Chunk* ChunkManager::GetChunkAtPos(const DirectX::XMFLOAT3 posCS)
+std::shared_ptr<Chunk> ChunkManager::GetChunkAtPos(const DirectX::XMFLOAT3 posCS)
 {
-	int16_t index = -1;
-	for(uint16_t iter = 0; iter < m_activeChunks.size(); iter++)
-	{
-		XMFLOAT3 currChunkPosCS = m_activeChunks[iter]->GetPosition();
-		if
-		(
-			posCS.x == currChunkPosCS.x &&
-			posCS.y == currChunkPosCS.y &&
-			posCS.z == currChunkPosCS.z
-		)
-		{
-			index = iter;
-			break;
-		}
-	}
+	uint64_t hashKey = GetHashKeyFromChunkPosition(posCS);
+	auto val = m_chunkMap.find(hashKey);
+	//std::shared_ptr<Chunk> chunkPtr = val->second;
 
-	if (index == -1) return nullptr;
-	else return m_activeChunks[index];
+	if (val == m_chunkMap.end()) return nullptr;
+	else return static_cast<std::shared_ptr<Chunk>>(val->second);
 }
 
-std::vector<Chunk*>& ChunkManager::GetChunkVector() 
+std::vector<std::shared_ptr<Chunk>> ChunkManager::GetChunkVector()
 {
 	return m_activeChunks;
 }
@@ -302,15 +329,15 @@ void ChunkManager::UpdaterEntryPoint()
 
 void ChunkManager::SetPlayerPos(DirectX::XMFLOAT3 playerPos) { m_playerPos = playerPos; }
 
-void ChunkManager::CheckOutChunkVector()
-{
-	m_canAccessVec.lock();
-}
-
-void ChunkManager::ReturnChunkVector()
-{
-	m_canAccessVec.unlock();
-}
+//void ChunkManager::CheckOutChunkVector()
+//{
+//	m_canAccessVec.lock();
+//}
+//
+//void ChunkManager::ReturnChunkVector()
+//{
+//	m_canAccessVec.unlock();
+//}
 
 XMFLOAT3 ChunkManager::WorldToChunkSpace(const XMFLOAT3& pos)
 {
@@ -326,4 +353,10 @@ XMFLOAT3 ChunkManager::ChunkToWorldSpace(const XMFLOAT3& pos)
 void ChunkManager::ResetChunkMemory(const uint16_t index)
 {
 	memset(&m_activeChunks[index], 0, sizeof(Chunk));
+}
+
+uint64_t ChunkManager::GetHashKeyFromChunkPosition(const DirectX::XMFLOAT3& chunkPos)
+{
+	// (z + size) * (size << 1)^2 + (y + size) * (size << 1) + (x + size)
+	return (chunkPos.z + CHUNK_SIZE) * DOUBLE_CHUNK_SIZE * DOUBLE_CHUNK_SIZE + (chunkPos.y + CHUNK_SIZE) * DOUBLE_CHUNK_SIZE + (chunkPos.x + CHUNK_SIZE);
 }

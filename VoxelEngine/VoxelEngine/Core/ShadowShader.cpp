@@ -66,17 +66,21 @@ void ShadowShader::Render()
 
 	BindObjects();
 
-	ChunkManager::CheckOutChunkVector();
+	//ChunkManager::CheckOutChunkVector();
 	auto chunkVec = ChunkManager::GetChunkVector();
+	int i = 0;
 	for (auto chunk : chunkVec)
 	{
+		if (!chunk) continue;
+
 		// Update the vertex buffer
 		BindVertexBuffer(chunk);
 
 		// Render the chunk
 		context->Draw(chunk->GetVertexCount(), 0);
+		i++;
 	}
-	ChunkManager::ReturnChunkVector();
+	//ChunkManager::ReturnChunkVector();
 }
 
 void ShadowShader::Shutdown()
@@ -273,7 +277,7 @@ void ShadowShader::CreateDepthBuffer(const uint32_t width, const uint32_t height
 	VX_ASSERT(!FAILED(hr));
 }
 
-void ShadowShader::BindVertexBuffer(Chunk* chunk)
+void ShadowShader::BindVertexBuffer(std::shared_ptr<Chunk> chunk)
 {
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 

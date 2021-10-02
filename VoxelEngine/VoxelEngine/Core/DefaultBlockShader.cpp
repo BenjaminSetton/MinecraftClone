@@ -87,10 +87,12 @@ void DefaultBlockShader::Render(ID3D11ShaderResourceView* const* srvs)
 
 	BindObjects(srvs);
 
-	ChunkManager::CheckOutChunkVector();
+	//ChunkManager::CheckOutChunkVector();
 	auto chunkVec = ChunkManager::GetChunkVector();
 	for(auto chunk : chunkVec)
 	{
+		if (!chunk) continue;
+
 		if(temp_enableFrustumCulling)
 			// Cull chunks outside view frustum
 			if (!FrustumCulling::CalculateChunkPosAgainstFrustum(ChunkManager::ChunkToWorldSpace(chunk->GetPosition()))) continue;
@@ -105,7 +107,7 @@ void DefaultBlockShader::Render(ID3D11ShaderResourceView* const* srvs)
 		debugVerts += numVerts;
 		numDrawCalls++;
 	}
-	ChunkManager::ReturnChunkVector();
+	//ChunkManager::ReturnChunkVector();
 
 	ImGui::Begin("Debug Panel");
 	ImGui::Text("Vertex Count: %i", debugVerts);
@@ -265,7 +267,7 @@ void DefaultBlockShader::CreateShaders(const WCHAR* vsFilename, const WCHAR* psF
 	PSBlob = nullptr;
 }
 
-void DefaultBlockShader::BindVertexBuffer(Chunk* chunk)
+void DefaultBlockShader::BindVertexBuffer(std::shared_ptr<Chunk> chunk)
 {
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 

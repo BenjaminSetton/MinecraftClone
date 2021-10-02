@@ -1,10 +1,12 @@
 #ifndef _CHUNK_H
 #define _CHUNK_H
 
-#define CHUNK_SIZE 16
-
 #include "Block.h"
 #include <d3d11.h>
+
+// Macros
+#define CHUNK_SIZE 16
+#define DOUBLE_CHUNK_SIZE (CHUNK_SIZE << 1)
 
 class Chunk
 {
