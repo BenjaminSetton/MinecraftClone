@@ -30,6 +30,7 @@ public:
 	// Returns chunk at "pos" CHUNK SPACE
 	static std::shared_ptr<Chunk> GetChunkAtPos(const DirectX::XMFLOAT3 pos);
 
+	// Returns a copy of the vector so shared_ptr ref count is increased by 1
 	static std::vector<std::shared_ptr<Chunk>> GetChunkVector();
 
 	static void UpdaterEntryPoint();

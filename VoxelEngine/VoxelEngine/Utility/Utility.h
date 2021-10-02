@@ -15,42 +15,48 @@
 
 #define BIT(x) (1 << x)
 
-// Assert defines
+// Asserting
 #define VX_ASSERT(cond) assert(cond)
 #define VX_ASSERT_MSG(cond, msg) assert(cond && "msg")
+#define VX_ASSERT_VAARGS(cond, ...) assert(cond && printf(__VA_ARGS__))
 
-// Profiling defines
+// Profiling
 #define VX_PROFILE_FUNC() auto VARNAME(var) = ScopeTimer(std::string(__FUNCTION__));
 #define VX_PROFILE_FUNC_MODE(mode) auto VARNAME(var) = ScopeTimer(std::string(__FUNCTION__), mode);
 #define VX_PROFILE_SCOPE() auto VARNAME(var) = ScopeTimer();
 #define VX_PROFILE_SCOPE_MSG(msg) auto VARNAME(var) = ScopeTimer(std::string(msg));
 #define VX_PROFILE_SCOPE_MSG_MODE(msg, mode) auto VARNAME(var) = ScopeTimer(std::string(msg), mode);
 
-// Log defines
-#define VX_LOG_ERROR(msg) \
+// Logging
+
+#define VX_LOG_ERROR(...) \
 Log VARNAME(log);\
 VARNAME(log).SetConsoleColors(FOREGROUND_RED);\
-VARNAME(log) << msg;\
+VARNAME(log).PrintTimestamp();\
+printf(__VA_ARGS__);\
 VARNAME(log).SetConsoleColors(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);\
 VARNAME(log).End();
 
-#define VX_LOG_WARN(msg) \
+#define VX_LOG_WARN(...) \
 Log VARNAME(log);\
 VARNAME(log).SetConsoleColors(FOREGROUND_RED | FOREGROUND_GREEN);\
-VARNAME(log) << msg;\
+VARNAME(log).PrintTimestamp();\
+printf(__VA_ARGS__);\
 VARNAME(log).SetConsoleColors(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);\
 VARNAME(log).End();
 
-#define VX_LOG_INFO(msg) \
+#define VX_LOG_INFO(...) \
 Log VARNAME(log);\
 VARNAME(log).SetConsoleColors(FOREGROUND_GREEN);\
-VARNAME(log) << msg;\
+VARNAME(log).PrintTimestamp();\
+printf(__VA_ARGS__);\
 VARNAME(log).SetConsoleColors(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);\
 VARNAME(log).End();
 
-#define VX_LOG(msg) \
+#define VX_LOG(...) \
 Log VARNAME(log);\
-VARNAME(log) << msg;\
+VARNAME(log).PrintTimestamp();\
+printf(__VA_ARGS__);\
 VARNAME(log).End();
 
 #else
@@ -73,10 +79,10 @@ VARNAME(log).End();
 #define VX_PROFILE_SCOPE_MSG(msg)
 #define VX_PROFILE_SCOPE_MSG_MODE(msg, mode)
 
-#define VX_LOG_ERROR(msg)
-#define VX_LOG_WARN(msg)
-#define VX_LOG_INFO(msg);
-#define VX_LOG(msg);
+#define VX_LOG_ERROR(...)
+#define VX_LOG_WARN(...)
+#define VX_LOG_INFO(...);
+#define VX_LOG(...);
 
 #endif
 

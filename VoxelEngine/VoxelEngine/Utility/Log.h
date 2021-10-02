@@ -70,6 +70,8 @@ public:
 
 	void End();
 
+	void PrintTimestamp();
+
 	void PrintToFile(const char* _msg);
 
 	void PrintNLToFile(const char* _msg);

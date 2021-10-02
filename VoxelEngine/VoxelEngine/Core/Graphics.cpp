@@ -61,6 +61,9 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 
 	m_texViewer = new TextureViewer(nullptr, 5, 5, 0.15f);
 
+	VX_LOG("Testing va_args with char %c", 's');
+	VX_LOG_WARN("Testing a %s in line %u", "warning", __LINE__);
+
 	return true;
 }
 
@@ -161,9 +164,12 @@ bool Graphics::Frame(const float dt)
 		{
 			VX_PROFILE_SCOPE_MSG("Render Loop");
 
-			// Update the position and color of the light/sun
-			m_shadowShader->UpdateLightMatrix();
-			m_chunkShader->UpdateLightMatrix();
+			{
+				VX_PROFILE_SCOPE_MSG("[UPDATE] Update Light Matrices")
+				// Update the position and color of the light/sun
+				m_shadowShader->UpdateLightMatrix();
+				m_chunkShader->UpdateLightMatrix();
+			}
 
 			{
 				VX_PROFILE_SCOPE_MSG("[RENDER] Shadow Pass");
@@ -171,13 +177,16 @@ bool Graphics::Frame(const float dt)
 				m_shadowShader->Render();
 			}
 
-			m_texViewer->SetTexture(m_shadowShader->GetShadowMap());
-
-			ID3D11ShaderResourceView* srvs[] =
+			ID3D11ShaderResourceView* srvs[2];
 			{
-				m_textureManager->GetTexture(std::string("TEXTUREATLAS_TEX")),
-				m_shadowShader->GetShadowMap()
-			};
+				VX_PROFILE_SCOPE_MSG("[SRV] Settings SRVs")
+				m_texViewer->SetTexture(m_shadowShader->GetShadowMap());
+
+
+				srvs[0] = m_textureManager->GetTexture(std::string("TEXTUREATLAS_TEX"));
+				srvs[1] = m_shadowShader->GetShadowMap();
+				
+			}
 
 
 			{

@@ -287,14 +287,14 @@ void ChunkManager::UnloadChunk(const uint16_t& index)
 
 const uint16_t ChunkManager::GetNumActiveChunks()
 {
-	//std::lock_guard<std::mutex> guard(m_canAccessVec);
+	std::lock_guard<std::mutex> guard(m_canAccessVec);
 	return m_activeChunks.size();
 }
 
 
 std::shared_ptr<Chunk> ChunkManager::GetChunkAtIndex(const uint16_t index)
 {
-	//std::lock_guard<std::mutex> guard(m_canAccessVec);
+	std::lock_guard<std::mutex> guard(m_canAccessVec);
 	if (index < m_activeChunks.size())
 	{
 		return m_activeChunks[index];
@@ -309,7 +309,6 @@ std::shared_ptr<Chunk> ChunkManager::GetChunkAtPos(const DirectX::XMFLOAT3 posCS
 {
 	uint64_t hashKey = GetHashKeyFromChunkPosition(posCS);
 	auto val = m_chunkMap.find(hashKey);
-	//std::shared_ptr<Chunk> chunkPtr = val->second;
 
 	if (val == m_chunkMap.end()) return nullptr;
 	else return static_cast<std::shared_ptr<Chunk>>(val->second);

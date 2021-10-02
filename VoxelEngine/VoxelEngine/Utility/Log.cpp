@@ -2,7 +2,8 @@
 #include "Log.h"
 
 
-Log::Log() : mLastWritePos(0), mOutputFile(nullptr), mNewMessage(true), mTimestamps(true), mNewLineAfterMessage(true)
+Log::Log() : mLastWritePos(0), mOutputFile(nullptr), mNewMessage(true), mTimestamps(true), 
+			 mNewLineAfterMessage(true), m_colors(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE)
 {
 	// Console HANDLE
 	m_console = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -56,6 +57,23 @@ void Log::PrintNLToFile(const char* _msg)
 	stream.close();
 }
 
+void Log::PrintTimestamp() 
+{
+	auto timeNow = std::chrono::system_clock::now();
+	std::time_t time = std::chrono::system_clock::to_time_t(timeNow);
+	tm timeStruct;
+	localtime_s(&timeStruct, &time);
+
+	std::cout << "[";
+	if (timeStruct.tm_hour < 10) std::cout << "0";
+	std::cout << timeStruct.tm_hour << ":";
+	if (timeStruct.tm_min < 10) std::cout << "0";
+	std::cout << timeStruct.tm_min << ":";
+	if (timeStruct.tm_sec < 10) std::cout << "0";
+	std::cout << timeStruct.tm_sec;
+	std::cout << "] ";
+}
+
 void Log::PrintToFile(const char* _msg)
 {
 	// Open a stream for decimal output
@@ -78,20 +96,7 @@ Log& Log::operator<<(const DirectX::XMFLOAT3 vec)
 	// Prints out a debug time
 	if (mNewMessage && mTimestamps)
 	{
-		auto timeNow = std::chrono::system_clock::now();
-		std::time_t time = std::chrono::system_clock::to_time_t(timeNow);
-		tm timeStruct;
-		localtime_s(&timeStruct, &time);
-
-		// Print out the debug timestamps
-		std::cout << "[";
-		if (timeStruct.tm_hour < 10) std::cout << "0";
-		std::cout << timeStruct.tm_hour << ":";
-		if (timeStruct.tm_min < 10) std::cout << "0";
-		std::cout << timeStruct.tm_min << ":";
-		if (timeStruct.tm_sec < 10) std::cout << "0";
-		std::cout << timeStruct.tm_sec;
-		std::cout << "] ";
+		PrintTimestamp();
 	}
 
 	std::cout << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
