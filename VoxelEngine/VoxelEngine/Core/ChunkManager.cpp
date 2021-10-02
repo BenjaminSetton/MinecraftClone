@@ -39,7 +39,6 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 	XMFLOAT3 playerPosCS = WorldToChunkSpace(playerPosWS);
 
 	// Load all of the initial chunks
-	uint32_t iter = 0;
 	for (int16_t x = -m_renderDist; x <= m_renderDist; x++)
 	{
 		for (int16_t z = -m_renderDist; z <= m_renderDist; z++)
@@ -47,37 +46,40 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 			// A coordinate in chunk space
 			XMFLOAT3 newChunkPosCS = { playerPosCS.x + x, 0, playerPosCS.z + z };
 
-			m_activeChunks.emplace_back(new Chunk(newChunkPosCS));
-			iter++;
+			LoadChunk(newChunkPosCS);
 		}
 	}
 
 	{
 		VX_PROFILE_SCOPE_MSG_MODE("Initial Chunk Loading", 1);
 		// Initialize all the chunks' buffers
-		// Consider adding multi-threading to speed up load time
-		for (uint16_t iter = 0; iter < m_activeChunks.size(); iter++) m_activeChunks[iter]->InitializeVertexBuffer();
+		for (auto currChunk : m_activeChunks) 
+		{
+			// Sanity check (this assert should never hit)
+			VX_ASSERT(currChunk);
+			currChunk->InitializeVertexBuffer();
+		}
 	}
 
 
 	// TEMP CODE, REMOVE IMMEDIATGELY
-	const int WHD = 3;
-	const int actDepth = WHD << 1;
-	std::vector<int> test;
-	for (int z = -WHD; z < WHD; z++)
-	{
-		for (int y = -WHD; y < WHD; y++)
-		{
-			for (int x = -WHD; x < WHD; x++)
-			{
-				int size = test.size();
-				int toPush = (z + WHD) * actDepth * actDepth + (y + WHD) * actDepth + (x + WHD);
-				test.push_back(toPush);
-				VX_ASSERT(size == toPush);
-			}
-		}
-	}
-	int stopHere = 10;
+	//const int WHD = 3;
+	//const int actDepth = WHD << 1;
+	//std::vector<int> test;
+	//for (int z = -WHD; z < WHD; z++)
+	//{
+	//	for (int y = -WHD; y < WHD; y++)
+	//	{
+	//		for (int x = -WHD; x < WHD; x++)
+	//		{
+	//			int size = test.size();
+	//			int toPush = (z + WHD) * actDepth * actDepth + (y + WHD) * actDepth + (x + WHD);
+	//			test.push_back(toPush);
+	//			VX_ASSERT(size == toPush);
+	//		}
+	//	}
+	//}
+	//int stopHere = 10;
 
 
 	// Start the updater thread
