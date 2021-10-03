@@ -132,6 +132,9 @@
     <ClCompile Include="Core\FrustumCamera.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="Core\Player.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utility\Clock.h">
@@ -255,6 +258,9 @@
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Core\FrustumCamera.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Player.h">
       <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>

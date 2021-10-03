@@ -21,22 +21,20 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	m_screenWidth = screenWidth;
 	m_screenHeight = screenHeight;
 
-	m_debugCam = new DebugCamera;
-	m_debugCam->SetPosition({-4.0f, 30.0f, -10.0f});
-	m_debugCam->ConstructMatrix();
+	Player* player = new Player();
 
 	m_frustumCam = new FrustumCamera;
 	m_frustumCam->SetPosition({ -15.0f, 20.0f, 15.0f });
 	m_frustumCam->ConstructMatrix();
 	FrustumCulling::CalculateFrustum(XM_PIDIV4, (float)screenWidth / screenHeight,
-		SCREEN_NEAR, SCREEN_FAR, m_debugCam->GetWorldMatrix(), m_debugCam->GetPosition());
+		SCREEN_NEAR, SCREEN_FAR, m_player->GetCamera()->GetWorldMatrix(), m_player->GetCamera()->GetPosition());
 
 	// Create and initialize the texture manager
 	m_textureManager = new TextureManager;
 	m_textureManager->Init(D3D::GetDevice());
 	
 	// Initialize ChunkManager class (DefaultBlockShader will use it's data so initialization has to take place before it)
-	ChunkManager::Initialize(m_debugCam->GetPosition());
+	ChunkManager::Initialize(m_player->GetCamera()->GetPosition());
 
 	// Create the shadow shader class
 	m_shadowShader = new ShadowShader;
@@ -47,12 +45,12 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	// Create the chunk shader class object
 	m_chunkShader = new DefaultBlockShader;
 	m_chunkShader->CreateObjects(L"./Shaders/DefaultBlock_VS.hlsl", L"./Shaders/DefaultBlock_PS.hlsl");
-	m_chunkShader->Initialize(m_debugCam->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
+	m_chunkShader->Initialize(m_player->GetCamera()->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
 
 	// Create the debug renderer class object
 	m_debugShader = new DebugRendererShader;
 	m_debugShader->CreateObjects(L"./Shaders/DebugRenderer_VS.hlsl", L"./Shaders/DebugRenderer_PS.hlsl");
-	m_debugShader->Initialize(m_debugCam->GetViewMatrix());
+	m_debugShader->Initialize(m_player->GetCamera()->GetViewMatrix());
 	
 
 	// Create and initialize the ImGuiLayer
@@ -111,10 +109,9 @@ void Graphics::Shutdown()
 
 	D3D::Shutdown();
 
-	if (m_debugCam) 
+	if(m_player)
 	{
-		delete m_debugCam;
-		m_debugCam = nullptr;
+		delete m_player;
 	}
 }
 
@@ -134,11 +131,11 @@ bool Graphics::Frame(const float dt)
 		else if (Input::IsKeyDown(KeyCode::R)) D3D::SetWireframeRasterState(false);
 
 		// Update the debug camera's position
-		m_debugCam->Update(dt);
+		m_player->GetCamera()->Update(dt);
 		m_frustumCam->Update(dt);
 
 		FrustumCulling::CalculateFrustum(XM_PIDIV4, (float)m_screenWidth / m_screenHeight, 
-			SCREEN_NEAR, SCREEN_FAR, m_debugCam->GetWorldMatrix(), m_debugCam->GetPosition());
+			SCREEN_NEAR, SCREEN_FAR, m_player->GetCamera()->GetWorldMatrix(), m_player->GetCamera()->GetPosition());
 
 
 		//
@@ -150,7 +147,7 @@ bool Graphics::Frame(const float dt)
 
 
 		// Update the position for the updater thread
-		ChunkManager::SetPlayerPos(m_debugCam->GetPosition());
+		ChunkManager::SetPlayerPos(m_player->GetCamera()->GetPosition());
 
 		// Update the day/night cycle
 		DayNightCycle::Update(dt);
@@ -189,7 +186,7 @@ bool Graphics::Frame(const float dt)
 			{
 				VX_PROFILE_SCOPE_MSG("[RENDER] Chunk");
 				// Send the chunks to the shader and render
-				m_chunkShader->UpdateViewMatrices(m_debugCam->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
+				m_chunkShader->UpdateViewMatrices(m_player->GetCamera()->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
 				m_chunkShader->Render(srvs);
 			}
 
@@ -207,7 +204,7 @@ bool Graphics::Frame(const float dt)
 			}
 		}
 
-		XMFLOAT3 playerPos = m_debugCam->GetPosition();
+		XMFLOAT3 playerPos = m_player->GetCamera()->GetPosition();
 		XMFLOAT3 playerPosChunkSpace = ChunkManager::WorldToChunkSpace(playerPos);
 		ImGui::Begin("Debug Panel");
 		ImGui::Text("Player Position: %2.2f, %2.2f, %2.2f (%i, %i, %i)",

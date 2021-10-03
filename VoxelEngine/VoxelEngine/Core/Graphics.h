@@ -3,7 +3,7 @@
 
 // TODO: Include CAMERA_CLASS, SHADERS, and other necessary classes used for rendering
 #include "D3D.h"
-#include "DebugCamera.h"
+#include "Player.h"
 #include "FrustumCamera.h"
 
 #include "DefaultBlockShader.h"
@@ -45,7 +45,8 @@ public:
 
 private:
 
-	DebugCamera* m_debugCam = nullptr;
+	Player* m_player = nullptr;
+
 	FrustumCamera* m_frustumCam = nullptr;
 
 	DefaultBlockShader* m_chunkShader = nullptr;

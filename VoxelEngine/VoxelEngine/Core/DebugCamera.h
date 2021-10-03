@@ -11,11 +11,13 @@ public:
 	DebugCamera(const DebugCamera& other) = default;
 	~DebugCamera() = default;
 
-	virtual void Update(float deltaTime) override;
+	void Update(const float dt) override;
+
+	const float GetRotationSpeed();
+	void SetRotationSpeed(const float speed);
 
 private:
 
-	float m_movementSpeed;
 	float m_rotationSpeed;
 
 };
