@@ -3,7 +3,6 @@
 
 // TODO: Include CAMERA_CLASS, SHADERS, and other necessary classes used for rendering
 #include "D3D.h"
-#include "Player.h"
 #include "FrustumCamera.h"
 
 #include "DefaultBlockShader.h"
@@ -15,6 +14,8 @@
 #include "TextureViewer.h"
 
 #include "DayNightCycle.h"
+
+#include "Player.h"
 
 // idk why it makes me include this here..again
 #include <windows.h>
@@ -35,7 +36,7 @@ public:
 	Graphics(const Graphics&) = default;
 	~Graphics() = default;
 
-	bool Initialize(const int& screenWidth, const int& screenHeight, HWND windowHandle);
+	bool Initialize(const int& screenWidth, const int& screenHeight, HWND windowHandle, Player* player);
 
 	void Shutdown();
 
@@ -44,8 +45,6 @@ public:
 	bool WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 private:
-
-	Player* m_player = nullptr;
 
 	FrustumCamera* m_frustumCam = nullptr;
 
@@ -58,6 +57,8 @@ private:
 	ImGuiLayer* m_imGuiLayer = nullptr;
 
 	TextureViewer* m_texViewer = nullptr;
+
+	Player* m_player = nullptr;
 
 	// Temporary
 	int m_screenWidth, m_screenHeight;

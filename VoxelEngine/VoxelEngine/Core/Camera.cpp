@@ -9,19 +9,18 @@ using namespace DirectX;
 
 Camera::Camera()
 {
-	m_position = { 0.0f, 0.0f, 0.0f };
 	m_rotation = { 0.0f, 0.0f, 0.0f };
 	m_viewMatrix = XMMatrixIdentity();
 }
 
-void Camera::ConstructMatrix()
+void Camera::ConstructMatrix(const XMFLOAT3 pos)
 {
 
 	// Setup the vector that points upwards.
 	XMVECTOR up = { 0, 1.0f, 0 };
 
 	// Setup the position of the camera in the world.
-	XMVECTOR position = { m_position.x, m_position.y, m_position.z };
+	XMVECTOR position = { pos.x, pos.y, pos.z };
 
 	// Setup where the camera is looking by default.
 	XMVECTOR lookAt = { 0, 0, 1.0f };
@@ -42,12 +41,12 @@ void Camera::ConstructMatrix()
 	return;
 }
 
-DirectX::XMFLOAT3 Camera::GetPosition() { return m_position; }
-void Camera::SetPosition(const DirectX::XMFLOAT3 pos) { m_position = pos; }
-
 DirectX::XMFLOAT3 Camera::GetRotation() { return m_rotation; }
 void Camera::SetRotation(const DirectX::XMFLOAT3 rot) { m_rotation = rot; }
 
 DirectX::XMMATRIX Camera::GetViewMatrix() { return m_viewMatrix; }
 
 DirectX::XMMATRIX Camera::GetWorldMatrix() { return XMMatrixInverse(nullptr, m_viewMatrix); }
+
+void Camera::SetViewMatrix(const DirectX::XMMATRIX viewMatrix) { m_viewMatrix = viewMatrix; }
+void Camera::SetWorldMatrix(const DirectX::XMMATRIX worldMatrix) { m_viewMatrix = XMMatrixInverse(nullptr, worldMatrix); }

@@ -7,6 +7,7 @@ class DebugCamera : public Camera
 {
 public:
 
+
 	DebugCamera();
 	DebugCamera(const DebugCamera& other) = default;
 	~DebugCamera() = default;

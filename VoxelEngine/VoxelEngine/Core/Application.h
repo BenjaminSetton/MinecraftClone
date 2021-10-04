@@ -23,7 +23,7 @@ class Application : public EventSubject
 public:
 
 	Application();
-	Application(const Application&);
+	Application(const Application&) = default;
 	~Application();
 
 	bool Initialize();
@@ -55,6 +55,8 @@ private:
 	Input* m_Input;
 	Graphics* m_Graphics;
 	Clock* m_Clock;
+
+	Player* m_player = nullptr;
 };
 
 // Static application handle pointer

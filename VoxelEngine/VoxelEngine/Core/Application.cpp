@@ -11,14 +11,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	return ApplicationHandle->MessageHandler(hwnd, msg, wparam, lparam);
 }
 
-Application::Application() : EventSubject()
+Application::Application() : EventSubject(),
+	m_Input(nullptr), m_Graphics(nullptr), m_Clock(nullptr), m_player(nullptr)
 {
-	m_Input = nullptr;
-	m_Graphics = nullptr;
-	m_Clock = nullptr;
-
 }
-Application::Application(const Application&){}
 
 Application::~Application()
 {
@@ -42,6 +38,11 @@ Application::~Application()
 	{
 		delete m_Input;
 		m_Input = nullptr;
+	}
+
+	if(m_player)
+	{
+		delete m_player;
 	}
 }
 
@@ -67,13 +68,17 @@ bool Application::Initialize()
 	m_Graphics = new Graphics;
 	if (!m_Graphics) { return false; }
 
+	// Initialize the player object
+	m_player = new Player();
+
 	// Initialize the graphics object.
-	result = m_Graphics->Initialize(screenWidth, screenHeight, m_hwnd);
+	result = m_Graphics->Initialize(screenWidth, screenHeight, m_hwnd, m_player);
 	if (!result) return false;
 
 	// Create the clock object
 	m_Clock = new Clock;
 	if (!m_Clock) return false;
+
 
 	return true;
 }
@@ -140,6 +145,11 @@ bool Application::Frame()
 	// Store the frame's delta time in dt
 	float dt = m_Clock->GetDeltaTime(Clock::TimePrecision::SECONDS);
 	
+	// Update physics
+
+	// Update the player
+	m_player->Update(dt);
+
 	// Process each frame in the graphics class
 	m_Graphics->Frame(dt);
 

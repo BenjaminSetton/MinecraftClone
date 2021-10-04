@@ -7,11 +7,10 @@
 using namespace DirectX;
 
 Player::Player() : m_acceleration({0.0f, 0.0f, 0.0f}), m_velocity({0.0f, 0.0f, 0.0f}), m_camera(nullptr),
-					m_movementSpeed(7.0f)
+					m_movementSpeed(7.0f), m_position({ -4.0f, 30.0f, -10.0f })
 {
 	m_camera = new DebugCamera;
-	m_camera->SetPosition({ -4.0f, 30.0f, -10.0f });
-	m_camera->ConstructMatrix();
+	m_camera->ConstructMatrix(m_position);
 }
 
 Player::~Player()
@@ -22,11 +21,14 @@ Player::~Player()
 DebugCamera* Player::GetCamera() { return m_camera; }
 void Player::SetCamera(DebugCamera* camera) { m_camera = camera; }
 
-DirectX::XMFLOAT3 Player::GetAcceleration() { return m_acceleration; }
-void Player::SetAcceleration(DirectX::XMFLOAT3 accel) { m_acceleration = accel; }
+DirectX::XMFLOAT3 Player::GetAcceleration() const { return m_acceleration; }
+void Player::SetAcceleration(const DirectX::XMFLOAT3 accel) { m_acceleration = accel; }
 
-DirectX::XMFLOAT3 Player::GetVelocity() { return m_velocity; }
-void Player::SetVelocity(DirectX::XMFLOAT3 vel) { m_velocity = vel; }
+DirectX::XMFLOAT3 Player::GetVelocity() const { return m_velocity; }
+void Player::SetVelocity(const DirectX::XMFLOAT3 vel) { m_velocity = vel; }
+
+DirectX::XMFLOAT3 Player::GetPosition() const { return m_position; }
+void Player::SetPosition(const DirectX::XMFLOAT3 pos) { m_position = pos; }
 
 void Player::Update(const float& dt)
 {
@@ -118,15 +120,14 @@ void Player::Update(const float& dt)
 		worldMatrix.r[3].m128_f32[2]
 	};
 
-	m_rotation =
+	XMFLOAT3 cameraRot = m_camera->GetRotation();
+	m_camera->SetRotation(
 	{
-		m_rotation.x + deltaRotation.m128_f32[0],
-		m_rotation.x + deltaRotation.m128_f32[1],
-		m_rotation.x + deltaRotation.m128_f32[2]
-	};
+		cameraRot.x + deltaRotation.m128_f32[0],
+		cameraRot.x + deltaRotation.m128_f32[1],
+		cameraRot.x + deltaRotation.m128_f32[2]
+	});
 
 	// Re-assign the view matrix with all the changes
-	m_viewMatrix = XMMatrixInverse(nullptr, worldMatrix);
-
-	// Apply gravity
+	m_camera->SetWorldMatrix(worldMatrix);
 }

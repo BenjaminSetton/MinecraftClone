@@ -11,30 +11,30 @@
 using namespace DirectX;
 
 
-bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd)
+bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd, Player* player)
 {
 	bool initResult;
 
 	initResult = D3D::Initialize(screenWidth, screenHeight, hwnd, VSYNC_ENABLED, FULL_SCREEN, SCREEN_FAR, SCREEN_NEAR);
 	if (!initResult) return false;
 
+	// Set internal player pointer to player parameter
+	m_player = player;
+
 	m_screenWidth = screenWidth;
 	m_screenHeight = screenHeight;
 
-	Player* player = new Player();
-
 	m_frustumCam = new FrustumCamera;
-	m_frustumCam->SetPosition({ -15.0f, 20.0f, 15.0f });
-	m_frustumCam->ConstructMatrix();
+	m_frustumCam->ConstructMatrix({ -15.0f, 20.0f, 15.0f });
 	FrustumCulling::CalculateFrustum(XM_PIDIV4, (float)screenWidth / screenHeight,
-		SCREEN_NEAR, SCREEN_FAR, m_player->GetCamera()->GetWorldMatrix(), m_player->GetCamera()->GetPosition());
+		SCREEN_NEAR, SCREEN_FAR, player->GetCamera()->GetWorldMatrix(), player->GetPosition());
 
 	// Create and initialize the texture manager
 	m_textureManager = new TextureManager;
 	m_textureManager->Init(D3D::GetDevice());
 	
 	// Initialize ChunkManager class (DefaultBlockShader will use it's data so initialization has to take place before it)
-	ChunkManager::Initialize(m_player->GetCamera()->GetPosition());
+	ChunkManager::Initialize(m_player->GetPosition());
 
 	// Create the shadow shader class
 	m_shadowShader = new ShadowShader;
@@ -108,11 +108,6 @@ void Graphics::Shutdown()
 	}
 
 	D3D::Shutdown();
-
-	if(m_player)
-	{
-		delete m_player;
-	}
 }
 
 bool Graphics::Frame(const float dt)
@@ -131,11 +126,10 @@ bool Graphics::Frame(const float dt)
 		else if (Input::IsKeyDown(KeyCode::R)) D3D::SetWireframeRasterState(false);
 
 		// Update the debug camera's position
-		m_player->GetCamera()->Update(dt);
 		m_frustumCam->Update(dt);
 
 		FrustumCulling::CalculateFrustum(XM_PIDIV4, (float)m_screenWidth / m_screenHeight, 
-			SCREEN_NEAR, SCREEN_FAR, m_player->GetCamera()->GetWorldMatrix(), m_player->GetCamera()->GetPosition());
+			SCREEN_NEAR, SCREEN_FAR, m_player->GetCamera()->GetWorldMatrix(), m_player->GetPosition());
 
 
 		//
@@ -147,7 +141,7 @@ bool Graphics::Frame(const float dt)
 
 
 		// Update the position for the updater thread
-		ChunkManager::SetPlayerPos(m_player->GetCamera()->GetPosition());
+		ChunkManager::SetPlayerPos(m_player->GetPosition());
 
 		// Update the day/night cycle
 		DayNightCycle::Update(dt);
@@ -204,7 +198,7 @@ bool Graphics::Frame(const float dt)
 			}
 		}
 
-		XMFLOAT3 playerPos = m_player->GetCamera()->GetPosition();
+		XMFLOAT3 playerPos = m_player->GetPosition();
 		XMFLOAT3 playerPosChunkSpace = ChunkManager::WorldToChunkSpace(playerPos);
 		ImGui::Begin("Debug Panel");
 		ImGui::Text("Player Position: %2.2f, %2.2f, %2.2f (%i, %i, %i)",
