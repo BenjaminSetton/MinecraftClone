@@ -135,6 +135,9 @@
     <ClCompile Include="Core\Player.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="Core\Physics.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utility\Clock.h">
@@ -261,6 +264,9 @@
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Core\Player.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Physics.h">
       <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>

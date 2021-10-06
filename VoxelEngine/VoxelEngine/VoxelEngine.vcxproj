@@ -222,6 +222,7 @@
     <ClCompile Include="Core\FrustumCulling.cpp" />
     <ClCompile Include="Core\Graphics.cpp" />
     <ClCompile Include="Core\main.cpp" />
+    <ClCompile Include="Core\Physics.cpp" />
     <ClCompile Include="Core\Player.cpp" />
     <ClCompile Include="Core\ShadowShader.cpp" />
     <ClCompile Include="Core\TextureManager.cpp" />
@@ -271,6 +272,7 @@
     <ClInclude Include="Core\FrustumCamera.h" />
     <ClInclude Include="Core\FrustumCulling.h" />
     <ClInclude Include="Core\Graphics.h" />
+    <ClInclude Include="Core\Physics.h" />
     <ClInclude Include="Core\Player.h" />
     <ClInclude Include="Core\ShadowShader.h" />
     <ClInclude Include="Core\TextureManager.h" />

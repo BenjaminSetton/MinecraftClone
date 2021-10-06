@@ -379,7 +379,13 @@ void ChunkManager::SetPlayerPos(DirectX::XMFLOAT3 playerPos) { m_playerPos = pla
 
 XMFLOAT3 ChunkManager::WorldToChunkSpace(const XMFLOAT3& pos)
 {
-	return { (float)((int)pos.x / CHUNK_SIZE), (float)((int)pos.y / CHUNK_SIZE), (float)((int)pos.z / CHUNK_SIZE) };
+	XMFLOAT3 convertedPos = { (float)((int)pos.x / CHUNK_SIZE), (float)((int)pos.y / CHUNK_SIZE), (float)((int)pos.z / CHUNK_SIZE) };
+	
+	// Adjust for negative coordinates
+	convertedPos.x = pos.x < 0 ? --convertedPos.x : convertedPos.x;
+	convertedPos.y = pos.y < 0 ? --convertedPos.y : convertedPos.y;
+	convertedPos.z = pos.z < 0 ? --convertedPos.z : convertedPos.z;
+	return convertedPos;
 }
 
 XMFLOAT3 ChunkManager::ChunkToWorldSpace(const XMFLOAT3& pos)

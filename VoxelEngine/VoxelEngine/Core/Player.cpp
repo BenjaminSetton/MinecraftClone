@@ -3,6 +3,7 @@
 
 #include "../Utility/Input.h"
 #include "Events/KeyCodes.h"
+#include "Physics.h"
 
 using namespace DirectX;
 
@@ -35,6 +36,7 @@ void Player::Update(const float& dt)
 	// Gather input
 
 	XMFLOAT3 prevPos = m_position;
+	XMVECTOR prevPlayerFeetPos = { prevPos.x, prevPos.y - 2.0f, prevPos.z };
 	XMVECTOR deltaTranslation = { 0, 0, 0, 1 };
 	XMVECTOR deltaRotation = { 0.0f, 0.0f, 0.0f };
 
@@ -45,7 +47,13 @@ void Player::Update(const float& dt)
 	prevX = worldMatrix.r[0];
 	prevY = worldMatrix.r[1];
 	prevZ = worldMatrix.r[2];
+
+	///
+	//
 	// Update position
+	//
+	///
+
 	if (Input::IsKeyDown(KeyCode::O) || Input::IsKeyDown(KeyCode::W)) // FORWARD
 		deltaTranslation.m128_f32[2] += m_movementSpeed * dt;
 	if (Input::IsKeyDown(KeyCode::L) || Input::IsKeyDown(KeyCode::S)) // BACKWARD
@@ -54,7 +62,16 @@ void Player::Update(const float& dt)
 		deltaTranslation.m128_f32[0] -= m_movementSpeed * dt;
 	if (Input::IsKeyDown(KeyCode::SEMICOLON) || Input::IsKeyDown(KeyCode::D)) // RIGHT
 		deltaTranslation.m128_f32[0] += m_movementSpeed * dt;
+	
 
+	if(!Physics::DetectCollision(prevPlayerFeetPos))
+	{
+		// Only apply gravity if we are not colliding with anything
+		XMVECTOR vel = XMLoadFloat3(&m_velocity);
+		Physics::ApplyGravity(vel, dt);
+		Physics::ApplyVelocity(deltaTranslation, vel, dt);
+		XMStoreFloat3(&m_velocity, vel);
+	}
 
 	// Update rotation only if LMB is held down
 
@@ -75,25 +92,29 @@ void Player::Update(const float& dt)
 	// Build the rotation and translation matrices
 	XMMATRIX rotXMatrix = XMMatrixRotationX(deltaRotation.m128_f32[0]);
 	XMMATRIX rotYMatrix = XMMatrixRotationY(deltaRotation.m128_f32[1]);
-	XMMATRIX translationMatrix = XMMatrixTranslation
+	XMMATRIX translationMatrixXZ = XMMatrixTranslation
 	(
-		deltaTranslation.m128_f32[0], deltaTranslation.m128_f32[1], deltaTranslation.m128_f32[2]
+		deltaTranslation.m128_f32[0], 0, deltaTranslation.m128_f32[2]
 	);
 
 	// Calculate the new world matrix
 	worldMatrix.r[3] = { 0, 0, 0, 1.0f };
 	worldMatrix = worldMatrix * rotYMatrix;
 	worldMatrix = rotXMatrix * worldMatrix;
-
 	worldMatrix.r[3] = { prevPos.x, prevPos.y, prevPos.z, 1.0f };
-	worldMatrix = translationMatrix * worldMatrix;
 
+	// Apply translation
+	worldMatrix = translationMatrixXZ * worldMatrix; // Local XZ translation
+	// NOTE!
+	// Y offset due to matrix multiplication is reverted, and deltaTranslation
+	// is added on top of it
+	worldMatrix.r[3].m128_f32[1] = prevPos.y + deltaTranslation.m128_f32[1]; // Global Y translation
 
-	// TODO: Orthonormalize the camera world matrix in order to prevent it from flipping
 
 	// Get the Z axis
 	float epsilon = 0.0025f;
 	XMVECTOR zAxis = worldMatrix.r[2];
+
 	XMVECTOR upVec = { 0.0f, 1.0f, 0.0f, 0.0f };
 
 
@@ -127,6 +148,23 @@ void Player::Update(const float& dt)
 		cameraRot.x + deltaRotation.m128_f32[1],
 		cameraRot.x + deltaRotation.m128_f32[2]
 	});
+
+
+	// We have "moved into collision", so don't apply translation
+	XMVECTOR newPlayerFeetPos = { worldMatrix.r[3].m128_f32[0], worldMatrix.r[3].m128_f32[1] - 2.0f, worldMatrix.r[3].m128_f32[2] };
+	bool prevPosCollision = Physics::DetectCollision(prevPlayerFeetPos);
+	bool newPosCollision = Physics::DetectCollision(newPlayerFeetPos);
+	if (newPosCollision)
+	{
+		worldMatrix.r[3] = XMLoadFloat3(&prevPos);
+
+		// Set the W component of the position to 1
+		worldMatrix.r[3].m128_f32[3] = 1.0f;
+
+		// Reset acceleration and velocity
+		m_acceleration = m_velocity = { 0.0f, 0.0f, 0.0f };
+	}
+
 
 	// Re-assign the view matrix with all the changes
 	m_camera->SetWorldMatrix(worldMatrix);

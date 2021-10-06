@@ -5,26 +5,10 @@
 
 #include "Chunk.h"
 
+// Includes the physics types (plane, aabb, and sphere)
+#include "Physics.h"
+
 #define PASS_STRADDLING_CHUNKS 1
-
-// Consider moving to Utility class/namespace
-struct Sphere
-{
-	DirectX::XMFLOAT3 center;
-	float radius;
-};
-
-// Consider moving to Utility class/namespace
-struct AABB
-{
-	DirectX::XMFLOAT3 center, extent;
-};
-
-struct Plane
-{
-	DirectX::XMFLOAT3 normal;
-	float point;
-};
 
 struct Frustum_Planes
 {
