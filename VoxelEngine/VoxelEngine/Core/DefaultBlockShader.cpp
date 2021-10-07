@@ -7,7 +7,7 @@
 #include "FrustumCulling.h"
 
 // ImGui Debug
-#include "../../imgui/imgui.h"
+#include "../Utility/ImGuiLayer.h"
 
 using namespace DirectX;
 
@@ -74,26 +74,20 @@ void DefaultBlockShader::Initialize(XMMATRIX camViewMatrix, XMMATRIX lightViewMa
 
 void DefaultBlockShader::Render(ID3D11ShaderResourceView* const* srvs)
 {
-	// DEBUG BOOLEAN
-	static bool temp_enableFrustumCulling = true;
-	ImGui::Begin("Debug Panel");
-	ImGui::Checkbox("Enable Frustum Culling", &temp_enableFrustumCulling);
-	ImGui::End();
+	BlockShader_Data::debugVerts = 0;
+	BlockShader_Data::numDrawCalls = 0;
+
 
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
-	int debugVerts = 0;
-	int numDrawCalls = 0;
-
 	BindObjects(srvs);
 
-	//ChunkManager::CheckOutChunkVector();
 	auto chunkVec = ChunkManager::GetChunkVector();
 	for(auto chunk : chunkVec)
 	{
 		if (!chunk) continue;
 
-		if(temp_enableFrustumCulling)
+		if(BlockShader_Data::enableFrustumCulling)
 			// Cull chunks outside view frustum
 			if (!FrustumCulling::CalculateChunkPosAgainstFrustum(ChunkManager::ChunkToWorldSpace(chunk->GetPosition()))) continue;
 
@@ -104,15 +98,10 @@ void DefaultBlockShader::Render(ID3D11ShaderResourceView* const* srvs)
 		uint32_t numVerts = chunk->GetVertexCount();
 		context->Draw(numVerts, 0);
 
-		debugVerts += numVerts;
-		numDrawCalls++;
+		BlockShader_Data::debugVerts += numVerts;
+		BlockShader_Data::numDrawCalls++;
 	}
-	//ChunkManager::ReturnChunkVector();
 
-	ImGui::Begin("Debug Panel");
-	ImGui::Text("Vertex Count: %i", debugVerts);
-	ImGui::Text("Draw Calls: %i", numDrawCalls);
-	ImGui::End();
 }
 
 void DefaultBlockShader::Shutdown()

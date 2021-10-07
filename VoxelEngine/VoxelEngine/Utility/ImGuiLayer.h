@@ -6,6 +6,8 @@
 #include "../../imgui/imgui_impl_dx11.h"
 #include "DirectXMath.h"
 
+#include "ImGuiDrawData.h"
+
 class ImGuiLayer
 {
 public:
@@ -17,6 +19,8 @@ public:
 	void Initialize(HWND hwnd, ID3D11Device* device, ID3D11DeviceContext* context);
 
 	void BeginFrame();
+
+	void Draw();
 
 	void EndFrame();
 

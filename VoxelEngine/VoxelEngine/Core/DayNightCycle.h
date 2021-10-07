@@ -2,6 +2,7 @@
 #define _DAY_NIGHT_CYCLE_H
 
 #include <DirectXMath.h>
+
 #include "DirectionalLight.h"
 
 class DayNightCycle

@@ -33,6 +33,24 @@ void Physics::ApplyGravity(DirectX::XMVECTOR& vel, const float& dt)
 	ApplyAcceleration(vel, gravityVector, dt);
 }
 
+void Physics::ConvertPositionToVelocity(DirectX::XMFLOAT3& vel, const DirectX::XMFLOAT3& pos, const float& dt)
+{
+	vel.x = pos.x / dt;
+	vel.y = pos.y / dt;
+	vel.z = pos.z / dt;
+}
+
+void Physics::ConvertVelocityToAcceleration(DirectX::XMFLOAT3& accel, const DirectX::XMFLOAT3& vel, const float& dt)
+{
+	ConvertPositionToVelocity(accel, vel, dt);
+}
+
+void Physics::ConvertPositionToAcceleration(DirectX::XMFLOAT3& accel, const DirectX::XMFLOAT3& pos, const float& dt)
+{
+	ConvertPositionToVelocity(accel, pos, dt);
+	ConvertVelocityToAcceleration(accel, pos, dt);
+}
+
 const bool Physics::DetectCollision(const DirectX::XMVECTOR& pos)
 {
 	XMFLOAT3 pos_f3;

@@ -2,8 +2,9 @@
 #include "DayNightCycle.h"
 #include "../Utility/Utility.h"
 
-#include "../../imgui/imgui.h"
 #include "../Utility/DebugRenderer.h"
+
+#include "../Utility/ImGuiLayer.h"
 
 
 using namespace DirectX;
@@ -63,8 +64,6 @@ float DayNightCycle::m_elapsedTime = 0.0f;
 
 void DayNightCycle::Update(const float& dt)
 {
-	ImGui::Begin("Day/Night Cycle Debug");
-
 	m_elapsedTime += dt;
 
 	if(m_elapsedTime >= ce_cycleDuration * 2.0f)
@@ -134,47 +133,42 @@ void DayNightCycle::Update(const float& dt)
 
 	// IMGUI DEBUG PANEL
 #pragma region _IMGUI_DEBUG
-	XMFLOAT4 sunColor = m_sun.GetColor();
-	XMFLOAT4 moonColor = m_moon.GetColor();
 
-	ImGui::Text("Sun/Moon Direction: (%2.2f, %2.2f, %2.2f) / (%2.2f, %2.2f, %2.2f)", 
-		sunDir.x, sunDir.y, sunDir.z, moonDir.x, moonDir.y, moonDir.z);
-	ImGui::Text("Sun/Moon Position: (%2.2f, %2.2f, %2.2f) / (%2.2f, %2.2f, %2.2f)",
-		m_sunPos.x, m_sunPos.y, m_sunPos.z, m_moonPos.x, m_moonPos.y, m_moonPos.z);
+	Cycle_Data::sunColor = m_sun.GetColor();
+	Cycle_Data::moonColor = m_moon.GetColor();
 
-	ImGui::Text("Sun Color "); ImGui::SameLine();
-	ImGui::ColorButton("Sun Color", {sunColor.x, sunColor.y, sunColor.z, 1.0f}, ImGuiColorEditFlags_NoAlpha);
+	Cycle_Data::sunDir = sunDir;
+	Cycle_Data::moonDir = moonDir;
+	Cycle_Data::sunPos = m_sunPos;
+	Cycle_Data::moonPos = m_moonPos;
 
-	ImGui::Text("Moon Color "); ImGui::SameLine();
-	ImGui::ColorButton("Moon Color", { moonColor.x, moonColor.y, moonColor.z, 1.0f }, ImGuiColorEditFlags_NoAlpha);
+	Cycle_Data::elapsedTime = m_elapsedTime;
+	Cycle_Data::timePct = timePct;
+
+	Cycle_Data::cycle = m_cycle == Cycle::DAY ? "Day" : "Night";
 	
-	ImGui::Text("Time Elapsed: %2.3f seconds (%1.2f)", m_elapsedTime, timePct * 100.0f);
-	const char* cycle = m_cycle == Cycle::DAY ? "Day" : "Night";
-	ImGui::Text(cycle);
-	const char* time = "";
-	switch(m_time)
+	switch (m_time)
 	{
 	case Time::DAYTIME:
-		time = "DAYTIME";
+		Cycle_Data::time = "DAYTIME";
 		break;
 	case Time::MIDDAY:
-		time = "MIDDAY";
+		Cycle_Data::time = "MIDDAY";
 		break;
 	case Time::MIDNIGHT:
-		time = "MIDNIGHT";
+		Cycle_Data::time = "MIDNIGHT";
 		break;
 	case Time::NIGHTTIME:
-		time = "NIGHTTIME";
+		Cycle_Data::time = "NIGHTTIME";
 		break;
 	case Time::SUNRISE:
-		time = "SUNRISE";
+		Cycle_Data::time = "SUNRISE";
 		break;
 	case Time::SUNSET:
-		time = "SUNSET";
+		Cycle_Data::time = "SUNSET";
 		break;
 	}
-	ImGui::Text(time);
-	ImGui::End();
+
 #pragma endregion
 
 #pragma region _DEBUG_RENDERER

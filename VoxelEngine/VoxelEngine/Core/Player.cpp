@@ -71,7 +71,11 @@ void Player::Update(const float& dt)
 		Physics::ApplyGravity(vel, dt);
 		Physics::ApplyVelocity(deltaTranslation, vel, dt);
 		XMStoreFloat3(&m_velocity, vel);
+
+		// TEMP
+		//
 	}
+	Physics::DetectCollision(prevPlayerFeetPos);
 
 	// Update rotation only if LMB is held down
 

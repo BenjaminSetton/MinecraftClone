@@ -31,6 +31,9 @@
     <Filter Include="Core\Events">
       <UniqueIdentifier>{556a61d8-22a9-4ae2-b1e0-1a1562b3d125}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Data">
+      <UniqueIdentifier>{491ea476-5f3e-4590-be3c-7af6213f2073}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Utility\Clock.cpp">
@@ -137,6 +140,9 @@
     </ClCompile>
     <ClCompile Include="Core\Physics.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility\ImGuiDrawData.cpp">
+      <Filter>Utility</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -268,6 +274,9 @@
     </ClInclude>
     <ClInclude Include="Core\Physics.h">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\ImGuiDrawData.h">
+      <Filter>Utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

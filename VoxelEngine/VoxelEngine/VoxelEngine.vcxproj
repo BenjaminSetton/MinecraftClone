@@ -237,6 +237,7 @@
     </ClCompile>
     <ClCompile Include="Utility\Clock.cpp" />
     <ClCompile Include="Utility\DebugRenderer.cpp" />
+    <ClCompile Include="Utility\ImGuiDrawData.cpp" />
     <ClCompile Include="Utility\ImGuiLayer.cpp" />
     <ClCompile Include="Utility\Input.cpp" />
     <ClCompile Include="Utility\Log.cpp" />
@@ -281,6 +282,7 @@
     <ClInclude Include="Utility\Clock.h" />
     <ClInclude Include="Utility\DDSTextureLoader.h" />
     <ClInclude Include="Utility\DebugRenderer.h" />
+    <ClInclude Include="Utility\ImGuiDrawData.h" />
     <ClInclude Include="Utility\ImGuiLayer.h" />
     <ClInclude Include="Utility\Input.h" />
     <ClInclude Include="Utility\Log.h" />

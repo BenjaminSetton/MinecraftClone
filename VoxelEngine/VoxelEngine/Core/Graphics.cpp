@@ -8,6 +8,8 @@
 #include "ChunkManager.h"
 #include "FrustumCulling.h"
 
+#include "../Utility/ImGuiLayer.h"
+
 using namespace DirectX;
 
 
@@ -198,19 +200,15 @@ bool Graphics::Frame(const float dt)
 			}
 		}
 
-		XMFLOAT3 playerPos = m_player->GetPosition();
-		XMFLOAT3 playerPosChunkSpace = ChunkManager::WorldToChunkSpace(playerPos);
-		ImGui::Begin("Debug Panel");
-		ImGui::Text("Player Position: %2.2f, %2.2f, %2.2f (%i, %i, %i)",
-			playerPos.x, playerPos.y, playerPos.z,
-			(int)playerPosChunkSpace.x, (int)playerPosChunkSpace.y, (int)playerPosChunkSpace.z);
-		ImGui::Text("Active Chunks: %i", ChunkManager::GetNumActiveChunks());
-		ImGui::Text("Render Distance: %i", 8);
-		ImGui::End();
+		Renderer_Data::playerPos = m_player->GetPosition();
+		Renderer_Data::playerPosChunkSpace = ChunkManager::WorldToChunkSpace(m_player->GetPosition());
+		Renderer_Data::numActiveChunks = ChunkManager::GetNumActiveChunks();
+
 	}
 
 	// End the ImGui frame
 	D3D::ClearDepthBuffer(1.0f); // Clear the depth buffer so GUI draws on top of everything
+	m_imGuiLayer->Draw();
 	m_imGuiLayer->EndFrame();
 
 	// End the scene and present the swap chain
