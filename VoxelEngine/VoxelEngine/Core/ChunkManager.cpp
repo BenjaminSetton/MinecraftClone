@@ -5,6 +5,9 @@
 #include "../../imgui/imgui.h"
 #include "Chunk.h"
 
+#include "../Utility/Noise.h"
+#include <chrono>
+
 ///
 /// TODO:
 /// 
@@ -25,6 +28,10 @@ std::thread* ChunkManager::m_updaterThread = nullptr;
 std::mutex ChunkManager::m_canAccessVec;
 
 #define ALLOW_HARD_CODED_MAX_INIT_THREADS 0
+#define USE_DEFAULT_SEED 0
+#define USE_SEED_BASED_ON_SYSTEM_TIME 1
+
+constexpr int CHUNK_GENERATION_SEED = 12346;
 
 #if ALLOW_HARD_CODED_MAX_INIT_THREADS == 1
 const uint32_t g_maxNumThreadsForInit = 5;
@@ -40,6 +47,14 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 {
 	// Isn't strictly necessary b/c it's inited as a static variable
 	m_runUpdater = true;
+
+#if USE_DEFAULT_SEED == 0
+#if USE_SEED_BASED_ON_SYSTEM_TIME == 0
+	Noise2D::SetSeed(CHUNK_GENERATION_SEED);
+#else
+	Noise2D::SetSeed(static_cast<int>(std::chrono::high_resolution_clock::now().time_since_epoch().count()));
+#endif // USE_SEED_BASED_ON_SYSTEM_TIME
+#endif // USE_DEFAULT_SEED
 
 	m_playerPos = playerPosWS;
 

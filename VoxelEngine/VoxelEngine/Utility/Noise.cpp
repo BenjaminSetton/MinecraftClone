@@ -19,10 +19,9 @@ double Noise2D::GenerateValue(double x, double z)
 	return val;
 }
 
-int Noise2D::GetSeed()
-{
-	return m_generator.GetSeed();
-}
+int Noise2D::GetSeed() { return m_generator.GetSeed(); }
+
+void Noise2D::SetSeed(const int seed) { m_generator.SetSeed(seed); }
 
 void Noise2D::SetScale(const double sc) { m_scale = sc; }
 

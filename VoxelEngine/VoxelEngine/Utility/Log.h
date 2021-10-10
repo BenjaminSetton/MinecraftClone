@@ -37,24 +37,7 @@ public:
 	template<typename Type>
 	Log& operator<< (const Type _msg)
 	{
-		// Prints out a debug time
-		if (mNewMessage && mTimestamps)
-		{
-			auto timeNow = std::chrono::system_clock::now();
-			std::time_t time = std::chrono::system_clock::to_time_t(timeNow);
-			tm timeStruct;
-			localtime_s(&timeStruct, &time);
-
-			// Print out the debug timestamps
-			std::cout << "[";
-			if (timeStruct.tm_hour < 10) std::cout << "0";
-			std::cout << timeStruct.tm_hour << ":";
-			if (timeStruct.tm_min < 10) std::cout << "0";
-			std::cout << timeStruct.tm_min << ":";
-			if (timeStruct.tm_sec < 10) std::cout << "0";
-			std::cout << timeStruct.tm_sec;
-			std::cout << "] ";
-		}
+		PrintTimestamp();
 
 		std::cout << _msg;
 		mNewMessage = false;
@@ -62,11 +45,45 @@ public:
 		return *this;
 	}
 
+	template<>
+	Log& operator<< (const DirectX::XMVECTOR _msg)
+	{
+		PrintTimestamp();
 
-	Log& operator<< (const DirectX::XMFLOAT3 vec);
+		std::cout 
+			<< _msg.m128_f32[0] 
+			<< ", " 
+			<< _msg.m128_f32[1] 
+			<< ", " 
+			<< _msg.m128_f32[2] 
+			<< ", " 
+			<< _msg.m128_f32[3];
+		mNewMessage = false;
 
+		return *this;
+	}
 
-	Log& operator<< (const DirectX::XMFLOAT4 vec);
+	template<>
+	Log& operator<< (const DirectX::XMFLOAT3 vec)
+	{
+		PrintTimestamp();
+
+		std::cout << vec.x << ", " << vec.y << ", " << vec.z;
+		mNewMessage = false;
+
+		return *this;
+	}
+
+	template<>
+	Log& operator<< (const DirectX::XMFLOAT4 vec)
+	{
+		PrintTimestamp();
+		
+		std::cout << "(" << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w << ")";
+		mNewMessage = false;
+
+		return *this;
+	}
 
 	void End();
 

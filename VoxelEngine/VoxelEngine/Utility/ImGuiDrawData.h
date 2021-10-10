@@ -42,4 +42,10 @@ struct Renderer_Data
 
 };
 
+struct PlayerPhysics_Data
+{
+	static DirectX::XMFLOAT3 accel;
+	static DirectX::XMFLOAT3 vel;
+};
+
 #endif _IMGUIDRAWDATA_H

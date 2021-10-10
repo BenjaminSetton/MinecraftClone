@@ -144,6 +144,11 @@ bool Application::Frame()
 
 	// Store the frame's delta time in dt
 	float dt = m_Clock->GetDeltaTime(Clock::TimePrecision::SECONDS);
+	dt = dt > 0.5f ? 0.016666f : dt;
+
+	// Quick hack!
+	// Prevent delta time from giving wack results after moving game window
+
 	
 	// Update physics
 

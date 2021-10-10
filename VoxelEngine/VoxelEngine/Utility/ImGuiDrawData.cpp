@@ -29,5 +29,11 @@ DirectX::XMFLOAT3 Renderer_Data::playerPos = { 0.0f, 0.0f, 0.0f };
 DirectX::XMFLOAT3 Renderer_Data::playerPosChunkSpace = { 0.0f, 0.0f, 0.0f };
 int Renderer_Data::numActiveChunks = 0;
 
+//
+// PLAYERPHYSICS_DATA
+//
+DirectX::XMFLOAT3 PlayerPhysics_Data::accel = { 0.0f, 0.0f, 0.0f };
+DirectX::XMFLOAT3 PlayerPhysics_Data::vel = { 0.0f, 0.0f, 0.0f };
+
 
 

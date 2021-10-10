@@ -10,9 +10,10 @@ void Physics::ApplyVelocity(DirectX::XMVECTOR& pos, const DirectX::XMVECTOR& vel
 {
 	//pos =
 	//{
-	//	pos.m128_f32[0] + (vel.x * dt),
-	//	pos.m128_f32[1] + (vel.y * dt),
-	//	pos.m128_f32[3] + (vel.z * dt)
+	//	pos.m128_f32[0] + (vel.m128_f32[0] * dt),
+	//	pos.m128_f32[1] + (vel.m128_f32[1] * dt),
+	//	pos.m128_f32[3] + (vel.m128_f32[2] * dt),
+	//	1.0f
 	//};
 	pos += XMVectorScale(vel, dt);
 }
@@ -21,16 +22,17 @@ void Physics::ApplyAcceleration(DirectX::XMVECTOR& vel, const DirectX::XMVECTOR&
 {
 	//vel =
 	//{
-	//	vel.x + (accel.x * dt),
-	//	vel.y + (accel.y * dt),
-	//	vel.z + (accel.z * dt)
+	//	vel.m128_f32[0] + (accel.m128_f32[0] * dt),
+	//	vel.m128_f32[1] + (accel.m128_f32[1] * dt),
+	//	vel.m128_f32[2] + (accel.m128_f32[2] * dt),
+	//	1.0f
 	//};
 	vel += XMVectorScale(accel, dt);
 }
 void Physics::ApplyGravity(DirectX::XMVECTOR& vel, const float& dt)
 {
 	const XMVECTOR gravityVector = { 0.0f, -9.8f, 0.0f };
-	ApplyAcceleration(vel, gravityVector, dt);
+	vel += gravityVector * dt;
 }
 
 void Physics::ConvertPositionToVelocity(DirectX::XMFLOAT3& vel, const DirectX::XMFLOAT3& pos, const float& dt)

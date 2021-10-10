@@ -38,7 +38,6 @@ ID3D11Buffer* Chunk::GetBuffer() { return m_buffer; }
 
 void Chunk::InitializeChunk()
 {
-	//m_id = 0; // TODO: Replace with an actual UUID
 
 	XMFLOAT3 posWS = { m_pos.x * CHUNK_SIZE, m_pos.y * CHUNK_SIZE, m_pos.z * CHUNK_SIZE };
 

@@ -15,6 +15,7 @@ public:
 	static double GenerateValue(double x, double z);
 	
 	static int GetSeed();
+	static void SetSeed(const int seed);
 
 	static void SetScale(const double sc);
 

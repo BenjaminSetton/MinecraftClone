@@ -34,6 +34,8 @@ private:
 	DirectX::XMFLOAT3 m_velocity;
 	DirectX::XMFLOAT3 m_position;
 
+	bool m_allowJump;
+
 	float m_movementSpeed;
 
 

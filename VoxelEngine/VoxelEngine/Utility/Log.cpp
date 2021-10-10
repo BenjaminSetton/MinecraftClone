@@ -59,6 +59,8 @@ void Log::PrintNLToFile(const char* _msg)
 
 void Log::PrintTimestamp() 
 {
+	if (!mNewMessage || !mTimestamps) return;
+
 	auto timeNow = std::chrono::system_clock::now();
 	std::time_t time = std::chrono::system_clock::to_time_t(timeNow);
 	tm timeStruct;
@@ -89,47 +91,6 @@ void Log::PrintToFile(const char* _msg)
 	mLastWritePos++;
 
 	stream.close();
-}
-
-Log& Log::operator<<(const DirectX::XMFLOAT3 vec)
-{
-	// Prints out a debug time
-	if (mNewMessage && mTimestamps)
-	{
-		PrintTimestamp();
-	}
-
-	std::cout << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
-	mNewMessage = false;
-
-	return *this;
-}
-
-Log& Log::operator<<(const DirectX::XMFLOAT4 vec)
-{
-	// Prints out a debug time
-	if (mNewMessage && mTimestamps)
-	{
-		auto timeNow = std::chrono::system_clock::now();
-		std::time_t time = std::chrono::system_clock::to_time_t(timeNow);
-		tm timeStruct;
-		localtime_s(&timeStruct, &time);
-
-		// Print out the debug timestamps
-		std::cout << "[";
-		if (timeStruct.tm_hour < 10) std::cout << "0";
-		std::cout << timeStruct.tm_hour << ":";
-		if (timeStruct.tm_min < 10) std::cout << "0";
-		std::cout << timeStruct.tm_min << ":";
-		if (timeStruct.tm_sec < 10) std::cout << "0";
-		std::cout << timeStruct.tm_sec;
-		std::cout << "] ";
-	}
-
-	std::cout << "(" << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w << ")";
-	mNewMessage = false;
-
-	return *this;
 }
 
 void Log::End()
