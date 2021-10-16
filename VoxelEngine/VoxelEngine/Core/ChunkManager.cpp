@@ -6,28 +6,20 @@
 #include "Chunk.h"
 
 #include "../Utility/Noise.h"
-#include <chrono>
-
-///
-/// TODO:
-/// 
-///		Consider using an unordered map to speed up chunk searching
-/// 
 
 using namespace DirectX;
 
 // Static variable definitions
 std::vector<std::shared_ptr<Chunk>> ChunkManager::m_activeChunks = std::vector<std::shared_ptr<Chunk>>();
-uint16_t ChunkManager::m_renderDist = 8;
+uint16_t ChunkManager::m_renderDist = 4;
 bool ChunkManager::m_runUpdater = true;
 XMFLOAT3 ChunkManager::m_playerPos = { 0.0f, 0.0f, 0.0f };
-
 std::vector<XMFLOAT3> ChunkManager::m_newChunkList = std::vector<XMFLOAT3>();
 std::vector<uint32_t> ChunkManager::m_deletedChunkList = std::vector<uint32_t>();
 std::thread* ChunkManager::m_updaterThread = nullptr;
 std::mutex ChunkManager::m_canAccessVec;
 
-#define ALLOW_HARD_CODED_MAX_INIT_THREADS 0
+#define ALLOW_HARD_CODED_MAX_INIT_THREADS 1
 #define USE_DEFAULT_SEED 0
 #define USE_SEED_BASED_ON_SYSTEM_TIME 1
 
@@ -179,7 +171,7 @@ void ChunkManager::Update()
 		};
 
 		// 1. Unload chunks if they are too far away from "player"
-		if (chunkDistFromPlayer.x > m_renderDist || chunkDistFromPlayer.z > m_renderDist)
+		if (chunkDistFromPlayer.x > m_renderDist || chunkDistFromPlayer.y > m_renderDist || chunkDistFromPlayer.z > m_renderDist)
 		{
 			m_deletedChunkList.push_back(i);
 		}
@@ -192,36 +184,42 @@ void ChunkManager::Update()
 	// Z-axis chunk checking (includes corner chunks)
 	for (int16_t x = -m_renderDist; x <= m_renderDist; x += 2 * m_renderDist)
 	{
-		for (int16_t z = -m_renderDist; z <= m_renderDist; z++)
+		for (int16_t y = -m_renderDist; y <= m_renderDist; y++)
 		{
-			// A coordinate in chunk space
-			XMFLOAT3 newChunkPosCS = { playerPosChunkSpace.x + x, 0, playerPosChunkSpace.z + z };
-
-			// If this new chunk is not already active, allocate a new chunk
-			if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
-			else
+			for (int16_t z = -m_renderDist; z <= m_renderDist; z++)
 			{
-				m_newChunkList.push_back(newChunkPosCS);
-			}
+				// A coordinate in chunk space
+				XMFLOAT3 newChunkPosCS = { playerPosChunkSpace.x + x, playerPosChunkSpace.y + y, playerPosChunkSpace.z + z };
 
+				// If this new chunk is not already active, allocate a new chunk
+				if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
+				else
+				{
+					m_newChunkList.push_back(newChunkPosCS);
+				}
+
+			}
 		}
 	}
 
 	// X-axis chunk checking (excludes corner chunks)
 	for (int16_t z = -m_renderDist; z <= m_renderDist; z += 2 * m_renderDist) 
 	{
-		for (int16_t x = -m_renderDist + 1; x < m_renderDist; x++)
+		for (int16_t y = -m_renderDist; y <= m_renderDist; y++)
 		{
-			// A coordinate in chunk space
-			XMFLOAT3 newChunkPosCS = { playerPosChunkSpace.x + x, 0, playerPosChunkSpace.z + z };
-
-			// If this new chunk is not already active, allocate a new chunk
-			if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
-			else
+			for (int16_t x = -m_renderDist + 1; x < m_renderDist; x++)
 			{
-				m_newChunkList.push_back(newChunkPosCS);
-			}
+				// A coordinate in chunk space
+				XMFLOAT3 newChunkPosCS = { playerPosChunkSpace.x + x, playerPosChunkSpace.y + y, playerPosChunkSpace.z + z };
 
+				// If this new chunk is not already active, allocate a new chunk
+				if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
+				else
+				{
+					m_newChunkList.push_back(newChunkPosCS);
+				}
+
+			}
 		}
 	}
 
@@ -243,7 +241,6 @@ void ChunkManager::Update()
 		// Left neighbor
 		std::shared_ptr<Chunk> leftNeighbor = GetChunkAtPos({ chunkPosCS.x - 1, chunkPosCS.y, chunkPosCS.z });
 		if (leftNeighbor) leftNeighbor->InitializeVertexBuffer();
-
 
 		// Right neighbor
 		std::shared_ptr<Chunk> rightNeighbor = GetChunkAtPos({ chunkPosCS.x + 1, chunkPosCS.y, chunkPosCS.z });
@@ -362,19 +359,9 @@ void ChunkManager::UpdaterEntryPoint()
 
 void ChunkManager::SetPlayerPos(DirectX::XMFLOAT3 playerPos) { m_playerPos = playerPos; }
 
-//void ChunkManager::CheckOutChunkVector()
-//{
-//	m_canAccessVec.lock();
-//}
-//
-//void ChunkManager::ReturnChunkVector()
-//{
-//	m_canAccessVec.unlock();
-//}
-
 XMFLOAT3 ChunkManager::WorldToChunkSpace(const XMFLOAT3& pos)
 {
-	XMFLOAT3 convertedPos = { (float)((int)pos.x / CHUNK_SIZE), (float)((int)pos.y / CHUNK_SIZE), (float)((int)pos.z / CHUNK_SIZE) };
+	XMFLOAT3 convertedPos = { (float)((int32_t)pos.x / CHUNK_SIZE), (float)((int32_t)pos.y / CHUNK_SIZE), (float)((int32_t)pos.z / CHUNK_SIZE) };
 	
 	// Adjust for negative coordinates
 	convertedPos.x = pos.x < 0 ? --convertedPos.x : convertedPos.x;
@@ -397,19 +384,24 @@ void ChunkManager::ResetChunkMemory(const uint16_t index)
 uint64_t ChunkManager::GetHashKeyFromChunkPosition(const DirectX::XMFLOAT3& chunkPos)
 {
 	// (z + size) * (size << 1)^2 + (y + size) * (size << 1) + (x + size)
-	return (chunkPos.z + CHUNK_SIZE) * DOUBLE_CHUNK_SIZE * DOUBLE_CHUNK_SIZE + (chunkPos.y + CHUNK_SIZE) * DOUBLE_CHUNK_SIZE + (chunkPos.x + CHUNK_SIZE);
+	return (static_cast<double>(chunkPos.z) + CHUNK_SIZE) * DOUBLE_CHUNK_SIZE * DOUBLE_CHUNK_SIZE
+		+ (static_cast<double>(chunkPos.y) + CHUNK_SIZE) * DOUBLE_CHUNK_SIZE 
+		+ (static_cast<double>(chunkPos.x) + CHUNK_SIZE);
 }
 
 void ChunkManager::InitChunksMultithreaded(const int32_t& startChunk, const int32_t& numChunksToInit, const XMFLOAT3& playerPosCS)
 {
 	for(int32_t x = startChunk; x < startChunk + numChunksToInit; x++)
 	{
-		for (int32_t z = -m_renderDist; z <= m_renderDist; z++)
+		for (int32_t y = -m_renderDist; y <= m_renderDist; y++)
 		{
-			// A coordinate in chunk space
-			XMFLOAT3 newChunkPosCS = { playerPosCS.x + x, 0, playerPosCS.z + z };
+			for (int32_t z = -m_renderDist; z <= m_renderDist; z++)
+			{
+				// A coordinate in chunk space
+				XMFLOAT3 newChunkPosCS = { playerPosCS.x + x, playerPosCS.y + y, playerPosCS.z + z };
 
-			LoadChunkMultithreaded(newChunkPosCS);
+				LoadChunkMultithreaded(newChunkPosCS);
+			}
 		}
 	}
 }
@@ -437,6 +429,9 @@ std::shared_ptr<Chunk> ChunkManager::LoadChunkMultithreaded(const DirectX::XMFLO
 
 	m_canAccessVec.lock();
 	m_activeChunks.emplace_back(chunk);
+
+	if (m_chunkMap.size() > 0 && m_chunkMap.find(hashKey) != m_chunkMap.end()) VX_ASSERT(false);
+	//VX_ASSERT(m_chunkMap.find(hashKey) != m_chunkMap.end() && m_chunkMap.size() > 0);
 	m_chunkMap[hashKey] = static_cast<std::weak_ptr<Chunk>>(chunk);
 	m_canAccessVec.unlock();
 

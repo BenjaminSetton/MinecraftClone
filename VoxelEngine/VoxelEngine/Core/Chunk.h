@@ -5,8 +5,8 @@
 #include <d3d11.h>
 
 // Macros
-#define CHUNK_SIZE 16
-#define DOUBLE_CHUNK_SIZE (CHUNK_SIZE << 1)
+constexpr int32_t CHUNK_SIZE = 16;
+constexpr int32_t DOUBLE_CHUNK_SIZE = (CHUNK_SIZE << 1);
 
 class Chunk
 {
@@ -18,9 +18,6 @@ public:
 	Chunk(const Chunk& other) = default; // I don't know why you would even do this, but I do it just in case
 	~Chunk();
 
-
-	const uint32_t GetID();
-
 	Block* GetBlock(unsigned int x, unsigned int y, unsigned int z);
 
 	// Returns chunks' position in CHUNK SPACE
@@ -31,6 +28,8 @@ public:
 	const uint32_t GetVertexCount();
 
 	ID3D11Buffer* GetBuffer();
+
+	void DrawChunkBorder();
 
 private:
 
@@ -49,9 +48,6 @@ private:
 	void ResetFaces();
 
 private:
-
-	// TODO: Actually use this :)
-	uint32_t m_id;
 
 	uint32_t m_numFaces;
 

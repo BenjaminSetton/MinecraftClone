@@ -98,6 +98,9 @@ void DefaultBlockShader::Render(ID3D11ShaderResourceView* const* srvs)
 		uint32_t numVerts = chunk->GetVertexCount();
 		context->Draw(numVerts, 0);
 
+		// Draw their borders temporarily
+		chunk->DrawChunkBorder();
+
 		BlockShader_Data::debugVerts += numVerts;
 		BlockShader_Data::numDrawCalls++;
 	}

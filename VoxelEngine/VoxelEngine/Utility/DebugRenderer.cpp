@@ -8,7 +8,7 @@ namespace
 	// In other words, these variables are global but are only visible in this source file.
 
 	// Maximum number of debug lines at one time (i.e: Capacity)
-	constexpr size_t MAX_LINE_VERTS = 194000;
+	constexpr size_t MAX_LINE_VERTS = 388000;
 
 	// CPU-side buffer of debug-line verts
 	// Copied to the GPU and reset every frame.
@@ -18,7 +18,8 @@ namespace
 
 void DebugLine::AddLine(DirectX::XMFLOAT3 ptA, DirectX::XMFLOAT3 ptB, DirectX::XMFLOAT4 clA, DirectX::XMFLOAT4 clB)
 {
-	// Add points to debug_verts, increments debug_vert_count
+	if (line_vert_count >= MAX_LINE_VERTS) return;
+
 	line_verts[line_vert_count].pos = ptA;
 	line_verts[line_vert_count].color = clA;
 	line_vert_count++;

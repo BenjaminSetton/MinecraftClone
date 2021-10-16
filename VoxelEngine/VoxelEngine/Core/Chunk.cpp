@@ -7,13 +7,21 @@
 #include "ChunkManager.h"
 #include "D3D.h"
 
+#include "../Utility/Utility.h"
+
 
 using namespace DirectX;
 
 constexpr uint32_t BUFFER_SIZE = 6 * 6 * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * 0.1;
 
+constexpr int32_t MINIMUM_TERRAIN_HEIGHT = 50;
+constexpr int32_t MAXIMUM_TERRAIN_HEIGHT = 80;
 
-Chunk::Chunk(const XMFLOAT3 pos) : m_id(0), m_pos(pos), m_numFaces(0)
+constexpr int32_t LOW_CHUNK_LIMIT = -256;
+constexpr int32_t HIGH_CHUNK_LIMIT = -LOW_CHUNK_LIMIT;
+
+
+Chunk::Chunk(const XMFLOAT3 pos) : m_pos(pos), m_numFaces(0)
 {
 	InitializeChunk();
 	CreateVertexBuffer();
@@ -23,8 +31,6 @@ Chunk::~Chunk()
 {
 	m_buffer->Release();
 }
-
-const uint32_t Chunk::GetID() { return m_id; }
 
 Block* Chunk::GetBlock(unsigned int x, unsigned int y, unsigned int z) { return &m_chunk[x][y][z]; }
 
@@ -36,22 +42,63 @@ const uint32_t Chunk::GetVertexCount() { return GetFaceCount() * 6; }
 
 ID3D11Buffer* Chunk::GetBuffer() { return m_buffer; }
 
+void Chunk::DrawChunkBorder()
+{
+	XMFLOAT4 color = { 1.0f, 0.0f, 0.0f, 1.0f };
+
+	XMFLOAT3 posWS = { m_pos.x * CHUNK_SIZE, m_pos.y * CHUNK_SIZE, m_pos.z * CHUNK_SIZE };
+	XMFLOAT3 tlf = { posWS.x, posWS.y, posWS.z };
+	XMFLOAT3 trf = { posWS.x + CHUNK_SIZE, posWS.y, posWS.z };
+	XMFLOAT3 blf = { posWS.x, posWS.y - CHUNK_SIZE, posWS.z };
+	XMFLOAT3 brf = { posWS.x + CHUNK_SIZE, posWS.y - CHUNK_SIZE, posWS.z };
+	XMFLOAT3 tln = { posWS.x, posWS.y, posWS.z + CHUNK_SIZE };
+	XMFLOAT3 trn = { posWS.x + CHUNK_SIZE, posWS.y, posWS.z + CHUNK_SIZE };
+	XMFLOAT3 bln = { posWS.x, posWS.y - CHUNK_SIZE, posWS.z + CHUNK_SIZE };
+	XMFLOAT3 brn = { posWS.x + CHUNK_SIZE, posWS.y - CHUNK_SIZE, posWS.z + CHUNK_SIZE };
+
+	// Back
+	DebugLine::AddLine(tln, trn, color);
+	DebugLine::AddLine(trn, brn, color);
+	DebugLine::AddLine(brn, bln, color);
+	DebugLine::AddLine(bln, tln, color);
+
+	// Front
+	DebugLine::AddLine(tlf, trf, color);
+	DebugLine::AddLine(trf, brf, color);
+	DebugLine::AddLine(brf, blf, color);
+	DebugLine::AddLine(blf, tlf, color);
+
+	// Left side
+	DebugLine::AddLine(tln, tlf, color);
+	DebugLine::AddLine(blf, bln, color);
+
+	// Right side
+	DebugLine::AddLine(trn, trf, color);
+	DebugLine::AddLine(brf, brn, color);
+}
+
 void Chunk::InitializeChunk()
 {
+	VX_ASSERT(MINIMUM_TERRAIN_HEIGHT < MAXIMUM_TERRAIN_HEIGHT);
 
 	XMFLOAT3 posWS = { m_pos.x * CHUNK_SIZE, m_pos.y * CHUNK_SIZE, m_pos.z * CHUNK_SIZE };
 
 	// Populate the chunk array
 	// For now we'll just initialize all blocks to "DIRT" blocks
-	for(int x = 0; x < CHUNK_SIZE; x++)
+	for(int64_t x = 0; x < CHUNK_SIZE; x++)
 	{
-		for (int z = 0; z < CHUNK_SIZE; z++)
+		for (int64_t z = 0; z < CHUNK_SIZE; z++)
 		{
-			float height = Noise2D::GenerateValue(x + posWS.x, z + posWS.z) * static_cast<float>(CHUNK_SIZE);
-			for(int y = 0; y < CHUNK_SIZE; y++)
+			// Returns a values between MAXIMUM_TERRAIN_HEIGHT and MINIMUM_TERRAIN_HEIGHT
+			float height = Noise2D::GenerateValue(static_cast<double>(x + posWS.x), static_cast<double>(z + posWS.z)) 
+				* (MAXIMUM_TERRAIN_HEIGHT - MINIMUM_TERRAIN_HEIGHT) + MINIMUM_TERRAIN_HEIGHT;
+			for(int64_t y = 0; y < CHUNK_SIZE; y++)
 			{
-				if(y <= height) m_chunk[x][y][z] = Block(BlockType::Grass);
-				else m_chunk[x][y][z] = Block(BlockType::Air);
+				float yWS = posWS.y + y;
+				if(yWS <= static_cast<int32_t>(height)) 
+					m_chunk[x][y][z] = Block(BlockType::Grass);
+				else 
+					m_chunk[x][y][z] = Block(BlockType::Air);
 			}
 		}
 	}
@@ -87,9 +134,6 @@ void Chunk::InitializeVertexBuffer()
 				  static_cast<float>(y) + posWS.y,
 				  static_cast<float>(z) + posWS.z
 				};
-
-				// NOTE: appends faces that are not occluded (only render faces that can be seen)
-				// RIGHT BACK AND TOP FACES RENDER TWICE
 
 				// Only append faces if current block is not an air block
 				BlockType blockType = m_chunk[x][y][z].GetType();
@@ -159,7 +203,6 @@ void Chunk::InitializeVertexBuffer()
 					else if(m_chunk[x][y][z + 1].GetType() == BlockType::Air)
 						AppendBlockFaceToArray(BlockFace::BACK, blockType, index, blockPos, blockFaces);
 				}
-
 			}
 		}
 	}
@@ -186,7 +229,11 @@ void Chunk::CreateVertexBuffer()
 	vertexBufferDesc.StructureByteStride = 0;
 
 	hr = D3D::GetDevice()->CreateBuffer(&vertexBufferDesc, nullptr, &m_buffer);
-	VX_ASSERT(!FAILED(hr));
+	if(FAILED(hr))
+	{
+		hr = D3D::GetDevice()->GetDeviceRemovedReason();
+		VX_ASSERT(false);
+	}
 }
 
 void Chunk::AppendBlockFaceToArray(const BlockFace& face, const BlockType& type, uint32_t& index, const XMFLOAT3& blockPos, 
