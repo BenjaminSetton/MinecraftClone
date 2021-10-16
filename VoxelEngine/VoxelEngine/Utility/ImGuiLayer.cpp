@@ -100,6 +100,8 @@ void ImGuiLayer::Draw()
 		PlayerPhysics_Data::vel.x, PlayerPhysics_Data::vel.y, PlayerPhysics_Data::vel.z);
 	ImGui::Text("Acceleration: %2.2f, %2.2f, %2.2f",
 		PlayerPhysics_Data::accel.x, PlayerPhysics_Data::accel.y, PlayerPhysics_Data::accel.z);
+	ImGui::Text("IsCollidingWall: %i", PlayerPhysics_Data::isCollidingWall);
+	ImGui::Text("IsCollidingFloor: %i", PlayerPhysics_Data::isCollidingFloor);
 	ImGui::End();
 
 }

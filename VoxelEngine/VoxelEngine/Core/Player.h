@@ -4,9 +4,13 @@
 #include <DirectXMath.h>
 #include "DebugCamera.h"
 
+#include "PlayerController.h"
+
 class Player
 {
 public:
+
+	friend class PlayerController;
 
 	Player();
 	Player(const Player& other) = default;

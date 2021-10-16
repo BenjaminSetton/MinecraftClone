@@ -34,6 +34,9 @@
     <Filter Include="Data">
       <UniqueIdentifier>{491ea476-5f3e-4590-be3c-7af6213f2073}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\Player">
+      <UniqueIdentifier>{5871c20a-b7a8-4420-a570-5a6defd932f3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Utility\Clock.cpp">
@@ -135,14 +138,17 @@
     <ClCompile Include="Core\FrustumCamera.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Player.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="Core\Physics.cpp">
       <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="Utility\ImGuiDrawData.cpp">
       <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Player.cpp">
+      <Filter>Core\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\PlayerController.cpp">
+      <Filter>Core\Player</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -269,14 +275,17 @@
     <ClInclude Include="Core\FrustumCamera.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Player.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="Core\Physics.h">
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Utility\ImGuiDrawData.h">
       <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Player.h">
+      <Filter>Core\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\PlayerController.h">
+      <Filter>Core\Player</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

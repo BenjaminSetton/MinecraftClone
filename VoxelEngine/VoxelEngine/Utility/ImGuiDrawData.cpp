@@ -34,6 +34,8 @@ int Renderer_Data::numActiveChunks = 0;
 //
 DirectX::XMFLOAT3 PlayerPhysics_Data::accel = { 0.0f, 0.0f, 0.0f };
 DirectX::XMFLOAT3 PlayerPhysics_Data::vel = { 0.0f, 0.0f, 0.0f };
+bool PlayerPhysics_Data::isCollidingWall = false;
+bool PlayerPhysics_Data::isCollidingFloor = false;
 
 
 

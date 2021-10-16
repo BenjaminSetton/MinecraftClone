@@ -224,6 +224,7 @@
     <ClCompile Include="Core\main.cpp" />
     <ClCompile Include="Core\Physics.cpp" />
     <ClCompile Include="Core\Player.cpp" />
+    <ClCompile Include="Core\PlayerController.cpp" />
     <ClCompile Include="Core\ShadowShader.cpp" />
     <ClCompile Include="Core\TextureManager.cpp" />
     <ClCompile Include="Core\TextureViewer.cpp" />
@@ -275,6 +276,7 @@
     <ClInclude Include="Core\Graphics.h" />
     <ClInclude Include="Core\Physics.h" />
     <ClInclude Include="Core\Player.h" />
+    <ClInclude Include="Core\PlayerController.h" />
     <ClInclude Include="Core\ShadowShader.h" />
     <ClInclude Include="Core\TextureManager.h" />
     <ClInclude Include="Core\TextureViewer.h" />

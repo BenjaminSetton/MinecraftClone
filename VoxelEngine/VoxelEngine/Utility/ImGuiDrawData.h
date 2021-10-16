@@ -46,6 +46,8 @@ struct PlayerPhysics_Data
 {
 	static DirectX::XMFLOAT3 accel;
 	static DirectX::XMFLOAT3 vel;
+	static bool isCollidingFloor;
+	static bool isCollidingWall;
 };
 
 #endif _IMGUIDRAWDATA_H

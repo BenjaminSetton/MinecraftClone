@@ -322,8 +322,8 @@ void ShadowShader::UpdateLightMatrix()
 
 
 	// Create the new view matrix
-	XMFLOAT3 lightDirection = { -0.75f, -0.5f, 1.2f };// DayNightCycle::GetLightDirection(DayNightCycle::CelestialBody::SUN);
-	XMFLOAT3 camPos = { -4.0f, 20.0f, -10.0f };// DayNightCycle::GetLightPosition(DayNightCycle::CelestialBody::SUN);
+	XMFLOAT3 lightDirection = DayNightCycle::GetLightDirection(DayNightCycle::CelestialBody::SUN);
+	XMFLOAT3 camPos = DayNightCycle::GetLightPosition(DayNightCycle::CelestialBody::SUN);
 	XMMATRIX viewMatrix =
 		XMMatrixLookAtLH
 		(

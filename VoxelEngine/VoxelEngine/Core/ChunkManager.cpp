@@ -114,27 +114,6 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 		vertexBufferThreads.clear();
 	}
 
-
-	// TEMP CODE, REMOVE IMMEDIATGELY
-	//const int WHD = 3;
-	//const int actDepth = WHD << 1;
-	//std::vector<int> test;
-	//for (int z = -WHD; z < WHD; z++)
-	//{
-	//	for (int y = -WHD; y < WHD; y++)
-	//	{
-	//		for (int x = -WHD; x < WHD; x++)
-	//		{
-	//			int size = test.size();
-	//			int toPush = (z + WHD) * actDepth * actDepth + (y + WHD) * actDepth + (x + WHD);
-	//			test.push_back(toPush);
-	//			VX_ASSERT(size == toPush);
-	//		}
-	//	}
-	//}
-	//int stopHere = 10;
-
-
 	// Start the updater thread
 	m_updaterThread = new std::thread(UpdaterEntryPoint);
 }
@@ -152,6 +131,7 @@ void ChunkManager::Shutdown()
 	}
 	delete m_updaterThread;
 
+	m_chunkMap.clear();
 	m_activeChunks.clear();
 }
 
