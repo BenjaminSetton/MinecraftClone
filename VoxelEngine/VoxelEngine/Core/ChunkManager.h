@@ -8,6 +8,8 @@
 
 #include "Chunk.h"
 
+constexpr int32_t RENDER_DIST = 4;
+
 
 // This is a work in progress!!
 class ChunkManager
@@ -62,10 +64,6 @@ private:
 	
 	// Stores active chunks in CHUNK SPACE
 	static std::vector<std::shared_ptr<Chunk>> m_activeChunks;
-
-	// NOTE! Temporarily stored here
-	// Consider moving to another "settings" or "game" class
-	static uint16_t m_renderDist;
 
 	// Dictates whether the updater thread is free to run Update()
 	static std::mutex m_canAccessVec;

@@ -6,6 +6,7 @@
 #include "../Utility/Input.h"
 
 #include "ChunkManager.h"
+#include "ChunkBufferManager.h"
 #include "FrustumCulling.h"
 
 #include "../Utility/ImGuiLayer.h"
@@ -37,6 +38,8 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	
 	// Initialize ChunkManager class (DefaultBlockShader will use it's data so initialization has to take place before it)
 	ChunkManager::Initialize(m_player->GetPosition());
+	// Initialize ChunkBufferManager class
+	ChunkBufferManager::Initialize();
 
 	// Create the shadow shader class
 	m_shadowShader = new ShadowShader;

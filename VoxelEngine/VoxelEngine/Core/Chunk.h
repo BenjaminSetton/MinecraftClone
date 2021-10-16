@@ -31,16 +31,19 @@ public:
 
 	void DrawChunkBorder();
 
+	const uint32_t GetVertexBufferStartIndex();
+	void SetVertexBufferStartIndex(const uint32_t startIndex);
+
+	const uint32_t GetVertexCount();
+	void SetVertexCount(const uint32_t vertexCount);
+
 private:
 
-	// TODO: Think about generating a chunk based on a seed
 	void InitializeChunk();
 
 	void InitializeVertexBuffer();
 
 	void CreateVertexBuffer();
-
-private:
 
 	void AppendBlockFaceToArray(const BlockFace& face, const BlockType& type, uint32_t& index, const DirectX::XMFLOAT3& blockPos, 
 		BlockVertex* blockArray);
@@ -59,6 +62,10 @@ private:
 
 	// D3D11 Vertex buffer
 	ID3D11Buffer* m_buffer;
+
+	// Variables used for ChunkBufferManager
+	uint32_t m_vertexBufferStartIndex;
+	uint32_t m_vertexCount;
 
 };
 

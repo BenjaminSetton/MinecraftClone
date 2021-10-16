@@ -5,6 +5,8 @@
 #include "BlockUVs.h"
 
 #include "ChunkManager.h"
+#include "ChunkBufferManager.h"
+
 #include "D3D.h"
 
 #include "../Utility/Utility.h"
@@ -21,7 +23,7 @@ constexpr int32_t LOW_CHUNK_LIMIT = -256;
 constexpr int32_t HIGH_CHUNK_LIMIT = -LOW_CHUNK_LIMIT;
 
 
-Chunk::Chunk(const XMFLOAT3 pos) : m_pos(pos), m_numFaces(0)
+Chunk::Chunk(const DirectX::XMFLOAT3 pos) : m_pos(pos), m_numFaces(0), m_vertexBufferStartIndex(0), m_vertexCount(0)
 {
 	InitializeChunk();
 	CreateVertexBuffer();
@@ -76,6 +78,12 @@ void Chunk::DrawChunkBorder()
 	DebugLine::AddLine(trn, trf, color);
 	DebugLine::AddLine(brf, brn, color);
 }
+
+const uint32_t Chunk::GetVertexBufferStartIndex() { return m_vertexBufferStartIndex; }
+void Chunk::SetVertexBufferStartIndex(const uint32_t startIndex) { m_vertexBufferStartIndex = startIndex; }
+
+const uint32_t Chunk::GetVertexCount() { return m_vertexCount; }
+void Chunk::SetVertexCount(const uint32_t vertexCount) { m_vertexCount = vertexCount; }
 
 void Chunk::InitializeChunk()
 {

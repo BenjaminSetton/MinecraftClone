@@ -11,7 +11,6 @@ using namespace DirectX;
 
 // Static variable definitions
 std::vector<std::shared_ptr<Chunk>> ChunkManager::m_activeChunks = std::vector<std::shared_ptr<Chunk>>();
-uint16_t ChunkManager::m_renderDist = 4;
 bool ChunkManager::m_runUpdater = true;
 XMFLOAT3 ChunkManager::m_playerPos = { 0.0f, 0.0f, 0.0f };
 std::vector<XMFLOAT3> ChunkManager::m_newChunkList = std::vector<XMFLOAT3>();
@@ -50,7 +49,7 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 
 	m_playerPos = playerPosWS;
 
-	m_activeChunks.reserve(pow(2 * m_renderDist + 1, 2));
+	m_activeChunks.reserve(pow(2 * RENDER_DIST + 1, 2));
 
 	XMFLOAT3 playerPosCS = WorldToChunkSpace(playerPosWS);
 
@@ -65,14 +64,14 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 
 		uint32_t desiredDepthSlicesPerThread, actualDepthSlicesPerThread;
 		desiredDepthSlicesPerThread = actualDepthSlicesPerThread = 2;
-		uint32_t numThreadsToRun = floor((2 * m_renderDist + 1) / desiredDepthSlicesPerThread);
+		uint32_t numThreadsToRun = floor((2 * RENDER_DIST + 1) / desiredDepthSlicesPerThread);
 
 		// If we need more threads to run desired depth slices per thread, cap at map threads and recalculate
 		// actualDepthSlicesPerThread to reflect change in numThreadsToRun
 		if(numThreadsToRun > g_maxNumThreadsForInit)
 		{
 			numThreadsToRun = g_maxNumThreadsForInit;
-			actualDepthSlicesPerThread = floor((2 * m_renderDist + 1) / numThreadsToRun);
+			actualDepthSlicesPerThread = floor((2 * RENDER_DIST + 1) / numThreadsToRun);
 		}
 
 
@@ -80,8 +79,8 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 		std::vector<std::thread*> chunkLoaderThreads(numThreadsToRun);
 		for (int16_t threadID = 0; threadID < numThreadsToRun; threadID++)
 		{
-			int32_t startingChunk = threadID * actualDepthSlicesPerThread - m_renderDist;
-			int32_t numChunksToInit = threadID == numThreadsToRun - 1 ? actualDepthSlicesPerThread + ((2 * m_renderDist + 1) - numThreadsToRun * actualDepthSlicesPerThread) : actualDepthSlicesPerThread;
+			int32_t startingChunk = threadID * actualDepthSlicesPerThread - RENDER_DIST;
+			int32_t numChunksToInit = threadID == numThreadsToRun - 1 ? actualDepthSlicesPerThread + ((2 * RENDER_DIST + 1) - numThreadsToRun * actualDepthSlicesPerThread) : actualDepthSlicesPerThread;
 			std::thread* currThread = new std::thread(InitChunksMultithreaded, startingChunk, numChunksToInit, playerPosCS);
 			chunkLoaderThreads[threadID] = currThread;
 		}
@@ -171,7 +170,7 @@ void ChunkManager::Update()
 		};
 
 		// 1. Unload chunks if they are too far away from "player"
-		if (chunkDistFromPlayer.x > m_renderDist || chunkDistFromPlayer.y > m_renderDist || chunkDistFromPlayer.z > m_renderDist)
+		if (chunkDistFromPlayer.x > RENDER_DIST || chunkDistFromPlayer.y > RENDER_DIST || chunkDistFromPlayer.z > RENDER_DIST)
 		{
 			m_deletedChunkList.push_back(i);
 		}
@@ -182,11 +181,11 @@ void ChunkManager::Update()
 	// 2. Load chunks if they are inside render distance
 
 	// Z-axis chunk checking (includes corner chunks)
-	for (int16_t x = -m_renderDist; x <= m_renderDist; x += 2 * m_renderDist)
+	for (int16_t x = -RENDER_DIST; x <= RENDER_DIST; x += 2 * RENDER_DIST)
 	{
-		for (int16_t y = -m_renderDist; y <= m_renderDist; y++)
+		for (int16_t y = -RENDER_DIST; y <= RENDER_DIST; y++)
 		{
-			for (int16_t z = -m_renderDist; z <= m_renderDist; z++)
+			for (int16_t z = -RENDER_DIST; z <= RENDER_DIST; z++)
 			{
 				// A coordinate in chunk space
 				XMFLOAT3 newChunkPosCS = { playerPosChunkSpace.x + x, playerPosChunkSpace.y + y, playerPosChunkSpace.z + z };
@@ -203,11 +202,11 @@ void ChunkManager::Update()
 	}
 
 	// X-axis chunk checking (excludes corner chunks)
-	for (int16_t z = -m_renderDist; z <= m_renderDist; z += 2 * m_renderDist) 
+	for (int16_t z = -RENDER_DIST; z <= RENDER_DIST; z += 2 * RENDER_DIST)
 	{
-		for (int16_t y = -m_renderDist; y <= m_renderDist; y++)
+		for (int16_t y = -RENDER_DIST; y <= RENDER_DIST; y++)
 		{
-			for (int16_t x = -m_renderDist + 1; x < m_renderDist; x++)
+			for (int16_t x = -RENDER_DIST + 1; x < RENDER_DIST; x++)
 			{
 				// A coordinate in chunk space
 				XMFLOAT3 newChunkPosCS = { playerPosChunkSpace.x + x, playerPosChunkSpace.y + y, playerPosChunkSpace.z + z };
@@ -393,9 +392,9 @@ void ChunkManager::InitChunksMultithreaded(const int32_t& startChunk, const int3
 {
 	for(int32_t x = startChunk; x < startChunk + numChunksToInit; x++)
 	{
-		for (int32_t y = -m_renderDist; y <= m_renderDist; y++)
+		for (int32_t y = -RENDER_DIST; y <= RENDER_DIST; y++)
 		{
-			for (int32_t z = -m_renderDist; z <= m_renderDist; z++)
+			for (int32_t z = -RENDER_DIST; z <= RENDER_DIST; z++)
 			{
 				// A coordinate in chunk space
 				XMFLOAT3 newChunkPosCS = { playerPosCS.x + x, playerPosCS.y + y, playerPosCS.z + z };
