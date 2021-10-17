@@ -8,7 +8,7 @@ cbuffer WVP
 
 struct VertexIn
 {
-    float3 pos : POSITION0;
+    float3 wpos : POSITION0;
     float3 norm : NORMAL0;
     float2 uv : TEXCOORD0;
 };
@@ -21,7 +21,8 @@ struct VertexOut
 VertexOut main(VertexIn input)
 {
     VertexOut output;
-    float4 outPos = float4(input.pos, 1.0f);
+    
+    float4 outPos = float4(input.wpos, 1.0f);
     
     output.pos = mul(outPos, worldMatrix);
     output.pos = mul(output.pos, viewMatrix);

@@ -417,20 +417,23 @@ void ChunkManager::InitChunkVertexBuffersMultithreaded(const uint32_t& startInde
 		// Sanity check
 		VX_ASSERT(currChunk);
 
+		m_canAccessVec.lock();
 		currChunk->InitializeVertexBuffer();
+		m_canAccessVec.unlock();
 	}
 }
 
 std::shared_ptr<Chunk> ChunkManager::LoadChunkMultithreaded(const DirectX::XMFLOAT3 chunkCS)
 {
+	m_canAccessVec.lock();
 	std::shared_ptr<Chunk> chunk = std::make_shared<Chunk>(chunkCS);
+	m_canAccessVec.unlock();
+
 	uint64_t hashKey = GetHashKeyFromChunkPosition(chunkCS);
 
 	m_canAccessVec.lock();
 	m_activeChunks.emplace_back(chunk);
-
 	if (m_chunkMap.size() > 0 && m_chunkMap.find(hashKey) != m_chunkMap.end()) VX_ASSERT(false);
-	//VX_ASSERT(m_chunkMap.find(hashKey) != m_chunkMap.end() && m_chunkMap.size() > 0);
 	m_chunkMap[hashKey] = static_cast<std::weak_ptr<Chunk>>(chunk);
 	m_canAccessVec.unlock();
 

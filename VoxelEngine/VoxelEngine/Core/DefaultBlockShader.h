@@ -57,7 +57,7 @@ private:
 
 	void CreateShaders(const WCHAR* vsFilename, const WCHAR* psFilename);
 
-	void BindVertexBuffer(std::shared_ptr<Chunk> chunk);
+	void BindVertexBuffers();
 
 	void BindObjects(ID3D11ShaderResourceView* const* srvs);
 

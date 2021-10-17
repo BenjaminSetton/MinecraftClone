@@ -7,9 +7,12 @@
 #include "ChunkManager.h"
 #include "ChunkBufferManager.h"
 
+#include "FrustumCulling.h"
+
 #include "D3D.h"
 
 #include "../Utility/Utility.h"
+#include "../Utility/ImGuiLayer.h"
 
 
 using namespace DirectX;
@@ -23,7 +26,7 @@ constexpr int32_t LOW_CHUNK_LIMIT = -256;
 constexpr int32_t HIGH_CHUNK_LIMIT = -LOW_CHUNK_LIMIT;
 
 
-Chunk::Chunk(const DirectX::XMFLOAT3 pos) : m_pos(pos), m_numFaces(0), m_vertexBufferStartIndex(0), m_vertexCount(0)
+Chunk::Chunk(const DirectX::XMFLOAT3 pos) : m_pos(pos), m_vertexBufferStartIndex(0), m_vertexCount(0)
 {
 	InitializeChunk();
 	CreateVertexBuffer();
@@ -31,18 +34,42 @@ Chunk::Chunk(const DirectX::XMFLOAT3 pos) : m_pos(pos), m_numFaces(0), m_vertexB
 
 Chunk::~Chunk()
 {
-	m_buffer->Release();
+	VX_ASSERT(m_vertexBufferStartIndex < ChunkBufferManager::GetVertexArray().size());
+
+	if (m_vertexCount > 0)
+	{
+		// Remove vertices from the ChunkBufferManager
+		ChunkBufferManager::GetVertexArray().erase(
+			ChunkBufferManager::GetVertexArray().begin() + m_vertexBufferStartIndex,
+			ChunkBufferManager::GetVertexArray().begin() + m_vertexBufferStartIndex + m_vertexCount);
+
+		// Update all other chunk start indicies if they were displaced
+		auto chunkVector = ChunkManager::GetChunkVector();
+		for (auto chunk : chunkVector)
+		{
+
+			if (!chunk) continue;
+
+			if( chunk->GetVertexBufferStartIndex() <= m_vertexBufferStartIndex ||
+				chunk->GetVertexCount() <= 0) continue;
+
+			// else update the chunks' start position
+			int32_t newStartIndex = chunk->GetVertexBufferStartIndex() - m_vertexCount;
+			VX_ASSERT(newStartIndex < ChunkBufferManager::GetVertexArray().size());
+			VX_ASSERT(newStartIndex >= 0);
+			chunk->SetVertexBufferStartIndex(newStartIndex);
+		}
+	}
+
+	// Reset these variables
+	m_vertexBufferStartIndex = m_vertexCount = 0;
 }
 
 Block* Chunk::GetBlock(unsigned int x, unsigned int y, unsigned int z) { return &m_chunk[x][y][z]; }
 
 const DirectX::XMFLOAT3 Chunk::GetPosition() { return m_pos; }
 
-const uint32_t Chunk::GetFaceCount() { return m_numFaces; }
-
-const uint32_t Chunk::GetVertexCount() { return GetFaceCount() * 6; }
-
-ID3D11Buffer* Chunk::GetBuffer() { return m_buffer; }
+const uint32_t Chunk::GetFaceCount() { return static_cast<uint32_t>(m_vertexCount / 6); }
 
 void Chunk::DrawChunkBorder()
 {
@@ -103,7 +130,7 @@ void Chunk::InitializeChunk()
 			for(int64_t y = 0; y < CHUNK_SIZE; y++)
 			{
 				float yWS = posWS.y + y;
-				if(yWS <= static_cast<int32_t>(height)) 
+				if(yWS <= static_cast<int32_t>(height))
 					m_chunk[x][y][z] = Block(BlockType::Grass);
 				else 
 					m_chunk[x][y][z] = Block(BlockType::Air);
@@ -114,7 +141,30 @@ void Chunk::InitializeChunk()
 
 void Chunk::InitializeVertexBuffer()
 {
-	ResetFaces();
+	static std::unordered_map<uint32_t, XMFLOAT3> debug_map;
+
+	XMFLOAT3 posWS = { m_pos.x * CHUNK_SIZE, m_pos.y * CHUNK_SIZE, m_pos.z * CHUNK_SIZE };
+
+	if (BlockShader_Data::enableFrustumCulling)
+	{
+		if (FrustumCulling::CalculateChunkPosAgainstFrustum(posWS)) return;
+	}
+
+	m_vertexCount = 0;
+
+	// Get start index
+	size_t arraySize = ChunkBufferManager::GetVertexArray().size();
+	m_vertexBufferStartIndex = arraySize;
+	/*if (ChunkBufferManager::GetVertexArray().size() > 0)
+	{
+
+		if(debug_map.find(arraySize) != debug_map.end())
+		{
+			XMFLOAT3 duplicate = debug_map.find(arraySize)->second;
+			VX_ASSERT(false);
+		}
+	}
+	debug_map[arraySize] = m_pos;*/
 
 	// Retrieve neighboring chunks
 	std::shared_ptr<Chunk> leftChunk = ChunkManager::GetChunkAtPos({ m_pos.x - 1, m_pos.y, m_pos.z });
@@ -124,13 +174,6 @@ void Chunk::InitializeVertexBuffer()
 	std::shared_ptr<Chunk> frontChunk = ChunkManager::GetChunkAtPos({ m_pos.x, m_pos.y, m_pos.z - 1 });
 	std::shared_ptr<Chunk> backChunk = ChunkManager::GetChunkAtPos({ m_pos.x, m_pos.y, m_pos.z + 1 });
 
-	XMFLOAT3 posWS = { m_pos.x * CHUNK_SIZE, m_pos.y * CHUNK_SIZE, m_pos.z * CHUNK_SIZE };
-
-
-	// Local array (deleted after loop ends and buffer is updated)
-	BlockVertex* blockFaces = new BlockVertex[BUFFER_SIZE];
-
-	uint32_t index = 0;
 	for (int x = 0; x < CHUNK_SIZE; x++)
 	{
 		for (int y = CHUNK_SIZE - 1; y >= 0; y--)
@@ -138,9 +181,10 @@ void Chunk::InitializeVertexBuffer()
 			for (int z = 0; z < CHUNK_SIZE; z++)
 			{
 				XMFLOAT3 blockPos = 
-				{ static_cast<float>(x) + posWS.x,
-				  static_cast<float>(y) + posWS.y,
-				  static_cast<float>(z) + posWS.z
+				{ 
+					static_cast<float>(x) + posWS.x,
+					static_cast<float>(y) + posWS.y,
+					static_cast<float>(z) + posWS.z
 				};
 
 				// Only append faces if current block is not an air block
@@ -151,75 +195,65 @@ void Chunk::InitializeVertexBuffer()
 					if (x - 1 < 0)
 					{
 						if(leftChunk && leftChunk->GetBlock(CHUNK_SIZE - 1, y, z)->GetType() == BlockType::Air)
-							AppendBlockFaceToArray(BlockFace::LEFT, blockType, index, blockPos, blockFaces);
+							AppendBlockFaceToArray(BlockFace::LEFT, blockType, blockPos, ChunkBufferManager::GetVertexArray());
 					}
 					// left neighbor
 					else if(m_chunk[x - 1][y][z].GetType() == BlockType::Air)
-						AppendBlockFaceToArray(BlockFace::LEFT, blockType, index, blockPos, blockFaces);
+						AppendBlockFaceToArray(BlockFace::LEFT, blockType, blockPos, ChunkBufferManager::GetVertexArray());
 
 					// right limit
 					if (x + 1 > CHUNK_SIZE - 1)
 					{
 						if(rightChunk && rightChunk->GetBlock(0, y, z)->GetType() == BlockType::Air)
-							AppendBlockFaceToArray(BlockFace::RIGHT, blockType, index, blockPos, blockFaces);
+							AppendBlockFaceToArray(BlockFace::RIGHT, blockType, blockPos, ChunkBufferManager::GetVertexArray());
 					}
 					// right neighbor
 					else if(m_chunk[x + 1][y][z].GetType() == BlockType::Air)
-						AppendBlockFaceToArray(BlockFace::RIGHT, blockType, index, blockPos, blockFaces);
+						AppendBlockFaceToArray(BlockFace::RIGHT, blockType, blockPos, ChunkBufferManager::GetVertexArray());
 
 					// top neighbor
 					if (y + 1 > CHUNK_SIZE - 1)
 					{
 						if (!topChunk)
-							AppendBlockFaceToArray(BlockFace::TOP, blockType, index, blockPos, blockFaces);
+							AppendBlockFaceToArray(BlockFace::TOP, blockType, blockPos, ChunkBufferManager::GetVertexArray());
 						else if(topChunk->GetBlock(x, 0, z)->GetType() == BlockType::Air)
-							AppendBlockFaceToArray(BlockFace::TOP, blockType, index, blockPos, blockFaces);
+							AppendBlockFaceToArray(BlockFace::TOP, blockType, blockPos, ChunkBufferManager::GetVertexArray());
 					}
 					else if(m_chunk[x][y + 1][z].GetType() == BlockType::Air)
-						AppendBlockFaceToArray(BlockFace::TOP, blockType, index, blockPos, blockFaces);
+						AppendBlockFaceToArray(BlockFace::TOP, blockType, blockPos, ChunkBufferManager::GetVertexArray());
 
 					// bottom neighbor
 					if (y - 1 < 0)
 					{
-
-						// This will be commented out since there are no vertical chunks yet
-
-						//if (!bottomChunk)
-						//	AppendBlockFaceToArray(BlockFace::BOTTOM, index, blockPos);
-						//else 
-						if(bottomChunk && bottomChunk->GetBlock(x, CHUNK_SIZE - 1, z)->GetType() == BlockType::Air)
-							AppendBlockFaceToArray(BlockFace::BOTTOM, blockType, index, blockPos, blockFaces);
+						if (!bottomChunk)
+							AppendBlockFaceToArray(BlockFace::BOTTOM, blockType, blockPos, ChunkBufferManager::GetVertexArray());
+						else if(bottomChunk && bottomChunk->GetBlock(x, CHUNK_SIZE - 1, z)->GetType() == BlockType::Air)
+							AppendBlockFaceToArray(BlockFace::BOTTOM, blockType, blockPos, ChunkBufferManager::GetVertexArray());
 					}
 					else if(m_chunk[x][y - 1][z].GetType() == BlockType::Air)
-						AppendBlockFaceToArray(BlockFace::BOTTOM, blockType, index, blockPos, blockFaces);
+						AppendBlockFaceToArray(BlockFace::BOTTOM, blockType, blockPos, ChunkBufferManager::GetVertexArray());
 
 					// front neighbor
 					if (z - 1 < 0)
 					{
 						if(frontChunk && frontChunk->GetBlock(x, y, CHUNK_SIZE - 1)->GetType() == BlockType::Air)
-							AppendBlockFaceToArray(BlockFace::FRONT, blockType, index, blockPos, blockFaces);
+							AppendBlockFaceToArray(BlockFace::FRONT, blockType, blockPos, ChunkBufferManager::GetVertexArray());
 					}
 					else if(m_chunk[x][y][z - 1].GetType() == BlockType::Air)
-						AppendBlockFaceToArray(BlockFace::FRONT, blockType, index, blockPos, blockFaces);
+						AppendBlockFaceToArray(BlockFace::FRONT, blockType, blockPos, ChunkBufferManager::GetVertexArray());
 
 					// back neighbor
 					if (z + 1 > CHUNK_SIZE - 1)
 					{
 						if(backChunk && backChunk->GetBlock(x, y, 0)->GetType() == BlockType::Air)
-							AppendBlockFaceToArray(BlockFace::BACK, blockType, index, blockPos, blockFaces);
+							AppendBlockFaceToArray(BlockFace::BACK, blockType, blockPos, ChunkBufferManager::GetVertexArray());
 					}
 					else if(m_chunk[x][y][z + 1].GetType() == BlockType::Air)
-						AppendBlockFaceToArray(BlockFace::BACK, blockType, index, blockPos, blockFaces);
+						AppendBlockFaceToArray(BlockFace::BACK, blockType, blockPos, ChunkBufferManager::GetVertexArray());
 				}
 			}
 		}
 	}
-
-	// Update Buffer
-	D3D::GetDeviceContext()->UpdateSubresource(m_buffer, 0, nullptr, blockFaces, 0, 0);
-
-	// Delete array
-	delete[] blockFaces;
 
 }
 
@@ -236,16 +270,16 @@ void Chunk::CreateVertexBuffer()
 	vertexBufferDesc.MiscFlags = 0;
 	vertexBufferDesc.StructureByteStride = 0;
 
-	hr = D3D::GetDevice()->CreateBuffer(&vertexBufferDesc, nullptr, &m_buffer);
-	if(FAILED(hr))
-	{
-		hr = D3D::GetDevice()->GetDeviceRemovedReason();
-		VX_ASSERT(false);
-	}
+	//hr = D3D::GetDevice()->CreateBuffer(&vertexBufferDesc, nullptr, &m_buffer);
+	//if(FAILED(hr))
+	//{
+	//	hr = D3D::GetDevice()->GetDeviceRemovedReason();
+	//	VX_ASSERT(false);
+	//}
 }
 
-void Chunk::AppendBlockFaceToArray(const BlockFace& face, const BlockType& type, uint32_t& index, const XMFLOAT3& blockPos, 
-	BlockVertex* blockArray)
+void Chunk::AppendBlockFaceToArray(const BlockFace& face, const BlockType& type, const XMFLOAT3& blockPos, 
+	std::vector<BlockVertex>& out_blockArray)
 {
 	uint32_t startIndexArray = 0;
 
@@ -289,14 +323,11 @@ void Chunk::AppendBlockFaceToArray(const BlockFace& face, const BlockType& type,
 		BlockVertex currVert = verts[indicies[startIndexArray]];
 		currVert.pos = { currVert.pos.x + blockPos.x, currVert.pos.y + blockPos.y, currVert.pos.z + blockPos.z };
 		currVert.uv = GetUVsForBlock(type, indicies[startIndexArray++]);
-		blockArray[index++] = currVert;
+		
+		out_blockArray.push_back(currVert);
+
 	}
+	
+	m_vertexCount += 6;
 
-	m_numFaces++;
-
-}
-
-void Chunk::ResetFaces()
-{
-	m_numFaces = 0;
 }

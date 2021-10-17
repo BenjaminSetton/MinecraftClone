@@ -71,7 +71,13 @@ static DirectX::XMFLOAT2 GetUVsForBlock(const BlockType& type, const uint32_t& i
 	{
 		break;
 	}
+	default:
+	{
+		break;
 	}
+	}
+
+	return { 0.0f, 0.0f };
 }
 
 

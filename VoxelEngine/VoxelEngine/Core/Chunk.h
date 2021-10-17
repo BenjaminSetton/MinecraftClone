@@ -25,10 +25,6 @@ public:
 
 	const uint32_t GetFaceCount();
 
-	const uint32_t GetVertexCount();
-
-	ID3D11Buffer* GetBuffer();
-
 	void DrawChunkBorder();
 
 	const uint32_t GetVertexBufferStartIndex();
@@ -45,14 +41,10 @@ private:
 
 	void CreateVertexBuffer();
 
-	void AppendBlockFaceToArray(const BlockFace& face, const BlockType& type, uint32_t& index, const DirectX::XMFLOAT3& blockPos, 
-		BlockVertex* blockArray);
-
-	void ResetFaces();
+	void AppendBlockFaceToArray(const BlockFace& face, const BlockType& type, const DirectX::XMFLOAT3& blockPos, 
+		std::vector<BlockVertex>& out_blockArray);
 
 private:
-
-	uint32_t m_numFaces;
 
 	// The chunk's position stored in CHUNK SPACE
 	DirectX::XMFLOAT3 m_pos;
@@ -60,12 +52,9 @@ private:
 	// Currently defines a 3D array of 16x16x16 blocks
 	Block m_chunk[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 
-	// D3D11 Vertex buffer
-	ID3D11Buffer* m_buffer;
-
 	// Variables used for ChunkBufferManager
-	uint32_t m_vertexBufferStartIndex;
-	uint32_t m_vertexCount;
+	int32_t m_vertexBufferStartIndex;
+	int32_t m_vertexCount;
 
 };
 

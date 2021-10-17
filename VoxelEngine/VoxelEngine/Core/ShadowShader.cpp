@@ -4,6 +4,7 @@
 
 #include "D3D.h"
 #include "DayNightCycle.h"
+#include "ChunkBufferManager.h"
 
 using namespace DirectX;
 
@@ -66,21 +67,11 @@ void ShadowShader::Render()
 
 	BindObjects();
 
-	//ChunkManager::CheckOutChunkVector();
-	auto chunkVec = ChunkManager::GetChunkVector();
-	int i = 0;
-	for (auto chunk : chunkVec)
-	{
-		if (!chunk) continue;
+	BindVertexBuffers();
 
-		// Update the vertex buffer
-		BindVertexBuffer(chunk);
+	uint32_t size = ChunkBufferManager::GetVertexArray().size();
+	context->Draw(size, 0);
 
-		// Render the chunk
-		context->Draw(chunk->GetVertexCount(), 0);
-		i++;
-	}
-	//ChunkManager::ReturnChunkVector();
 }
 
 void ShadowShader::Shutdown()
@@ -277,15 +268,15 @@ void ShadowShader::CreateDepthBuffer(const uint32_t width, const uint32_t height
 	VX_ASSERT(!FAILED(hr));
 }
 
-void ShadowShader::BindVertexBuffer(std::shared_ptr<Chunk> chunk)
+void ShadowShader::BindVertexBuffers()
 {
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
-	ID3D11Buffer* buffers[] = { chunk->GetBuffer() };
+	ID3D11Buffer* buffers[] = { ChunkBufferManager::GetVertexBuffer() };
 	unsigned int stride[] = { sizeof(BlockVertex) };
 	unsigned int offset[] = { 0 };
-	context->IASetVertexBuffers(0, 1, buffers, stride, offset);
+	context->IASetVertexBuffers(0, ARRAYSIZE(buffers), buffers, stride, offset);
 }
 
 void ShadowShader::BindObjects()

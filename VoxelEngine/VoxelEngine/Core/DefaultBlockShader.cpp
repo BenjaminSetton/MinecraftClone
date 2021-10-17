@@ -4,10 +4,12 @@
 
 #include "../Utility/Utility.h"
 #include "DayNightCycle.h"
-#include "FrustumCulling.h"
 
 // ImGui Debug
 #include "../Utility/ImGuiLayer.h"
+
+#include "Block.h"
+#include "ChunkBufferManager.h"
 
 using namespace DirectX;
 
@@ -77,34 +79,17 @@ void DefaultBlockShader::Render(ID3D11ShaderResourceView* const* srvs)
 	BlockShader_Data::debugVerts = 0;
 	BlockShader_Data::numDrawCalls = 0;
 
-
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
 	BindObjects(srvs);
 
-	auto chunkVec = ChunkManager::GetChunkVector();
-	for(auto chunk : chunkVec)
-	{
-		if (!chunk) continue;
+	BindVertexBuffers();
 
-		if(BlockShader_Data::enableFrustumCulling)
-			// Cull chunks outside view frustum
-			if (!FrustumCulling::CalculateChunkPosAgainstFrustum(ChunkManager::ChunkToWorldSpace(chunk->GetPosition()))) continue;
+	uint32_t size = ChunkBufferManager::GetVertexArray().size();
+	BlockShader_Data::debugVerts = size;
+	BlockShader_Data::numDrawCalls = 1;
 
-		// Update the vertex buffer
-		BindVertexBuffer(chunk);
-	
-		// Render the chunk
-		uint32_t numVerts = chunk->GetVertexCount();
-		context->Draw(numVerts, 0);
-
-		// Draw their borders temporarily
-		chunk->DrawChunkBorder();
-
-		BlockShader_Data::debugVerts += numVerts;
-		BlockShader_Data::numDrawCalls++;
-	}
-
+	context->Draw(size, 0);
 }
 
 void DefaultBlockShader::Shutdown()
@@ -259,12 +244,12 @@ void DefaultBlockShader::CreateShaders(const WCHAR* vsFilename, const WCHAR* psF
 	PSBlob = nullptr;
 }
 
-void DefaultBlockShader::BindVertexBuffer(std::shared_ptr<Chunk> chunk)
+void DefaultBlockShader::BindVertexBuffers()
 {
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
-	ID3D11Buffer* buffers[] = { chunk->GetBuffer() };
+	ID3D11Buffer* buffers[] = { ChunkBufferManager::GetVertexBuffer() };
 	unsigned int stride[] = { sizeof(BlockVertex) };
 	unsigned int offset[] = { 0 };
 	context->IASetVertexBuffers(0, ARRAYSIZE(buffers), buffers, stride, offset);

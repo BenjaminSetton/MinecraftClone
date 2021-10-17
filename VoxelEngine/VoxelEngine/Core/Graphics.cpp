@@ -148,6 +148,12 @@ bool Graphics::Frame(const float dt)
 		// Update the position for the updater thread
 		ChunkManager::SetPlayerPos(m_player->GetPosition());
 
+		{
+			VX_PROFILE_SCOPE_MSG("[UPDATE] Chunk Buffer Update");
+			// Update the vertices
+			ChunkBufferManager::UpdateBuffers();
+		}
+
 		// Update the day/night cycle
 		DayNightCycle::Update(dt);
 

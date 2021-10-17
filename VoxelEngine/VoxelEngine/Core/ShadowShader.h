@@ -45,7 +45,7 @@ private:
 	// Depth buffer has to be resized if window is resized
 	void CreateDepthBuffer(const uint32_t width, const uint32_t height);
 
-	void BindVertexBuffer(std::shared_ptr<Chunk> chunk);
+	void BindVertexBuffers();
 
 	void BindObjects();
 
