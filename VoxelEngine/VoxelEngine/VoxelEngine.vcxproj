@@ -245,6 +245,7 @@
     <ClCompile Include="Utility\Log.cpp" />
     <ClCompile Include="Utility\Noise.cpp" />
     <ClCompile Include="Utility\ScopeTimer.cpp" />
+    <ClCompile Include="Utility\SortedPool.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\imgui\imconfig.h" />
@@ -292,6 +293,7 @@
     <ClInclude Include="Utility\Log.h" />
     <ClInclude Include="Utility\Noise.h" />
     <ClInclude Include="Utility\ScopeTimer.h" />
+    <ClInclude Include="Utility\SortedPool.h" />
     <ClInclude Include="Utility\Utility.h" />
   </ItemGroup>
   <ItemGroup>

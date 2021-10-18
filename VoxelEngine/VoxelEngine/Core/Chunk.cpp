@@ -136,12 +136,12 @@ void Chunk::InitializeVertexBuffer()
 	size_t initialArraySize = ChunkBufferManager::GetVertexArray().size();
 
 	// Retrieve neighboring chunks
-	std::shared_ptr<Chunk> leftChunk = ChunkManager::GetChunkAtPos({ m_pos.x - 1, m_pos.y, m_pos.z });
-	std::shared_ptr<Chunk> rightChunk = ChunkManager::GetChunkAtPos({ m_pos.x + 1, m_pos.y, m_pos.z });
-	std::shared_ptr<Chunk> topChunk = ChunkManager::GetChunkAtPos({ m_pos.x, m_pos.y + 1, m_pos.z });
-	std::shared_ptr<Chunk> bottomChunk = ChunkManager::GetChunkAtPos({ m_pos.x, m_pos.y - 1, m_pos.z });
-	std::shared_ptr<Chunk> frontChunk = ChunkManager::GetChunkAtPos({ m_pos.x, m_pos.y, m_pos.z - 1 });
-	std::shared_ptr<Chunk> backChunk = ChunkManager::GetChunkAtPos({ m_pos.x, m_pos.y, m_pos.z + 1 });
+	Chunk* leftChunk = ChunkManager::GetChunkAtPos({ m_pos.x - 1, m_pos.y, m_pos.z });
+	Chunk* rightChunk = ChunkManager::GetChunkAtPos({ m_pos.x + 1, m_pos.y, m_pos.z });
+	Chunk* topChunk = ChunkManager::GetChunkAtPos({ m_pos.x, m_pos.y + 1, m_pos.z });
+	Chunk* bottomChunk = ChunkManager::GetChunkAtPos({ m_pos.x, m_pos.y - 1, m_pos.z });
+	Chunk* frontChunk = ChunkManager::GetChunkAtPos({ m_pos.x, m_pos.y, m_pos.z - 1 });
+	Chunk* backChunk = ChunkManager::GetChunkAtPos({ m_pos.x, m_pos.y, m_pos.z + 1 });
 
 	for (int x = 0; x < CHUNK_SIZE; x++)
 	{
@@ -242,8 +242,9 @@ void Chunk::ShutdownVertexBuffer()
 
 		// Update all other chunk start indicies if they were displaced
 		auto chunkVector = ChunkManager::GetChunkVector();
-		for (auto chunk : chunkVector)
+		for (uint32_t i = 0; i < chunkVector.Size(); i++)
 		{
+			Chunk* chunk = chunkVector[i];
 
 			if (!chunk) continue;
 

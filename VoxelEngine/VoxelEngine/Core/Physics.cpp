@@ -61,7 +61,7 @@ const bool Physics::DetectCollision(const DirectX::XMVECTOR& pos)
 	XMFLOAT3 posCS = ChunkManager::WorldToChunkSpace(pos_f3);
 	XMFLOAT3 chunkPosWS = ChunkManager::ChunkToWorldSpace(posCS);
 
-	std::shared_ptr<Chunk> chunk = ChunkManager::GetChunkAtPos(posCS);
+	Chunk* chunk = ChunkManager::GetChunkAtPos(posCS);
 	// No chunk exists, so collision can't happen
 	// This should never be the case when testing collision with player's position
 	// but since vertical chunks aren't a thing yet we need this workaround

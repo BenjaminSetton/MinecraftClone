@@ -6,6 +6,8 @@
 #include <mutex>
 #include <unordered_map>
 
+#include "../Utility/SortedPool.h"
+
 #include "Chunk.h"
 
 constexpr int32_t RENDER_DIST = 8;
@@ -20,23 +22,22 @@ public:
 
 	static void Shutdown();
 
-	static std::shared_ptr<Chunk> LoadChunk(const DirectX::XMFLOAT3 chunkCS);
+	static Chunk* LoadChunk(const DirectX::XMFLOAT3 chunkCS);
 
-	static void UnloadChunk(std::shared_ptr<Chunk> chunk);
+	static void UnloadChunk(Chunk* chunk);
 	static void UnloadChunk(const uint16_t& index);
 
 	static const uint16_t GetNumActiveChunks();
 
-	static std::shared_ptr<Chunk> GetChunkAtIndex(const uint16_t index);
+	static Chunk* GetChunkAtIndex(const uint16_t index);
 
 	// Returns chunk at "pos" CHUNK SPACE
-	static std::shared_ptr<Chunk> GetChunkAtPos(const DirectX::XMFLOAT3 pos);
+	static Chunk* GetChunkAtPos(const DirectX::XMFLOAT3 pos);
 
 	// Returns a copy of the vector so shared_ptr ref count is increased by 1
-	static std::vector<std::shared_ptr<Chunk>> GetChunkVector();
+	static SortedPool<Chunk> GetChunkVector();
 
 	static void UpdaterEntryPoint();
-	static void LoaderEntryPoint();
 
 	static void SetPlayerPos(DirectX::XMFLOAT3 playerPos);
 
@@ -50,15 +51,13 @@ public:
 
 	static void InitChunkVertexBuffersMultithreaded(const uint32_t& startIndex, const uint32_t& numChunksToInit);
 
-	static std::shared_ptr<Chunk> LoadChunkMultithreaded(const DirectX::XMFLOAT3 chunkCS);
+	static Chunk* LoadChunkMultithreaded(const DirectX::XMFLOAT3 chunkCS);
 
 	static const bool IsShuttingDown();
 
 private:
 
 	static void Update();
-
-	static void CheckChunksToLoadAndDelete();
 
 	static void ResetChunkMemory(const uint16_t index);
 
@@ -68,12 +67,11 @@ private:
 private:
 	
 	// Stores active chunks in CHUNK SPACE
-	static std::vector<std::shared_ptr<Chunk>> m_activeChunks;
+	static SortedPool<Chunk> m_activeChunks;
 
 	// Dictates whether the updater thread is free to run Update()
 	static std::mutex m_canAccessVec;
 	static std::thread* m_updaterThread;
-	static std::thread* m_loaderThread;
 	static bool m_runThreads;
 
 	static std::vector<DirectX::XMFLOAT3> m_newChunkList;
@@ -81,9 +79,8 @@ private:
 
 	static DirectX::XMFLOAT3 m_playerPos;
 
-	// Stored as a weak_ptr because it doesn't own Chunk*'s
-	// It just speeds up position lookup for Chunk*'s
-	static std::unordered_map<uint64_t, std::weak_ptr<Chunk>> m_chunkMap;
+	// Speeds up position lookup for Chunk*'s
+	static std::unordered_map<uint64_t, Chunk*> m_chunkMap;
 
 	static bool m_isShuttingDown;
 

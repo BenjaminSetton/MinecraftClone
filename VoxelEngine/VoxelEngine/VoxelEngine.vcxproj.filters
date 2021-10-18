@@ -156,6 +156,9 @@
     <ClCompile Include="Core\ChunkBufferManager.cpp">
       <Filter>Core\Chunk</Filter>
     </ClCompile>
+    <ClCompile Include="Utility\SortedPool.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utility\Clock.h">
@@ -295,6 +298,9 @@
     </ClInclude>
     <ClInclude Include="Core\ChunkBufferManager.h">
       <Filter>Core\Chunk</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\SortedPool.h">
+      <Filter>Utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
