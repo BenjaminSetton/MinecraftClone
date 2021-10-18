@@ -15,7 +15,7 @@ SortedPool<Chunk> ChunkManager::m_activeChunks = SortedPool<Chunk>((2 * RENDER_D
 bool ChunkManager::m_runThreads = true;
 XMFLOAT3 ChunkManager::m_playerPos = { 0.0f, 0.0f, 0.0f };
 std::vector<XMFLOAT3> ChunkManager::m_newChunkList = std::vector<XMFLOAT3>();
-std::vector<uint32_t> ChunkManager::m_deletedChunkList = std::vector<uint32_t>();
+std::vector<XMFLOAT3> ChunkManager::m_deletedChunkList = std::vector<XMFLOAT3>();
 std::thread* ChunkManager::m_updaterThread = nullptr;
 std::mutex ChunkManager::m_canAccessVec;
 bool ChunkManager::m_isShuttingDown = false;
@@ -34,6 +34,7 @@ uint32_t g_maxNumThreadsForInit;
 
 
 std::unordered_map<uint64_t, Chunk*> ChunkManager::m_chunkMap = std::unordered_map<uint64_t, Chunk*>();
+std::unordered_map<uint64_t, uint32_t> ChunkManager::m_poolMap = std::unordered_map<uint64_t, uint32_t>();
 
 
 void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
@@ -155,9 +156,7 @@ void ChunkManager::Update()
 		// 1. Unload chunks if they are too far away from "player"
 		if (chunkDistFromPlayer.x > RENDER_DIST || chunkDistFromPlayer.y > RENDER_DIST || chunkDistFromPlayer.z > RENDER_DIST)
 		{
-			m_canAccessVec.lock();
-			m_deletedChunkList.push_back(i);
-			m_canAccessVec.unlock();
+			m_deletedChunkList.push_back(chunk->GetPosition());
 		}
 
 	}
@@ -179,9 +178,7 @@ void ChunkManager::Update()
 				if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
 				else
 				{
-					m_canAccessVec.lock();
 					m_newChunkList.push_back(newChunkPosCS);
-					m_canAccessVec.unlock();
 				}
 
 			}
@@ -202,9 +199,7 @@ void ChunkManager::Update()
 				if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
 				else
 				{
-					m_canAccessVec.lock();
 					m_newChunkList.push_back(newChunkPosCS);
-					m_canAccessVec.unlock();
 				}
 
 			}
@@ -225,9 +220,7 @@ void ChunkManager::Update()
 				if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
 				else
 				{
-					m_canAccessVec.lock();
 					m_newChunkList.push_back(newChunkPosCS);
-					m_canAccessVec.unlock();
 				}
 
 			}
@@ -235,11 +228,13 @@ void ChunkManager::Update()
 	}
 
 	// 3. Delete / unload out-of-render-distance chunks
-	uint32_t indexCorrection = 0;
+	//uint32_t indexCorrection = 0;
 
-	for (auto chunkIndex : m_deletedChunkList)
+	for (auto chunkPos : m_deletedChunkList)
 	{
-		UnloadChunk(chunkIndex - indexCorrection++);
+		// Use the map to map chunk position to index inside pool
+		uint32_t index = m_poolMap[GetHashKeyFromChunkPosition(chunkPos)];
+		UnloadChunk(index);
 	}
 	
 
@@ -287,12 +282,15 @@ void ChunkManager::Update()
 
 Chunk* ChunkManager::LoadChunk(const XMFLOAT3 chunkCS) 
 {
-	Chunk* chunk = m_activeChunks.Insert(Chunk(chunkCS));
+	Chunk chunk(chunkCS);
+	Chunk* chunkPtr = m_activeChunks.Insert_Move(std::move(chunk));
 
 	uint64_t hashKey = GetHashKeyFromChunkPosition(chunkCS);
-	m_chunkMap[hashKey] = chunk;
+	m_chunkMap[hashKey] = chunkPtr;
 
-	return chunk;
+	m_poolMap[hashKey] = m_activeChunks.GetIndexFromPointer(chunkPtr);
+
+	return chunkPtr;
 }
 
 void ChunkManager::UnloadChunk(Chunk* chunk)
@@ -321,13 +319,14 @@ void ChunkManager::UnloadChunk(Chunk* chunk)
 }
 
 
-void ChunkManager::UnloadChunk(const uint16_t& index)
+void ChunkManager::UnloadChunk(const uint32_t& index)
 {
 	// Consider swapping chunk with last one from vector, and ZeroMemory the chunk
 	// When all the chunks have been unloaded (i.e. swapped to the last available chunk)
 	// all the zero'd chunks will be deleted from the vector
 	m_chunkMap.erase(GetHashKeyFromChunkPosition(m_activeChunks[index]->GetPosition()));
-	m_activeChunks.Remove(index);
+	Chunk* chunkPtr = m_activeChunks.Remove(index);
+	m_poolMap[GetHashKeyFromChunkPosition(chunkPtr->GetPosition())] = m_activeChunks.GetIndexFromPointer(chunkPtr);
 }
 
 const uint16_t ChunkManager::GetNumActiveChunks()
@@ -359,7 +358,7 @@ Chunk* ChunkManager::GetChunkAtPos(const DirectX::XMFLOAT3 posCS)
 	else return val->second;
 }
 
-SortedPool<Chunk> ChunkManager::GetChunkVector()
+SortedPool<Chunk>& ChunkManager::GetChunkPool()
 {
 	return m_activeChunks;
 }
@@ -447,12 +446,14 @@ Chunk* ChunkManager::LoadChunkMultithreaded(const DirectX::XMFLOAT3 chunkCS)
 	uint64_t hashKey = GetHashKeyFromChunkPosition(chunkCS);
 
 	m_canAccessVec.lock();
-	Chunk* chunk = m_activeChunks.Insert(Chunk(chunkCS));
+	Chunk chunk(chunkCS);
+	Chunk* chunkPtr = m_activeChunks.Insert_Move(std::move(chunk));
 	if (m_chunkMap.size() > 0 && m_chunkMap.find(hashKey) != m_chunkMap.end()) VX_ASSERT(false);
-	m_chunkMap[hashKey] = chunk;
+	m_chunkMap[hashKey] = chunkPtr;
+	m_poolMap[hashKey] = m_activeChunks.GetIndexFromPointer(chunkPtr);
 	m_canAccessVec.unlock();
 
-	return chunk;
+	return chunkPtr;
 }
 
 const bool ChunkManager::IsShuttingDown() { return m_isShuttingDown; }

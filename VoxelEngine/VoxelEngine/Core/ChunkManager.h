@@ -25,7 +25,7 @@ public:
 	static Chunk* LoadChunk(const DirectX::XMFLOAT3 chunkCS);
 
 	static void UnloadChunk(Chunk* chunk);
-	static void UnloadChunk(const uint16_t& index);
+	static void UnloadChunk(const uint32_t& index);
 
 	static const uint16_t GetNumActiveChunks();
 
@@ -34,8 +34,7 @@ public:
 	// Returns chunk at "pos" CHUNK SPACE
 	static Chunk* GetChunkAtPos(const DirectX::XMFLOAT3 pos);
 
-	// Returns a copy of the vector so shared_ptr ref count is increased by 1
-	static SortedPool<Chunk> GetChunkVector();
+	static SortedPool<Chunk>& GetChunkPool();
 
 	static void UpdaterEntryPoint();
 
@@ -75,12 +74,13 @@ private:
 	static bool m_runThreads;
 
 	static std::vector<DirectX::XMFLOAT3> m_newChunkList;
-	static std::vector<uint32_t> m_deletedChunkList;
+	static std::vector<DirectX::XMFLOAT3> m_deletedChunkList;
 
 	static DirectX::XMFLOAT3 m_playerPos;
 
 	// Speeds up position lookup for Chunk*'s
 	static std::unordered_map<uint64_t, Chunk*> m_chunkMap;
+	static std::unordered_map<uint64_t, uint32_t> m_poolMap;
 
 	static bool m_isShuttingDown;
 

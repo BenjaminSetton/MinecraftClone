@@ -238,10 +238,10 @@ void Chunk::ShutdownVertexBuffer()
 		// Remove vertices from the ChunkBufferManager
 		ChunkBufferManager::GetVertexArray().erase(
 			ChunkBufferManager::GetVertexArray().begin() + m_vertexBufferStartIndex,
-			ChunkBufferManager::GetVertexArray().begin() + m_vertexBufferStartIndex + m_vertexCount + 1);
+			ChunkBufferManager::GetVertexArray().begin() + m_vertexBufferStartIndex + m_vertexCount);
 
 		// Update all other chunk start indicies if they were displaced
-		auto chunkVector = ChunkManager::GetChunkVector();
+		auto chunkVector = ChunkManager::GetChunkPool();
 		for (uint32_t i = 0; i < chunkVector.Size(); i++)
 		{
 			Chunk* chunk = chunkVector[i];
