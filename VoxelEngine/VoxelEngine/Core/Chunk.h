@@ -38,6 +38,7 @@ private:
 	void InitializeChunk();
 
 	void InitializeVertexBuffer();
+	void ShutdownVertexBuffer();
 
 	void CreateVertexBuffer();
 
@@ -53,8 +54,8 @@ private:
 	Block m_chunk[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 
 	// Variables used for ChunkBufferManager
-	int32_t m_vertexBufferStartIndex;
-	int32_t m_vertexCount;
+	uint32_t m_vertexBufferStartIndex;
+	uint32_t m_vertexCount;
 
 };
 

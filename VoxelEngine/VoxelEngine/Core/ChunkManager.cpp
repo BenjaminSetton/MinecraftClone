@@ -4,6 +4,7 @@
 #include "../Utility/Utility.h"
 #include "../../imgui/imgui.h"
 #include "Chunk.h"
+#include "../Utility/ImGuiLayer.h"
 
 #include "../Utility/Noise.h"
 
@@ -11,12 +12,14 @@ using namespace DirectX;
 
 // Static variable definitions
 std::vector<std::shared_ptr<Chunk>> ChunkManager::m_activeChunks = std::vector<std::shared_ptr<Chunk>>();
-bool ChunkManager::m_runUpdater = true;
+bool ChunkManager::m_runThreads = true;
 XMFLOAT3 ChunkManager::m_playerPos = { 0.0f, 0.0f, 0.0f };
 std::vector<XMFLOAT3> ChunkManager::m_newChunkList = std::vector<XMFLOAT3>();
 std::vector<uint32_t> ChunkManager::m_deletedChunkList = std::vector<uint32_t>();
 std::thread* ChunkManager::m_updaterThread = nullptr;
+std::thread* ChunkManager::m_loaderThread = nullptr;
 std::mutex ChunkManager::m_canAccessVec;
+bool ChunkManager::m_isShuttingDown = false;
 
 #define ALLOW_HARD_CODED_MAX_INIT_THREADS 1
 #define USE_DEFAULT_SEED 0
@@ -37,7 +40,9 @@ std::unordered_map<uint64_t, std::weak_ptr<Chunk>> ChunkManager::m_chunkMap = st
 void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 {
 	// Isn't strictly necessary b/c it's inited as a static variable
-	m_runUpdater = true;
+	m_runThreads = true;
+
+	Renderer_Data::renderDist = RENDER_DIST;
 
 #if USE_DEFAULT_SEED == 0
 #if USE_SEED_BASED_ON_SYSTEM_TIME == 0
@@ -107,20 +112,33 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 
 	// Start the updater thread
 	m_updaterThread = new std::thread(UpdaterEntryPoint);
+	m_loaderThread = new std::thread(LoaderEntryPoint);
 }
 
 void ChunkManager::Shutdown()
 {
-	m_runUpdater = false;
+	m_isShuttingDown = true;
+
+	m_runThreads = false;
 	if(m_updaterThread->joinable())
 	{
 		m_updaterThread->join();
 	}
 	else
 	{
-		VX_ASSERT(false, "Fatal error joining thread");
+		VX_ASSERT(false, "Fatal error joining updater thread");
 	}
 	delete m_updaterThread;
+
+	if (m_loaderThread->joinable())
+	{
+		m_loaderThread->join();
+	}
+	else
+	{
+		VX_ASSERT(false, "Fatal error joining loader thread");
+	}
+	delete m_loaderThread;
 
 	m_chunkMap.clear();
 	m_activeChunks.clear();
@@ -130,34 +148,14 @@ void ChunkManager::Shutdown()
 
 void ChunkManager::Update()
 {
-	//VX_PROFILE_FUNC();
 
 	// Chunk coord
 	XMFLOAT3 playerPosChunkSpace = WorldToChunkSpace(m_playerPos);
 
-
-	//
-	//	! DEBUG
-	//
-#pragma region _DEBUG
-#define TEST_RATE 100
-	for(uint32_t i = 0; i < TEST_RATE; i++)
-	{
-		const char* newArray = new char[1000];
-
-		// STALL
-		for(uint32_t j = 0; j < TEST_RATE * 2; j++)
-		{
-			// Do something
-		}
-
-		delete[] newArray;
-	}
-#pragma endregion //_DEBUG
-
 	// 1. Unload chunks outside of render distance
 	for (uint32_t i = 0; i < m_activeChunks.size(); i++)
 	{
+		if (!m_activeChunks[i]) continue;
 		std::shared_ptr<Chunk> chunk = m_activeChunks[i];
 
 		XMFLOAT3 chunkPosChunkSpace = chunk->GetPosition();
@@ -172,7 +170,9 @@ void ChunkManager::Update()
 		// 1. Unload chunks if they are too far away from "player"
 		if (chunkDistFromPlayer.x > RENDER_DIST || chunkDistFromPlayer.y > RENDER_DIST || chunkDistFromPlayer.z > RENDER_DIST)
 		{
+			m_canAccessVec.lock();
 			m_deletedChunkList.push_back(i);
+			m_canAccessVec.unlock();
 		}
 
 	}
@@ -194,7 +194,9 @@ void ChunkManager::Update()
 				if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
 				else
 				{
+					m_canAccessVec.lock();
 					m_newChunkList.push_back(newChunkPosCS);
+					m_canAccessVec.unlock();
 				}
 
 			}
@@ -215,60 +217,103 @@ void ChunkManager::Update()
 				if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
 				else
 				{
+					m_canAccessVec.lock();
 					m_newChunkList.push_back(newChunkPosCS);
+					m_canAccessVec.unlock();
 				}
 
 			}
 		}
 	}
 
-	// 3. Delete / unload out-of-render-distance chunks
-	uint32_t indexCorrection = 0;
-	m_canAccessVec.lock();
-	for (auto chunkIndex : m_deletedChunkList)
+	// Y-axis chunk checking (no need to check the outer XZ plane outline)
+	for (int16_t y = -RENDER_DIST; y <= RENDER_DIST; y += 2 * RENDER_DIST)
 	{
-		UnloadChunk(chunkIndex - indexCorrection++);
+		for (int16_t x = -RENDER_DIST + 1; x < RENDER_DIST; x++)
+		{
+			for (int16_t z = -RENDER_DIST + 1; z < RENDER_DIST; z++)
+			{
+				// A coordinate in chunk space
+				XMFLOAT3 newChunkPosCS = { playerPosChunkSpace.x + x, playerPosChunkSpace.y + y, playerPosChunkSpace.z + z };
+
+				// If this new chunk is not already active, allocate a new chunk
+				if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
+				else
+				{
+					m_canAccessVec.lock();
+					m_newChunkList.push_back(newChunkPosCS);
+					m_canAccessVec.unlock();
+				}
+
+			}
+		}
+	}
+
+}
+
+void ChunkManager::CheckChunksToLoadAndDelete()
+{
+	// 3. Delete / unload out-of-render-distance chunks
+	if (m_deletedChunkList.size() > 0)
+	{
+		uint32_t indexCorrection = 0;
+
+		// Copy contents over to local vector
+		m_canAccessVec.lock();
+		std::vector<uint32_t> deletedChunks = m_deletedChunkList;
+		m_deletedChunkList.clear();
+		m_canAccessVec.unlock();
+
+		for (auto chunkIndex : deletedChunks)
+		{
+			UnloadChunk(chunkIndex - indexCorrection++);
+		}
 	}
 
 	// 4. Load new chunks and force all their neighbors to initialize or re-initialize their buffers
-	for (uint16_t i = 0; i < m_newChunkList.size(); i++)
+	if(m_newChunkList.size() > 0)
 	{
-		// If "New Chunk" is not in frustum view, don't LoadChunk
-		std::shared_ptr<Chunk> newChunk = LoadChunk(m_newChunkList[i]);
-		XMFLOAT3 chunkPosCS = newChunk->GetPosition();
+		// Copy contents over to local vector
+		m_canAccessVec.lock();
+		std::vector<XMFLOAT3> newChunks = m_newChunkList;
+		m_newChunkList.clear();
+		m_canAccessVec.unlock();
 
-		// Left neighbor
-		std::shared_ptr<Chunk> leftNeighbor = GetChunkAtPos({ chunkPosCS.x - 1, chunkPosCS.y, chunkPosCS.z });
-		if (leftNeighbor) leftNeighbor->InitializeVertexBuffer();
+		for (uint16_t i = 0; i < m_newChunkList.size(); i++)
+		{
+			std::shared_ptr<Chunk> newChunk = LoadChunk(m_newChunkList[i]);
+			XMFLOAT3 chunkPosCS = newChunk->GetPosition();
 
-		// Right neighbor
-		std::shared_ptr<Chunk> rightNeighbor = GetChunkAtPos({ chunkPosCS.x + 1, chunkPosCS.y, chunkPosCS.z });
-		if (rightNeighbor) rightNeighbor->InitializeVertexBuffer();
+			// Left neighbor
+			std::shared_ptr<Chunk> leftNeighbor = GetChunkAtPos({ chunkPosCS.x - 1, chunkPosCS.y, chunkPosCS.z });
+			if (leftNeighbor) leftNeighbor->InitializeVertexBuffer();
 
-		// Top neighbor
-		std::shared_ptr<Chunk> topNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y + 1, chunkPosCS.z });
-		if (topNeighbor) topNeighbor->InitializeVertexBuffer();
+			// Right neighbor
+			std::shared_ptr<Chunk> rightNeighbor = GetChunkAtPos({ chunkPosCS.x + 1, chunkPosCS.y, chunkPosCS.z });
+			if (rightNeighbor) rightNeighbor->InitializeVertexBuffer();
 
-		// Bottom neighbor
-		std::shared_ptr<Chunk> bottomNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y - 1, chunkPosCS.z });
-		if (bottomNeighbor) bottomNeighbor->InitializeVertexBuffer();
+			// Top neighbor
+			std::shared_ptr<Chunk> topNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y + 1, chunkPosCS.z });
+			if (topNeighbor) topNeighbor->InitializeVertexBuffer();
 
-		// Front neighbor
-		std::shared_ptr<Chunk> frontNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y, chunkPosCS.z - 1 });
-		if (frontNeighbor) frontNeighbor->InitializeVertexBuffer();
+			// Bottom neighbor
+			std::shared_ptr<Chunk> bottomNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y - 1, chunkPosCS.z });
+			if (bottomNeighbor) bottomNeighbor->InitializeVertexBuffer();
 
-		// Back neighbor
-		std::shared_ptr<Chunk> backNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y, chunkPosCS.z + 1 });
-		if (backNeighbor) backNeighbor->InitializeVertexBuffer();
+			// Front neighbor
+			std::shared_ptr<Chunk> frontNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y, chunkPosCS.z - 1 });
+			if (frontNeighbor) frontNeighbor->InitializeVertexBuffer();
 
-		// Current chunk
-		newChunk->InitializeVertexBuffer();
+			// Back neighbor
+			std::shared_ptr<Chunk> backNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y, chunkPosCS.z + 1 });
+			if (backNeighbor) backNeighbor->InitializeVertexBuffer();
+
+			// Current chunk
+			newChunk->InitializeVertexBuffer();
+		}
 	}
-	m_canAccessVec.unlock();
 
-	// Clear the temp new/deleted vectors
-	m_newChunkList.clear();
-	m_deletedChunkList.clear();
+	//VX_ASSERT(m_activeChunks.size() == pow((2 * RENDER_DIST + 1), 3));
 }
 
 std::shared_ptr<Chunk> ChunkManager::LoadChunk(const XMFLOAT3 chunkCS) 
@@ -309,6 +354,9 @@ void ChunkManager::UnloadChunk(std::shared_ptr<Chunk> chunk)
 
 void ChunkManager::UnloadChunk(const uint16_t& index)
 {
+	// Consider swapping chunk with last one from vector, and ZeroMemory the chunk
+	// When all the chunks have been unloaded (i.e. swapped to the last available chunk)
+	// all the zero'd chunks will be deleted from the vector
 	m_chunkMap.erase(GetHashKeyFromChunkPosition(m_activeChunks[index]->GetPosition()));
 	m_activeChunks.erase(m_activeChunks.begin() + index);
 }
@@ -350,9 +398,17 @@ std::vector<std::shared_ptr<Chunk>> ChunkManager::GetChunkVector()
 void ChunkManager::UpdaterEntryPoint()
 {
 	// "Infinite" while loop; only break out if ChunkManager is shut down...
-	while(m_runUpdater)
+	while(m_runThreads)
 	{
 		Update();
+	}
+}
+
+void ChunkManager::LoaderEntryPoint()
+{
+	while(m_runThreads)
+	{
+		CheckChunksToLoadAndDelete();
 	}
 }
 
@@ -439,3 +495,5 @@ std::shared_ptr<Chunk> ChunkManager::LoadChunkMultithreaded(const DirectX::XMFLO
 
 	return chunk;
 }
+
+const bool ChunkManager::IsShuttingDown() { return m_isShuttingDown; }

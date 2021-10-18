@@ -39,6 +39,7 @@ struct Renderer_Data
 	static DirectX::XMFLOAT3 playerPos;
 	static DirectX::XMFLOAT3 playerPosChunkSpace;
 	static int numActiveChunks;
+	static uint32_t renderDist;
 
 };
 

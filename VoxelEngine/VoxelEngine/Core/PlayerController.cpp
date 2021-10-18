@@ -61,6 +61,8 @@ void PlayerController::Update(const float& dt, Player* player)
 		deltaTranslation.m128_f32[0] -= player->m_movementSpeed * dt;
 	if (Input::IsKeyDown(KeyCode::SEMICOLON) || Input::IsKeyDown(KeyCode::D)) // RIGHT
 		deltaTranslation.m128_f32[0] += player->m_movementSpeed * dt;
+	if (Input::IsKeyDown(KeyCode::W)) // TEMP
+		deltaTranslation.m128_f32[1] -= player->m_movementSpeed * dt * 5.0f;
 
 
 	// Update rotation only if LMB is held down
@@ -84,7 +86,7 @@ void PlayerController::Update(const float& dt, Player* player)
 	XMMATRIX rotYMatrix = XMMatrixRotationY(deltaRotation.m128_f32[1]);
 	XMMATRIX translationMatrixXZ = XMMatrixTranslation
 	(
-		deltaTranslation.m128_f32[0], 0, deltaTranslation.m128_f32[2]
+		deltaTranslation.m128_f32[0], deltaTranslation.m128_f32[1], deltaTranslation.m128_f32[2]
 	);
 
 	// Calculate the new world matrix
@@ -121,11 +123,6 @@ void PlayerController::Update(const float& dt, Player* player)
 		worldMatrix.r[1] = prevY;
 		worldMatrix.r[2] = prevZ;
 	}
-
-	// gather input
-	// apply gravity
-	// apply accel then vel
-	// check is we moved into collision
 
 
 	// We have "moved into collision", so don't apply translation
@@ -171,7 +168,7 @@ void PlayerController::Update(const float& dt, Player* player)
 	XMVECTOR vel = XMLoadFloat3(&player->m_velocity);
 
 	// Apply gravity
-	Physics::ApplyAcceleration(vel, { 0.0f, GRAVITY, 0.0f }, dt);
+	//Physics::ApplyAcceleration(vel, { 0.0f, GRAVITY, 0.0f }, dt);
 
 	// Cap velocity at a reasonable terminal velocity value
 	if (abs(vel.m128_f32[1]) > TERMINAL_VELOCITY) vel.m128_f32[1] = vel.m128_f32[1] > 0 ? TERMINAL_VELOCITY : -TERMINAL_VELOCITY;

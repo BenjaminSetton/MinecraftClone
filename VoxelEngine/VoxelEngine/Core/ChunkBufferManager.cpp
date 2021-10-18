@@ -9,7 +9,7 @@
 
 using namespace DirectX;
 
-constexpr int32_t NUM_BLOCK_VERTS = (6 * 6 * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * (RENDER_DIST + 1) * (RENDER_DIST + 1) * (RENDER_DIST + 1)) * 0.1;
+constexpr int32_t NUM_BLOCK_VERTS = (6 * 6 * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * (RENDER_DIST + 1) * (RENDER_DIST + 1) * (RENDER_DIST + 1)) * 0.1f;
 
 std::vector<BlockVertex> ChunkBufferManager::m_vertices = std::vector<BlockVertex>();
 
@@ -50,13 +50,15 @@ void ChunkBufferManager::UpdateBuffers()
 	D3D::GetDeviceContext()->Map(m_blockVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	{
 		VX_PROFILE_SCOPE_MSG("[UPDATE] Updating mapped resource");
-		uint64_t numBytes = sizeof(BlockVertex) * m_vertices.size();
+		int64_t numBytes = (int64_t)sizeof(BlockVertex) * m_vertices.size();
 		ImGui::Begin("Timing Panel");
 		ImGui::Text("Number of bytes copied: %i", numBytes);
 		ImGui::End();
 		memcpy(mappedResource.pData, &m_vertices[0], numBytes);
 	}
 	D3D::GetDeviceContext()->Unmap(m_blockVertexBuffer, 0);
+
+	
 
 }
 

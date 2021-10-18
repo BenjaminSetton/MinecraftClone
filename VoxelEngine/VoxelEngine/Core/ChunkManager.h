@@ -36,6 +36,7 @@ public:
 	static std::vector<std::shared_ptr<Chunk>> GetChunkVector();
 
 	static void UpdaterEntryPoint();
+	static void LoaderEntryPoint();
 
 	static void SetPlayerPos(DirectX::XMFLOAT3 playerPos);
 
@@ -51,9 +52,13 @@ public:
 
 	static std::shared_ptr<Chunk> LoadChunkMultithreaded(const DirectX::XMFLOAT3 chunkCS);
 
+	static const bool IsShuttingDown();
+
 private:
 
 	static void Update();
+
+	static void CheckChunksToLoadAndDelete();
 
 	static void ResetChunkMemory(const uint16_t index);
 
@@ -68,7 +73,8 @@ private:
 	// Dictates whether the updater thread is free to run Update()
 	static std::mutex m_canAccessVec;
 	static std::thread* m_updaterThread;
-	static bool m_runUpdater;
+	static std::thread* m_loaderThread;
+	static bool m_runThreads;
 
 	static std::vector<DirectX::XMFLOAT3> m_newChunkList;
 	static std::vector<uint32_t> m_deletedChunkList;
@@ -78,6 +84,8 @@ private:
 	// Stored as a weak_ptr because it doesn't own Chunk*'s
 	// It just speeds up position lookup for Chunk*'s
 	static std::unordered_map<uint64_t, std::weak_ptr<Chunk>> m_chunkMap;
+
+	static bool m_isShuttingDown;
 
 };
 

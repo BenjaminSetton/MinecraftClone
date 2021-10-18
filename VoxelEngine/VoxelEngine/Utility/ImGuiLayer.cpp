@@ -88,7 +88,7 @@ void ImGuiLayer::Draw()
 		Renderer_Data::playerPos.x, Renderer_Data::playerPos.y, Renderer_Data::playerPos.z,
 		(int)Renderer_Data::playerPosChunkSpace.x, (int)Renderer_Data::playerPosChunkSpace.y, (int)Renderer_Data::playerPosChunkSpace.z);
 	ImGui::Text("Active Chunks: %i", Renderer_Data::numActiveChunks);
-	ImGui::Text("Render Distance: %i", 8);
+	ImGui::Text("Render Distance: %i", Renderer_Data::renderDist);
 	ImGui::End();
 
 #pragma endregion

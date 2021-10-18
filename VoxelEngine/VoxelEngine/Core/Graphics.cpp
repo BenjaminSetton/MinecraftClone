@@ -117,11 +117,13 @@ void Graphics::Shutdown()
 
 bool Graphics::Frame(const float dt)
 {
-	// Debugging stats
-	int numChunks = 0;
 
 	// Begin the ImGui frame
 	m_imGuiLayer->BeginFrame();
+
+	ImGui::Begin("Timing Panel");
+	ImGui::Text("FRAMERATE: %2.2f FPS", 1.0f / dt);
+	ImGui::End();
 
 	{
 		VX_PROFILE_FUNC();
