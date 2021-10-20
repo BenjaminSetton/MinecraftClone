@@ -20,7 +20,7 @@ class DefaultBlockShader
 {
 public:
 
-	void CreateObjects(const WCHAR* vsFilename, const WCHAR* psFilename);
+	void CreateObjects(const WCHAR* vsFilename, const WCHAR* gsFilename, const WCHAR* psFilename);
 
 	void Initialize(DirectX::XMMATRIX camViewMatrix, DirectX::XMMATRIX lightViewMatrix);
 	
@@ -55,7 +55,7 @@ private:
 
 	void CreateD3DObjects();
 
-	void CreateShaders(const WCHAR* vsFilename, const WCHAR* psFilename);
+	void CreateShaders(const WCHAR* vsFilename, const WCHAR* gsFilename, const WCHAR* psFilename);
 
 	void BindVertexBuffers();
 
@@ -66,6 +66,7 @@ private:
 
 	// D3D object definitions
 	ID3D11VertexShader* m_vertexShader;
+	ID3D11GeometryShader* m_geometryShader;
 	ID3D11PixelShader* m_pixelShader;
 
 	ID3D11Buffer* m_matrixBuffer;

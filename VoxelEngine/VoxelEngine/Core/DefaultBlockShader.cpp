@@ -13,12 +13,12 @@
 
 using namespace DirectX;
 
-void DefaultBlockShader::CreateObjects(const WCHAR* vsFilename, const WCHAR* psFilename) 
+void DefaultBlockShader::CreateObjects(const WCHAR* vsFilename, const WCHAR* gsFilename, const WCHAR* psFilename) 
 {
 	ID3D11Device* device = D3D::GetDevice();
 
 	// Create the shaders
-	CreateShaders(vsFilename, psFilename);
+	CreateShaders(vsFilename, gsFilename, psFilename);
 
 	// Create the rest of the objects
 	CreateD3DObjects();
@@ -130,6 +130,12 @@ void DefaultBlockShader::Shutdown()
 		m_pixelShader = nullptr;
 	}
 
+	if(m_geometryShader)
+	{
+		m_geometryShader->Release();
+		m_geometryShader = nullptr;
+	}
+
 	if (m_vertexShader)
 	{
 		m_vertexShader->Release();
@@ -200,26 +206,46 @@ void DefaultBlockShader::CreateD3DObjects()
 	
 }
 
-void DefaultBlockShader::CreateShaders(const WCHAR* vsFilename, const WCHAR* psFilename)
+void DefaultBlockShader::CreateShaders(const WCHAR* vsFilename, const WCHAR* gsFilename, const WCHAR* psFilename)
 {
 	ID3D11Device* device = D3D::GetDevice();
 
 	HRESULT hr;
 	ID3D10Blob* VSBlob;
+	ID3D10Blob* GSBlob;
 	ID3D10Blob* PSBlob;
 
 	// Compile the vertex shader
 	hr = D3DCompileFromFile(vsFilename, nullptr, nullptr, "main", "vs_5_0",
-		D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG, 0, &VSBlob, nullptr);
+		D3DCOMPILE_ENABLE_STRICTNESS
+#ifdef _DEBUG 
+		| D3DCOMPILE_DEBUG
+#endif
+		, 0, &VSBlob, nullptr);
+	VX_ASSERT(!FAILED(hr));
+
+	// Compile the geometry shader
+	hr = D3DCompileFromFile(gsFilename, nullptr, nullptr, "main", "gs_5_0",
+		D3DCOMPILE_ENABLE_STRICTNESS 
+#ifdef _DEBUG 
+		| D3DCOMPILE_DEBUG
+#endif
+		, 0, &GSBlob, nullptr);
 	VX_ASSERT(!FAILED(hr));
 
 	// Compile the pixel shader
 	hr = D3DCompileFromFile(psFilename, nullptr, nullptr, "main", "ps_5_0",
-		D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG, 0, &PSBlob, nullptr);
+		D3DCOMPILE_ENABLE_STRICTNESS 
+#ifdef _DEBUG 
+		| D3DCOMPILE_DEBUG
+#endif
+		, 0, &PSBlob, nullptr);
 	VX_ASSERT(!FAILED(hr));
 
 	// Create the shaders
 	hr = device->CreateVertexShader(VSBlob->GetBufferPointer(), VSBlob->GetBufferSize(), nullptr, &m_vertexShader);
+	VX_ASSERT(!FAILED(hr));
+	hr = device->CreateGeometryShader(GSBlob->GetBufferPointer(), GSBlob->GetBufferSize(), nullptr, &m_geometryShader);
 	VX_ASSERT(!FAILED(hr));
 	hr = device->CreatePixelShader(PSBlob->GetBufferPointer(), PSBlob->GetBufferSize(), nullptr, &m_pixelShader);
 	VX_ASSERT(!FAILED(hr));
@@ -228,7 +254,6 @@ void DefaultBlockShader::CreateShaders(const WCHAR* vsFilename, const WCHAR* psF
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
@@ -239,8 +264,10 @@ void DefaultBlockShader::CreateShaders(const WCHAR* vsFilename, const WCHAR* psF
 
 	// Release the blobs as they are not needed anymore
 	VSBlob->Release();
+	GSBlob->Release();
 	PSBlob->Release();
 	VSBlob = nullptr;
+	GSBlob = nullptr;
 	PSBlob = nullptr;
 }
 
@@ -277,8 +304,9 @@ void DefaultBlockShader::BindObjects(ID3D11ShaderResourceView* const* srvs)
 	context->IASetInputLayout(m_inputLayout);
 
 	// Set the vertex and pixel shaders that will be used to render this triangle.
-	context->VSSetShader(m_vertexShader, NULL, 0);
-	context->PSSetShader(m_pixelShader, NULL, 0);
+	context->VSSetShader(m_vertexShader, nullptr, 0);
+	context->GSSetShader(m_geometryShader, nullptr, 0);
+	context->PSSetShader(m_pixelShader, nullptr, 0);
 
 	// Set the sampler state in the pixel shader.
 	ID3D11SamplerState* samplers[] = { m_samplerWrap, m_samplerClamp };

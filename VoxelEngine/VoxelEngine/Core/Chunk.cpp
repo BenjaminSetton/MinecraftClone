@@ -19,7 +19,7 @@ using namespace DirectX;
 
 constexpr uint32_t BUFFER_SIZE = 6 * 6 * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * 0.1f;
 
-constexpr int32_t TERRAIN_STARTING_HEIGHT = 40;
+constexpr int32_t TERRAIN_STARTING_HEIGHT = 105;
 constexpr int32_t TERRAIN_HEIGHT_RANGE = 40;
 
 constexpr int32_t LOW_CHUNK_LIMIT = -256;
@@ -28,8 +28,11 @@ constexpr int32_t HIGH_CHUNK_LIMIT = -LOW_CHUNK_LIMIT;
 
 Chunk::Chunk(const DirectX::XMFLOAT3 pos) : m_pos(pos), m_vertexBufferStartIndex(0), m_vertexCount(0)
 {
+	//VX_PROFILE_SCOPE_MSG_MODE("Chunk Constructor", 1);
+
 	InitializeChunk();
 	CreateVertexBuffer();
+
 }
 
 Chunk::~Chunk()

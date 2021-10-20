@@ -6,7 +6,7 @@
 struct BlockVertex
 {
 	DirectX::XMFLOAT3 pos;
-	DirectX::XMFLOAT3 norm;
+	//DirectX::XMFLOAT3 norm;
 	DirectX::XMFLOAT2 uv;
 };
 
@@ -16,35 +16,35 @@ struct BlockVertex
 
 static BlockVertex verts[24] =
 {
-	{ DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),		DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),    DirectX::XMFLOAT2(1.0f, 0.0f) },	// TLF(0)
-	{ DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f),		DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),    DirectX::XMFLOAT2(0.0f, 0.0f) },	// TRF(1)
-	{ DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f),		DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),    DirectX::XMFLOAT2(0.0f, 1.0f) },	// TRB(2)
-	{ DirectX::XMFLOAT3(0.0f, 1.0f, 1.0f),		DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),    DirectX::XMFLOAT2(1.0f, 1.0f) },	// TLB(3)
-
-	{ DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f),		DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f),   DirectX::XMFLOAT2(0.0f, 1.0f) },	// BLF(4)
-	{ DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f),		DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f),   DirectX::XMFLOAT2(1.0f, 1.0f) },	// BRF(5)
-	{ DirectX::XMFLOAT3(1.0f, 0.0f, 1.0f),		DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f),   DirectX::XMFLOAT2(1.0f, 0.0f) },	// BRB(6)
-	{ DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f),		DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f),   DirectX::XMFLOAT2(0.0f, 0.0f) },	// BLB(7)
-
-	{ DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f),		DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f),   DirectX::XMFLOAT2(0.0f, 1.0f) },	// BLB(8)
-	{ DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f),		DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f),   DirectX::XMFLOAT2(1.0f, 1.0f) },	// BLF(9)
-	{ DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),		DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f),   DirectX::XMFLOAT2(1.0f, 0.0f) },	// TLF(10)
-	{ DirectX::XMFLOAT3(0.0f, 1.0f, 1.0f),		DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f),   DirectX::XMFLOAT2(0.0f, 0.0f) },	// TLB(11)
-
-	{ DirectX::XMFLOAT3(1.0f, 0.0f, 1.0f),		DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f),    DirectX::XMFLOAT2(1.0f, 1.0f) },	// BRB(12) 
-	{ DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f),		DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f),    DirectX::XMFLOAT2(0.0f, 1.0f) },	// BRF(13)
-	{ DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f),		DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f),    DirectX::XMFLOAT2(0.0f, 0.0f) },	// TRF(14)
-	{ DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f),		DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f),    DirectX::XMFLOAT2(1.0f, 0.0f) },	// TRB(15)
-
-	{ DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f),		DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f),	DirectX::XMFLOAT2(0.0f, 1.0f) },	// BLF(16)
-	{ DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f),		DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f),	DirectX::XMFLOAT2(1.0f, 1.0f) },	// BRF(17)
-	{ DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f),		DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f),   DirectX::XMFLOAT2(1.0f, 0.0f) },	// TRF(18)
-	{ DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),		DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f),	DirectX::XMFLOAT2(0.0f, 0.0f) },	// TLF(19)
-
-	{ DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f),		DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f),	DirectX::XMFLOAT2(1.0f, 1.0f) },	// BLB(20)
-	{ DirectX::XMFLOAT3(1.0f, 0.0f, 1.0f),		DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f),    DirectX::XMFLOAT2(0.0f, 1.0f) },	// BRB(21)
-	{ DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f),		DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f),    DirectX::XMFLOAT2(0.0f, 0.0f) },	// TRB(22)
-	{ DirectX::XMFLOAT3(0.0f, 1.0f, 1.0f),		DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f),    DirectX::XMFLOAT2(1.0f, 0.0f) },	// TLB(23)
+	{ DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),		/*DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), */   DirectX::XMFLOAT2(1.0f, 0.0f) },	// TLF(0)
+	{ DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f),		/*DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), */   DirectX::XMFLOAT2(0.0f, 0.0f) },	// TRF(1)
+	{ DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f),		/*DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), */   DirectX::XMFLOAT2(0.0f, 1.0f) },	// TRB(2)
+	{ DirectX::XMFLOAT3(0.0f, 1.0f, 1.0f),		/*DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), */   DirectX::XMFLOAT2(1.0f, 1.0f) },	// TLB(3)
+												/*									   */
+	{ DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f),		/*DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f),*/   DirectX::XMFLOAT2(0.0f, 1.0f) },	// BLF(4)
+	{ DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f),		/*DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f),*/   DirectX::XMFLOAT2(1.0f, 1.0f) },	// BRF(5)
+	{ DirectX::XMFLOAT3(1.0f, 0.0f, 1.0f),		/*DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f),*/   DirectX::XMFLOAT2(1.0f, 0.0f) },	// BRB(6)
+	{ DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f),		/*DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f),*/   DirectX::XMFLOAT2(0.0f, 0.0f) },	// BLB(7)
+												/*									   */
+	{ DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f),		/*DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f),*/   DirectX::XMFLOAT2(0.0f, 1.0f) },	// BLB(8)
+	{ DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f),		/*DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f),*/   DirectX::XMFLOAT2(1.0f, 1.0f) },	// BLF(9)
+	{ DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),		/*DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f),*/   DirectX::XMFLOAT2(1.0f, 0.0f) },	// TLF(10)
+	{ DirectX::XMFLOAT3(0.0f, 1.0f, 1.0f),		/*DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f),*/   DirectX::XMFLOAT2(0.0f, 0.0f) },	// TLB(11)
+												/*									   */
+	{ DirectX::XMFLOAT3(1.0f, 0.0f, 1.0f),		/*DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f), */   DirectX::XMFLOAT2(1.0f, 1.0f) },	// BRB(12) 
+	{ DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f),		/*DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f), */   DirectX::XMFLOAT2(0.0f, 1.0f) },	// BRF(13)
+	{ DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f),		/*DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f), */   DirectX::XMFLOAT2(0.0f, 0.0f) },	// TRF(14)
+	{ DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f),		/*DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f), */   DirectX::XMFLOAT2(1.0f, 0.0f) },	// TRB(15)
+												/*									   */
+	{ DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f),		/*DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f),*/	  DirectX::XMFLOAT2(0.0f, 1.0f) },	// BLF(16)
+	{ DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f),		/*DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f),*/	  DirectX::XMFLOAT2(1.0f, 1.0f) },	// BRF(17)
+	{ DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f),		/*DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f),*/   DirectX::XMFLOAT2(1.0f, 0.0f) },	// TRF(18)
+	{ DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),		/*DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f),*/	  DirectX::XMFLOAT2(0.0f, 0.0f) },	// TLF(19)
+												/*									   */
+	{ DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f),		/*DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f),	*/   DirectX::XMFLOAT2(1.0f, 1.0f) },	// BLB(20)
+	{ DirectX::XMFLOAT3(1.0f, 0.0f, 1.0f),		/*DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f), */   DirectX::XMFLOAT2(0.0f, 1.0f) },	// BRB(21)
+	{ DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f),		/*DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f), */   DirectX::XMFLOAT2(0.0f, 0.0f) },	// TRB(22)
+	{ DirectX::XMFLOAT3(0.0f, 1.0f, 1.0f),		/*DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f), */   DirectX::XMFLOAT2(1.0f, 0.0f) },	// TLB(23)
 };
 
 static unsigned int indicies[36] =
@@ -67,9 +67,9 @@ enum class BlockFace
 	BACK = 30
 };
 
-enum class BlockType 
+enum class BlockType : uint8_t
 {
-	Air,
+	Air = 0,
 	Dirt,
 	Stone,
 	Grass,

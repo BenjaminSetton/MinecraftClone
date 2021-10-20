@@ -328,5 +328,8 @@
     <FxCompile Include="Shaders\DebugRenderer_PS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\DefaultBlock_GS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

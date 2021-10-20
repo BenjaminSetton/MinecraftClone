@@ -37,7 +37,9 @@ private:
 
 	void InitializeChunk();
 
+	// TODO: Work on optimizing this function!!
 	void InitializeVertexBuffer();
+
 	void ShutdownVertexBuffer();
 
 	void CreateVertexBuffer();

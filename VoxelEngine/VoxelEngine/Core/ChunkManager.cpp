@@ -62,23 +62,25 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 	g_maxNumThreadsForInit = std::thread::hardware_concurrency();
 #endif
 
+	uint32_t desiredDepthSlicesPerThread, actualDepthSlicesPerThread;
+	desiredDepthSlicesPerThread = actualDepthSlicesPerThread = 2;
+	uint32_t numThreadsToRun = floor((2 * RENDER_DIST + 1) / desiredDepthSlicesPerThread);
+
+	// If we need more threads to run desired depth slices per thread, cap at map threads and recalculate
+	// actualDepthSlicesPerThread to reflect change in numThreadsToRun
+	if (numThreadsToRun > g_maxNumThreadsForInit)
 	{
-		VX_PROFILE_SCOPE_MSG_MODE("Initial Chunk Loading", 1);
+		numThreadsToRun = g_maxNumThreadsForInit;
+		actualDepthSlicesPerThread = floor((2 * RENDER_DIST + 1) / numThreadsToRun);
+	}
 
-		uint32_t desiredDepthSlicesPerThread, actualDepthSlicesPerThread;
-		desiredDepthSlicesPerThread = actualDepthSlicesPerThread = 2;
-		uint32_t numThreadsToRun = floor((2 * RENDER_DIST + 1) / desiredDepthSlicesPerThread);
 
-		// If we need more threads to run desired depth slices per thread, cap at map threads and recalculate
-		// actualDepthSlicesPerThread to reflect change in numThreadsToRun
-		if(numThreadsToRun > g_maxNumThreadsForInit)
-		{
-			numThreadsToRun = g_maxNumThreadsForInit;
-			actualDepthSlicesPerThread = floor((2 * RENDER_DIST + 1) / numThreadsToRun);
-		}
+	{
+		VX_PROFILE_SCOPE_MSG_MODE("Chunk Loading", 1);
 
 
 		// [MULTI-THREADED]		Load all of the initial chunks
+		VX_LOG_INFO("%i Chunk initializer threads launched", numThreadsToRun);
 		std::vector<std::thread*> chunkLoaderThreads(numThreadsToRun);
 		for (int16_t threadID = 0; threadID < numThreadsToRun; threadID++)
 		{
@@ -86,13 +88,21 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 			int32_t numChunksToInit = threadID == numThreadsToRun - 1 ? actualDepthSlicesPerThread + ((2 * RENDER_DIST + 1) - numThreadsToRun * actualDepthSlicesPerThread) : actualDepthSlicesPerThread;
 			std::thread* currThread = new std::thread(InitChunksMultithreaded, startingChunk, numChunksToInit, playerPosCS);
 			chunkLoaderThreads[threadID] = currThread;
+
+			VX_LOG_INFO("Thread %i initialized %i chunks from %i to %i", threadID, numChunksToInit, startingChunk, startingChunk + numChunksToInit);
 		}
 
 		// Join all initer threads before proceeding
 		for (auto thread : chunkLoaderThreads) thread->join();
 		chunkLoaderThreads.clear();
 
+	}
+
+	{
+		VX_PROFILE_SCOPE_MSG_MODE("Chunk Vertex Buffers", 1);
+
 		// [MULTI-THREADED]		Initialize all the chunks' vertex buffers
+		VX_LOG_INFO("%i vertex buffer initializer threads launched", numThreadsToRun);
 		std::vector<std::thread*> vertexBufferThreads(numThreadsToRun);
 		uint32_t numIndicesPerChunk = m_activeChunks.Size() / numThreadsToRun;
 		for (int16_t threadID = 0; threadID < numThreadsToRun; threadID++)
@@ -101,6 +111,7 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 			uint32_t numIndiciesToInit = threadID == numThreadsToRun - 1 ? m_activeChunks.Size() - startingIndex : numIndicesPerChunk;
 			std::thread* currThread = new std::thread(InitChunkVertexBuffersMultithreaded, startingIndex, numIndiciesToInit);
 			vertexBufferThreads[threadID] = currThread;
+			VX_LOG_INFO("Thread %i initialized %i indicies from %i to %i", threadID, numIndiciesToInit, startingIndex, startingIndex + numIndiciesToInit);
 		}
 
 		// Join all initer threads before proceeding
@@ -137,6 +148,7 @@ void ChunkManager::Update()
 {
 	// Chunk coord
 	XMFLOAT3 playerPosChunkSpace = WorldToChunkSpace(m_playerPos);
+
 
 	// 1. Unload chunks outside of render distance
 	for (uint32_t i = 0; i < m_activeChunks.Size(); i++)
@@ -230,7 +242,7 @@ void ChunkManager::Update()
 	// 3. Delete / unload out-of-render-distance chunks
 	//uint32_t indexCorrection = 0;
 
-	for (auto chunkPos : m_deletedChunkList)
+	for (const auto& chunkPos : m_deletedChunkList)
 	{
 		// Use the map to map chunk position to index inside pool
 		uint32_t index = m_poolMap[GetHashKeyFromChunkPosition(chunkPos)];
@@ -445,8 +457,9 @@ Chunk* ChunkManager::LoadChunkMultithreaded(const DirectX::XMFLOAT3 chunkCS)
 
 	uint64_t hashKey = GetHashKeyFromChunkPosition(chunkCS);
 
-	m_canAccessVec.lock();
 	Chunk chunk(chunkCS);
+
+	m_canAccessVec.lock();
 	Chunk* chunkPtr = m_activeChunks.Insert_Move(std::move(chunk));
 	if (m_chunkMap.size() > 0 && m_chunkMap.find(hashKey) != m_chunkMap.end()) VX_ASSERT(false);
 	m_chunkMap[hashKey] = chunkPtr;

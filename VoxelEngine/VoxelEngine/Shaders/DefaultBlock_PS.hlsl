@@ -11,7 +11,7 @@ cbuffer LightBuffer
     float4 lightAmbient[2];
 };
 
-struct VertexOut
+struct PixelIn
 {
     float4 pos : SV_Position;
     float3 norm : NORMAL0;
@@ -19,7 +19,7 @@ struct VertexOut
     float4 lightPos : TEXCOORD1;
 };
 
-float4 main(VertexOut input) : SV_TARGET
+float4 main(PixelIn input) : SV_TARGET
 {
     
     float4 diffuseAmbient = { 0.10f, 0.10f, 0.10f, 1.0f };

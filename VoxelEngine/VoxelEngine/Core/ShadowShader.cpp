@@ -297,6 +297,7 @@ void ShadowShader::BindObjects()
 
 	// Set the vertex and pixel shaders that will be used to render this triangle.
 	context->VSSetShader(m_vertexShader, nullptr, 0);
+	context->GSSetShader(nullptr, nullptr, 0);
 	context->PSSetShader(m_pixelShader, nullptr, 0);
 
 	// Set the type of primitive that should be rendered from this vertex buffer, in this case triangles.

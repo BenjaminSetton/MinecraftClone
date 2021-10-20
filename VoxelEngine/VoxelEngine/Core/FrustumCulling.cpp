@@ -13,7 +13,7 @@ const Frustum FrustumCulling::GetFrustum() { return m_frustum; }
 
 bool FrustumCulling::CalculateChunkPosAgainstFrustum(const XMFLOAT3 chunkPosWS)
 {
-	// Convert Chunk* to AABB to test against frustum
+	// Convert Chunk pos to AABB to test against frustum
 	AABB aabb = ConvertChunkPosToAABB(chunkPosWS);
 
 	// Test the AABB against the frustum and return the result
