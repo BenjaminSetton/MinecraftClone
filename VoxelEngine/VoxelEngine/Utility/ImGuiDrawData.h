@@ -51,4 +51,13 @@ struct PlayerPhysics_Data
 	static bool isCollidingWall;
 };
 
+struct ChunkManager_Data
+{
+	static float updateTimer;
+	static float deletionLoop;
+	static float creationLoop;
+	static float deletingChunks;
+	static float creatingChunks;
+};
+
 #endif _IMGUIDRAWDATA_H

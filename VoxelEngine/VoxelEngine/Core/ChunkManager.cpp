@@ -76,7 +76,7 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 
 
 	{
-		VX_PROFILE_SCOPE_MSG_MODE("Chunk Loading", 1);
+		VX_PROFILE_SCOPE_MODE("Chunk Loading", 1);
 
 
 		// [MULTI-THREADED]		Load all of the initial chunks
@@ -99,7 +99,7 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 	}
 
 	{
-		VX_PROFILE_SCOPE_MSG_MODE("Chunk Vertex Buffers", 1);
+		VX_PROFILE_SCOPE_MODE("Chunk Vertex Buffers", 1);
 
 		// [MULTI-THREADED]		Initialize all the chunks' vertex buffers
 		VX_LOG_INFO("%i vertex buffer initializer threads launched", numThreadsToRun);
@@ -121,6 +121,7 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 
 	// Start the updater thread
 	m_updaterThread = new std::thread(UpdaterEntryPoint);
+
 }
 
 void ChunkManager::Shutdown()
@@ -146,142 +147,157 @@ void ChunkManager::Shutdown()
 
 void ChunkManager::Update()
 {
+
+	VX_PROFILE_OUT(&ChunkManager_Data::updateTimer);
+
 	// Chunk coord
 	XMFLOAT3 playerPosChunkSpace = WorldToChunkSpace(m_playerPos);
 
-
-	// 1. Unload chunks outside of render distance
-	for (uint32_t i = 0; i < m_activeChunks.Size(); i++)
 	{
-		if (!m_activeChunks[i]) continue;
-		Chunk* chunk = m_activeChunks[i];
-
-		XMFLOAT3 chunkPosChunkSpace = chunk->GetPosition();
-
-		XMFLOAT3 chunkDistFromPlayer =
+		VX_PROFILE_OUT(&ChunkManager_Data::deletionLoop);
+		// 1. Unload chunks outside of render distance
+		for (uint32_t i = 0; i < m_activeChunks.Size(); i++)
 		{
-			abs(chunkPosChunkSpace.x - playerPosChunkSpace.x),
-			abs(chunkPosChunkSpace.y - playerPosChunkSpace.y),
-			abs(chunkPosChunkSpace.z - playerPosChunkSpace.z),
-		};
+			if (!m_activeChunks[i]) continue;
+			Chunk* chunk = m_activeChunks[i];
 
-		// 1. Unload chunks if they are too far away from "player"
-		if (chunkDistFromPlayer.x > RENDER_DIST || chunkDistFromPlayer.y > RENDER_DIST || chunkDistFromPlayer.z > RENDER_DIST)
-		{
-			m_deletedChunkList.push_back(chunk->GetPosition());
+			XMFLOAT3 chunkPosChunkSpace = chunk->GetPosition();
+
+			XMFLOAT3 chunkDistFromPlayer =
+			{
+				abs(chunkPosChunkSpace.x - playerPosChunkSpace.x),
+				abs(chunkPosChunkSpace.y - playerPosChunkSpace.y),
+				abs(chunkPosChunkSpace.z - playerPosChunkSpace.z),
+			};
+
+			// 1. Unload chunks if they are too far away from "player"
+			if (chunkDistFromPlayer.x > RENDER_DIST || chunkDistFromPlayer.y > RENDER_DIST || chunkDistFromPlayer.z > RENDER_DIST)
+			{
+				m_deletedChunkList.push_back(chunk->GetPosition());
+			}
+
 		}
-
 	}
 
-
-	// 2. Load chunks if they are inside render distance
-
-	// Z-axis chunk checking (includes corner chunks)
-	for (int16_t x = -RENDER_DIST; x <= RENDER_DIST; x += 2 * RENDER_DIST)
+	int debug_timesLooped = 0;
 	{
-		for (int16_t y = -RENDER_DIST; y <= RENDER_DIST; y++)
+		VX_PROFILE_OUT(&ChunkManager_Data::creationLoop);
+		// 2. Load chunks if they are inside render distance
+
+		// Z-axis chunk checking (includes corner chunks)
+		for (int16_t x = -RENDER_DIST; x <= RENDER_DIST; x += 2 * RENDER_DIST)
 		{
-			for (int16_t z = -RENDER_DIST; z <= RENDER_DIST; z++)
+			for (int16_t y = -RENDER_DIST; y <= RENDER_DIST; y++)
 			{
-				// A coordinate in chunk space
-				XMFLOAT3 newChunkPosCS = { playerPosChunkSpace.x + x, playerPosChunkSpace.y + y, playerPosChunkSpace.z + z };
-
-				// If this new chunk is not already active, allocate a new chunk
-				if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
-				else
+				for (int16_t z = -RENDER_DIST; z <= RENDER_DIST; z++)
 				{
-					m_newChunkList.push_back(newChunkPosCS);
-				}
+					debug_timesLooped++;
+					// A coordinate in chunk space
+					XMFLOAT3 newChunkPosCS = { playerPosChunkSpace.x + x, playerPosChunkSpace.y + y, playerPosChunkSpace.z + z };
 
+					// If this new chunk is not already active, allocate a new chunk
+					if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
+					else
+					{
+						m_newChunkList.push_back(newChunkPosCS);
+					}
+
+				}
 			}
 		}
-	}
 
-	// X-axis chunk checking (excludes corner chunks)
-	for (int16_t z = -RENDER_DIST; z <= RENDER_DIST; z += 2 * RENDER_DIST)
-	{
-		for (int16_t y = -RENDER_DIST; y <= RENDER_DIST; y++)
+		// X-axis chunk checking (excludes corner chunks)
+		for (int16_t z = -RENDER_DIST; z <= RENDER_DIST; z += 2 * RENDER_DIST)
+		{
+			for (int16_t y = -RENDER_DIST; y <= RENDER_DIST; y++)
+			{
+				for (int16_t x = -RENDER_DIST + 1; x < RENDER_DIST; x++)
+				{
+					debug_timesLooped++;
+					// A coordinate in chunk space
+					XMFLOAT3 newChunkPosCS = { playerPosChunkSpace.x + x, playerPosChunkSpace.y + y, playerPosChunkSpace.z + z };
+
+					// If this new chunk is not already active, allocate a new chunk
+					if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
+					else
+					{
+						m_newChunkList.push_back(newChunkPosCS);
+					}
+				}
+			}
+		}
+
+		// Y-axis chunk checking (no need to check the outer XZ plane outline)
+		for (int16_t y = -RENDER_DIST; y <= RENDER_DIST; y += 2 * RENDER_DIST)
 		{
 			for (int16_t x = -RENDER_DIST + 1; x < RENDER_DIST; x++)
 			{
-				// A coordinate in chunk space
-				XMFLOAT3 newChunkPosCS = { playerPosChunkSpace.x + x, playerPosChunkSpace.y + y, playerPosChunkSpace.z + z };
-
-				// If this new chunk is not already active, allocate a new chunk
-				if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
-				else
+				for (int16_t z = -RENDER_DIST + 1; z < RENDER_DIST; z++)
 				{
-					m_newChunkList.push_back(newChunkPosCS);
-				}
+					debug_timesLooped++;
+					// A coordinate in chunk space
+					XMFLOAT3 newChunkPosCS = { playerPosChunkSpace.x + x, playerPosChunkSpace.y + y, playerPosChunkSpace.z + z };
 
+					// If this new chunk is not already active, allocate a new chunk
+					if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
+					else
+					{
+						m_newChunkList.push_back(newChunkPosCS);
+					}
+				}
 			}
 		}
 	}
 
-	// Y-axis chunk checking (no need to check the outer XZ plane outline)
-	for (int16_t y = -RENDER_DIST; y <= RENDER_DIST; y += 2 * RENDER_DIST)
 	{
-		for (int16_t x = -RENDER_DIST + 1; x < RENDER_DIST; x++)
+		VX_PROFILE_OUT(&ChunkManager_Data::deletingChunks);
+		// 3. Delete / unload out-of-render-distance chunks
+
+		for (const auto& chunkPos : m_deletedChunkList)
 		{
-			for (int16_t z = -RENDER_DIST + 1; z < RENDER_DIST; z++)
-			{
-				// A coordinate in chunk space
-				XMFLOAT3 newChunkPosCS = { playerPosChunkSpace.x + x, playerPosChunkSpace.y + y, playerPosChunkSpace.z + z };
-
-				// If this new chunk is not already active, allocate a new chunk
-				if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
-				else
-				{
-					m_newChunkList.push_back(newChunkPosCS);
-				}
-
-			}
+			// Use the map to map chunk position to index inside pool
+			uint32_t index = m_poolMap[GetHashKeyFromChunkPosition(chunkPos)];
+			UnloadChunk(index);
 		}
-	}
-
-	// 3. Delete / unload out-of-render-distance chunks
-	//uint32_t indexCorrection = 0;
-
-	for (const auto& chunkPos : m_deletedChunkList)
-	{
-		// Use the map to map chunk position to index inside pool
-		uint32_t index = m_poolMap[GetHashKeyFromChunkPosition(chunkPos)];
-		UnloadChunk(index);
 	}
 	
 
-	// 4. Load new chunks and force all their neighbors to initialize or re-initialize their buffers
-	for (uint16_t i = 0; i < m_newChunkList.size(); i++)
 	{
-		Chunk* newChunk = LoadChunk(m_newChunkList[i]);
-		XMFLOAT3 chunkPosCS = newChunk->GetPosition();
+		VX_PROFILE_OUT(&ChunkManager_Data::creatingChunks);
 
-		// Left neighbor
-		Chunk* leftNeighbor = GetChunkAtPos({ chunkPosCS.x - 1, chunkPosCS.y, chunkPosCS.z });
-		if (leftNeighbor) leftNeighbor->InitializeVertexBuffer();
+		// 4. Load new chunks and force all their neighbors to initialize or re-initialize their buffers
+		for (uint16_t i = 0; i < m_newChunkList.size(); i++)
+		{
+			Chunk* newChunk = LoadChunk(m_newChunkList[i]);
+			XMFLOAT3 chunkPosCS = newChunk->GetPosition();
 
-		// Right neighbor
-		Chunk* rightNeighbor = GetChunkAtPos({ chunkPosCS.x + 1, chunkPosCS.y, chunkPosCS.z });
-		if (rightNeighbor) rightNeighbor->InitializeVertexBuffer();
+			// Left neighbor
+			Chunk* leftNeighbor = GetChunkAtPos({ chunkPosCS.x - 1, chunkPosCS.y, chunkPosCS.z });
+			if (leftNeighbor) leftNeighbor->InitializeVertexBuffer();
 
-		// Top neighbor
-		Chunk* topNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y + 1, chunkPosCS.z });
-		if (topNeighbor) topNeighbor->InitializeVertexBuffer();
+			// Right neighbor
+			Chunk* rightNeighbor = GetChunkAtPos({ chunkPosCS.x + 1, chunkPosCS.y, chunkPosCS.z });
+			if (rightNeighbor) rightNeighbor->InitializeVertexBuffer();
 
-		// Bottom neighbor
-		Chunk* bottomNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y - 1, chunkPosCS.z });
-		if (bottomNeighbor) bottomNeighbor->InitializeVertexBuffer();
+			// Top neighbor
+			Chunk* topNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y + 1, chunkPosCS.z });
+			if (topNeighbor) topNeighbor->InitializeVertexBuffer();
 
-		// Front neighbor
-		Chunk* frontNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y, chunkPosCS.z - 1 });
-		if (frontNeighbor) frontNeighbor->InitializeVertexBuffer();
+			// Bottom neighbor
+			Chunk* bottomNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y - 1, chunkPosCS.z });
+			if (bottomNeighbor) bottomNeighbor->InitializeVertexBuffer();
 
-		// Back neighbor
-		Chunk* backNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y, chunkPosCS.z + 1 });
-		if (backNeighbor) backNeighbor->InitializeVertexBuffer();
+			// Front neighbor
+			Chunk* frontNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y, chunkPosCS.z - 1 });
+			if (frontNeighbor) frontNeighbor->InitializeVertexBuffer();
 
-		// Current chunk
-		newChunk->InitializeVertexBuffer();
+			// Back neighbor
+			Chunk* backNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y, chunkPosCS.z + 1 });
+			if (backNeighbor) backNeighbor->InitializeVertexBuffer();
+
+			// Current chunk
+			newChunk->InitializeVertexBuffer();
+		}
 	}
 	
 	VX_ASSERT(m_activeChunks.Size() == pow((2 * RENDER_DIST + 1), 3));

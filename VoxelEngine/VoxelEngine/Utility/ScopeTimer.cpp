@@ -3,7 +3,8 @@
 #include "ScopeTimer.h"
 #include "Log.h"
 
-ScopeTimer::ScopeTimer(std::string name, const int mode) : m_name(name), m_mode(mode)
+ScopeTimer::ScopeTimer(std::string name, const int mode, float* outDeltaTime) : 
+	m_name(name), m_mode(mode), m_timerVariable(outDeltaTime)
 {
 	m_start = std::chrono::steady_clock::now();
 }
@@ -13,6 +14,13 @@ ScopeTimer::~ScopeTimer()
 	auto m_end = std::chrono::steady_clock::now();
 
 	float duration = std::chrono::duration_cast<std::chrono::microseconds>(m_end - m_start).count();
+
+	if (m_timerVariable)
+	{
+		(*m_timerVariable) = duration / 1000.0f;
+		m_timerVariable = nullptr;
+		return;
+	}
 
 	switch(m_mode)
 	{

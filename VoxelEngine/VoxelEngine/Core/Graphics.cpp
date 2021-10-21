@@ -70,6 +70,7 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 void Graphics::Shutdown()
 {
 	ChunkManager::Shutdown();
+	ChunkBufferManager::Shutdown();
 
 	if(m_texViewer)
 	{
@@ -151,7 +152,7 @@ bool Graphics::Frame(const float dt)
 		ChunkManager::SetPlayerPos(m_player->GetPosition());
 
 		{
-			VX_PROFILE_SCOPE_MSG("[UPDATE] Chunk Buffer Update");
+			VX_PROFILE_SCOPE("[UPDATE] Chunk Buffer Update");
 			// Update the vertices
 			ChunkBufferManager::UpdateBuffers();
 		}
@@ -163,24 +164,24 @@ bool Graphics::Frame(const float dt)
 		D3D::BeginScene(DayNightCycle::GetSkyColor());
 
 		{
-			VX_PROFILE_SCOPE_MSG("Render Loop");
+			VX_PROFILE_SCOPE("Render Loop");
 
 			{
-				VX_PROFILE_SCOPE_MSG("[UPDATE] Update Light Matrices")
+				VX_PROFILE_SCOPE("[UPDATE] Update Light Matrices");
 				// Update the position and color of the light/sun
 				m_shadowShader->UpdateLightMatrix();
 				m_chunkShader->UpdateLightMatrix();
 			}
 
 			{
-				VX_PROFILE_SCOPE_MSG("[RENDER] Shadow Pass");
+				VX_PROFILE_SCOPE("[RENDER] Shadow Pass");
 				// Render the shadow map
 				m_shadowShader->Render();
 			}
 
 			ID3D11ShaderResourceView* srvs[2];
 			{
-				VX_PROFILE_SCOPE_MSG("[SRV] Settings SRVs")
+				VX_PROFILE_SCOPE("[SRV] Settings SRVs");
 				m_texViewer->SetTexture(m_shadowShader->GetShadowMap());
 
 
@@ -191,21 +192,21 @@ bool Graphics::Frame(const float dt)
 
 
 			{
-				VX_PROFILE_SCOPE_MSG("[RENDER] Chunk");
+				VX_PROFILE_SCOPE("[RENDER] Chunk");
 				// Send the chunks to the shader and render
 				m_chunkShader->UpdateViewMatrices(m_player->GetCamera()->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
 				m_chunkShader->Render(srvs);
 			}
 
 			{
-				VX_PROFILE_SCOPE_MSG("[RENDER] Debug Lines");
+				VX_PROFILE_SCOPE("[RENDER] Debug Lines");
 				// Render all debug lines and spheres
 				m_debugShader->UpdateViewMatrix(m_player->GetCamera()->GetViewMatrix());
 				m_debugShader->Render();
 			}
 
 			{
-				VX_PROFILE_SCOPE_MSG("[RENDER] Texture Viewer")
+				VX_PROFILE_SCOPE("[RENDER] Texture Viewer");
 				// Render the texture viewer quad
 				m_texViewer->Render();
 			}

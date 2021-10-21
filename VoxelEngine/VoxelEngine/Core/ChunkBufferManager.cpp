@@ -35,7 +35,8 @@ void ChunkBufferManager::Initialize()
 
 void ChunkBufferManager::Shutdown()
 {
-	//if (m_blockVertexBuffer.get()) m_blockVertexBuffer.get()->Release();
+	if (m_blockVertexBuffer) m_blockVertexBuffer->Release();
+	m_vertices.clear();
 }
 
 void ChunkBufferManager::UpdateBuffers()
@@ -49,7 +50,7 @@ void ChunkBufferManager::UpdateBuffers()
 	// Update the dynamic vertex buffer
 	D3D::GetDeviceContext()->Map(m_blockVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	{
-		VX_PROFILE_SCOPE_MSG("[UPDATE] Updating mapped resource");
+		VX_PROFILE_SCOPE("[UPDATE] Updating mapped resource");
 		int64_t numBytes = (int64_t)sizeof(BlockVertex) * m_vertices.size();
 		ImGui::Begin("Timing Panel");
 		ImGui::Text("Number of bytes copied: %i", numBytes);

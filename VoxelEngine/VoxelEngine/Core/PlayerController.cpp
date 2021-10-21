@@ -19,7 +19,7 @@ using namespace DirectX;
 // Full credit to author Kyle Pittman
 
 constexpr float JUMP_HEIGHT = 1.1f;												// in meters
-constexpr float JUMP_TIME = 0.4f;												// in seconds
+constexpr float JUMP_TIME = 0.32f;												// in seconds
 
 // Defined to be NEGATIVE by convention
 constexpr float GRAVITY = (-2.0f * JUMP_HEIGHT) / (JUMP_TIME * JUMP_TIME);		// -2h / t^2

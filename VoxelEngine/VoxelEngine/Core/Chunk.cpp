@@ -28,7 +28,7 @@ constexpr int32_t HIGH_CHUNK_LIMIT = -LOW_CHUNK_LIMIT;
 
 Chunk::Chunk(const DirectX::XMFLOAT3 pos) : m_pos(pos), m_vertexBufferStartIndex(0), m_vertexCount(0)
 {
-	//VX_PROFILE_SCOPE_MSG_MODE("Chunk Constructor", 1);
+	//VX_PROFILE_SCOPE_MODE("Chunk Constructor", 1);
 
 	InitializeChunk();
 	CreateVertexBuffer();

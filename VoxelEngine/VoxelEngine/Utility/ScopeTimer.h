@@ -17,7 +17,7 @@ public:
 	//	CONSOLE = 1
 	
 
-	ScopeTimer(std::string name = "Unnamed", const int mode = 0);
+	ScopeTimer(std::string name = "Unnamed", const int mode = 0, float* outDeltaTime = nullptr);
 	ScopeTimer(const ScopeTimer& other) = default;
 
 	~ScopeTimer();
@@ -26,6 +26,8 @@ private:
 	std::chrono::steady_clock::time_point m_start;
 	std::string m_name;
 	int m_mode;
+
+	float* m_timerVariable;
 };
 
 #endif

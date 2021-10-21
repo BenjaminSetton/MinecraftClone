@@ -104,6 +104,20 @@ void ImGuiLayer::Draw()
 	ImGui::Text("IsCollidingFloor: %i", PlayerPhysics_Data::isCollidingFloor);
 	ImGui::End();
 
+#pragma endregion
+
+#pragma region CHUNKMANAGER_DATA
+
+	ImGui::Begin("Timing Panel");
+	ImGui::Text("ChunkManager Update: %2.2f ms", ChunkManager_Data::updateTimer);
+	ImGui::Text("ChunkManager Creation Loop: %2.2f ms", ChunkManager_Data::creationLoop);
+	ImGui::Text("ChunkManager Deletion Loop: %2.2f ms", ChunkManager_Data::deletionLoop);
+	ImGui::Text("ChunkManager Creating Chunks: %2.2f ms", ChunkManager_Data::creatingChunks);
+	ImGui::Text("ChunkManager Deleting Chunks: %2.2f ms", ChunkManager_Data::deletingChunks);
+	ImGui::End();
+
+#pragma endregion
+
 }
 
 void ImGuiLayer::EndFrame()

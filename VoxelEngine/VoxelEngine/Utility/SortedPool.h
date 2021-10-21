@@ -34,7 +34,7 @@ public:
 	{
 		if (m_ownsPool)
 		{
-			if (m_pool) delete m_pool;
+			if (m_pool) delete[] m_pool;
 		}
 		m_size = 0;
 		m_capacity = 0;

@@ -17,15 +17,14 @@
 
 // Asserting
 #define VX_ASSERT(cond) assert(cond)
-#define VX_ASSERT_MSG(cond, msg) assert(cond && "msg")
-#define VX_ASSERT_VAARGS(cond, ...) assert(cond && printf(__VA_ARGS__))
+#define VX_ASSERT_MSG(cond, ...) assert(cond && printf(__VA_ARGS__))
 
 // Profiling
-#define VX_PROFILE_FUNC() auto VARNAME(var) = ScopeTimer(std::string(__FUNCTION__));
-#define VX_PROFILE_FUNC_MODE(mode) auto VARNAME(var) = ScopeTimer(std::string(__FUNCTION__), mode);
-#define VX_PROFILE_SCOPE() auto VARNAME(var) = ScopeTimer();
-#define VX_PROFILE_SCOPE_MSG(msg) auto VARNAME(var) = ScopeTimer(std::string(msg));
-#define VX_PROFILE_SCOPE_MSG_MODE(msg, mode) auto VARNAME(var) = ScopeTimer(std::string(msg), mode);
+#define VX_PROFILE_FUNC() auto VARNAME(var) = ScopeTimer(std::string(__FUNCTION__))
+#define VX_PROFILE_FUNC_MODE(mode) auto VARNAME(var) = ScopeTimer(std::string(__FUNCTION__), mode)
+#define VX_PROFILE_SCOPE(msg) auto VARNAME(var) = ScopeTimer(std::string(msg))
+#define VX_PROFILE_SCOPE_MODE(msg, mode) auto VARNAME(var) = ScopeTimer(std::string(msg), mode)
+#define VX_PROFILE_OUT(outVar) auto VARNAME(var) = ScopeTimer(std::string(__FUNCTION__), 0, outVar)
 
 // Logging
 
@@ -70,14 +69,14 @@ VARNAME(log).End();
 
 // Assert defines
 #define VX_ASSERT(cond)
-#define VX_ASSERT_MSG(cond, msg)
+#define VX_ASSERT_MSG(cond, ...)
 
 // Log defines
 #define VX_PROFILE_FUNC()
 #define VX_PROFILE_FUNC_MODE(mode)
 #define VX_PROFILE_SCOPE()
-#define VX_PROFILE_SCOPE_MSG(msg)
-#define VX_PROFILE_SCOPE_MSG_MODE(msg, mode)
+#define VX_PROFILE_SCOPE_MODE(msg, mode)
+#define VX_PROFILE_OUT(outVar)
 
 #define VX_LOG_ERROR(...)
 #define VX_LOG_WARN(...)

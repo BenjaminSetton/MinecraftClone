@@ -38,5 +38,13 @@ DirectX::XMFLOAT3 PlayerPhysics_Data::vel = { 0.0f, 0.0f, 0.0f };
 bool PlayerPhysics_Data::isCollidingWall = false;
 bool PlayerPhysics_Data::isCollidingFloor = false;
 
+//
+// CHUNKMANAGER_DATA
+//
+float ChunkManager_Data::updateTimer = 0.0f;
+float ChunkManager_Data::deletionLoop = 0.0f;
+float ChunkManager_Data::creationLoop = 0.0f;
+float ChunkManager_Data::deletingChunks = 0.0f;
+float ChunkManager_Data::creatingChunks = 0.0f;
 
 
