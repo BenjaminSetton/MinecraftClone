@@ -118,6 +118,8 @@ void Graphics::Shutdown()
 
 bool Graphics::Frame(const float dt)
 {
+	VX_PROFILE_OUT(&GraphicsTimer_Data::frameTimer);
+
 
 	// Begin the ImGui frame
 	m_imGuiLayer->BeginFrame();
@@ -126,105 +128,103 @@ bool Graphics::Frame(const float dt)
 	ImGui::Text("FRAMERATE: %2.2f FPS", 1.0f / dt);
 	ImGui::End();
 
+	// Check to toggle wireframe state
+	if (Input::IsKeyDown(KeyCode::E)) D3D::SetWireframeRasterState(true);
+	else if (Input::IsKeyDown(KeyCode::R)) D3D::SetWireframeRasterState(false);
+
+	// Update the debug camera's position
+	m_frustumCam->Update(dt);
+
+	FrustumCulling::CalculateFrustum(XM_PIDIV4, (float)m_screenWidth / m_screenHeight, 
+		SCREEN_NEAR, SCREEN_FAR, m_player->GetCamera()->GetWorldMatrix(), m_player->GetPosition());
+
+
+	//
+	// !	DEBUG ONLY
+	//
+	// FrustumCulling::Debug_DrawFrustum();
+	// auto chunkVec = ChunkManager::GetChunkVector();
+	// for (auto chunk : chunkVec) FrustumCulling::Debug_DrawAABB(FrustumCulling::ConvertChunkPosToAABB(ChunkManager::ChunkToWorldSpace(chunk->GetPosition())));
+
+
+	// Update the position for the updater thread
+	ChunkManager::SetPlayerPos(m_player->GetPosition());
+
 	{
-		VX_PROFILE_FUNC();
-
-		// Check to toggle wireframe state
-		if (Input::IsKeyDown(KeyCode::E)) D3D::SetWireframeRasterState(true);
-		else if (Input::IsKeyDown(KeyCode::R)) D3D::SetWireframeRasterState(false);
-
-		// Update the debug camera's position
-		m_frustumCam->Update(dt);
-
-		FrustumCulling::CalculateFrustum(XM_PIDIV4, (float)m_screenWidth / m_screenHeight, 
-			SCREEN_NEAR, SCREEN_FAR, m_player->GetCamera()->GetWorldMatrix(), m_player->GetPosition());
-
-
-		//
-		// !	DEBUG ONLY
-		//
-		// FrustumCulling::Debug_DrawFrustum();
-		// auto chunkVec = ChunkManager::GetChunkVector();
-		// for (auto chunk : chunkVec) FrustumCulling::Debug_DrawAABB(FrustumCulling::ConvertChunkPosToAABB(ChunkManager::ChunkToWorldSpace(chunk->GetPosition())));
-
-
-		// Update the position for the updater thread
-		ChunkManager::SetPlayerPos(m_player->GetPosition());
-
-		{
-			VX_PROFILE_SCOPE("[UPDATE] Chunk Buffer Update");
-			// Update the vertices
-			ChunkBufferManager::UpdateBuffers();
-		}
-
-		// Update the day/night cycle
-		DayNightCycle::Update(dt);
-
-		// Begin the D3D scene
-		D3D::BeginScene(DayNightCycle::GetSkyColor());
-
-		{
-			VX_PROFILE_SCOPE("Render Loop");
-
-			{
-				VX_PROFILE_SCOPE("[UPDATE] Update Light Matrices");
-				// Update the position and color of the light/sun
-				m_shadowShader->UpdateLightMatrix();
-				m_chunkShader->UpdateLightMatrix();
-			}
-
-			{
-				VX_PROFILE_SCOPE("[RENDER] Shadow Pass");
-				// Render the shadow map
-				m_shadowShader->Render();
-			}
-
-			ID3D11ShaderResourceView* srvs[2];
-			{
-				VX_PROFILE_SCOPE("[SRV] Settings SRVs");
-				m_texViewer->SetTexture(m_shadowShader->GetShadowMap());
-
-
-				srvs[0] = m_textureManager->GetTexture(std::string("TEXTUREATLAS_TEX"));
-				srvs[1] = m_shadowShader->GetShadowMap();
-				
-			}
-
-
-			{
-				VX_PROFILE_SCOPE("[RENDER] Chunk");
-				// Send the chunks to the shader and render
-				m_chunkShader->UpdateViewMatrices(m_player->GetCamera()->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
-				m_chunkShader->Render(srvs);
-			}
-
-			{
-				VX_PROFILE_SCOPE("[RENDER] Debug Lines");
-				// Render all debug lines and spheres
-				m_debugShader->UpdateViewMatrix(m_player->GetCamera()->GetViewMatrix());
-				m_debugShader->Render();
-			}
-
-			{
-				VX_PROFILE_SCOPE("[RENDER] Texture Viewer");
-				// Render the texture viewer quad
-				m_texViewer->Render();
-			}
-		}
-
-		Renderer_Data::playerPos = m_player->GetPosition();
-		Renderer_Data::playerPosChunkSpace = ChunkManager::WorldToChunkSpace(m_player->GetPosition());
-		Renderer_Data::numActiveChunks = ChunkManager::GetNumActiveChunks();
-
+		VX_PROFILE_SCOPE("[UPDATE] Chunk Buffer Update");
+		// Update the vertices
+		ChunkBufferManager::UpdateBuffers();
 	}
+
+	// Update the day/night cycle
+	DayNightCycle::Update(dt);
+
+	// Begin the D3D scene
+	D3D::BeginScene(DayNightCycle::GetSkyColor());
+
+	{
+		VX_PROFILE_SCOPE("Render Loop");
+
+		{
+			VX_PROFILE_SCOPE("[UPDATE] Update Light Matrices");
+			// Update the position and color of the light/sun
+			m_shadowShader->UpdateLightMatrix();
+			m_chunkShader->UpdateLightMatrix();
+		}
+
+		{
+			VX_PROFILE_SCOPE("[RENDER] Shadow Pass");
+			// Render the shadow map
+			m_shadowShader->Render();
+		}
+
+		ID3D11ShaderResourceView* srvs[2];
+		{
+			VX_PROFILE_SCOPE("[SRV] Settings SRVs");
+			m_texViewer->SetTexture(m_shadowShader->GetShadowMap());
+
+
+			srvs[0] = m_textureManager->GetTexture(std::string("TEXTUREATLAS_TEX"));
+			srvs[1] = m_shadowShader->GetShadowMap();
+				
+		}
+
+
+		{
+			VX_PROFILE_SCOPE("[RENDER] Chunk");
+			// Send the chunks to the shader and render
+			m_chunkShader->UpdateViewMatrices(m_player->GetCamera()->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
+			m_chunkShader->Render(srvs);
+		}
+
+		{
+			VX_PROFILE_SCOPE("[RENDER] Debug Lines");
+			// Render all debug lines and spheres
+			m_debugShader->UpdateViewMatrix(m_player->GetCamera()->GetViewMatrix());
+			m_debugShader->Render();
+		}
+
+		{
+			VX_PROFILE_SCOPE("[RENDER] Texture Viewer");
+			// Render the texture viewer quad
+			m_texViewer->Render();
+		}
+	}
+
+	Renderer_Data::playerPos = m_player->GetPosition();
+	Renderer_Data::playerPosChunkSpace = ChunkManager::WorldToChunkSpace(m_player->GetPosition());
+	Renderer_Data::numActiveChunks = ChunkManager::GetNumActiveChunks();
 
 	// End the ImGui frame
 	D3D::ClearDepthBuffer(1.0f); // Clear the depth buffer so GUI draws on top of everything
 	m_imGuiLayer->Draw();
 	m_imGuiLayer->EndFrame();
 
-	// End the scene and present the swap chain
-	D3D::EndScene();
+	{
+		VX_PROFILE_OUT(&GraphicsTimer_Data::presentTimer);
+		// End the scene and present the swap chain
+		D3D::EndScene();
+	}
 
 	return true;
 }

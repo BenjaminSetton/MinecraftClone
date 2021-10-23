@@ -60,4 +60,10 @@ struct ChunkManager_Data
 	static float creatingChunks;
 };
 
+struct GraphicsTimer_Data
+{
+	static float frameTimer;
+	static float presentTimer;
+};
+
 #endif _IMGUIDRAWDATA_H

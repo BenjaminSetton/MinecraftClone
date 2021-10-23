@@ -118,6 +118,15 @@ void ImGuiLayer::Draw()
 
 #pragma endregion
 
+#pragma region GRAPHICSTIMER_DATA
+
+	ImGui::Begin("Timing Panel");
+	ImGui::Text("Graphics Frame: %2.2f", GraphicsTimer_Data::frameTimer);
+	ImGui::Text("Graphics Present: %2.2f", GraphicsTimer_Data::presentTimer);
+	ImGui::End();
+
+#pragma endregion
+
 }
 
 void ImGuiLayer::EndFrame()
@@ -134,7 +143,6 @@ void ImGuiLayer::Shutdown()
 	ImGui::DestroyContext();
 }
 
-// Forward declare the WndProc Handler from imgui.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 bool ImGuiLayer::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)

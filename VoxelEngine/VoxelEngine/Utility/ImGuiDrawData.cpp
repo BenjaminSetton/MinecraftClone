@@ -48,3 +48,8 @@ float ChunkManager_Data::deletingChunks = 0.0f;
 float ChunkManager_Data::creatingChunks = 0.0f;
 
 
+//
+// GRAPHICSTIMER_DATA
+//
+float GraphicsTimer_Data::frameTimer = 0.0f;
+float GraphicsTimer_Data::presentTimer = 0.0f;
