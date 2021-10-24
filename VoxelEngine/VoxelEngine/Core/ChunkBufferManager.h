@@ -24,7 +24,7 @@ public:
 
 	static std::vector<BlockVertex>& GetVertexArray();
 
-private:
+private: 
 
 	static std::vector<BlockVertex> m_vertices;
 
