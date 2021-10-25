@@ -4,6 +4,8 @@ struct GeometryIn
     float4 pos : SV_Position;
     float2 uv : TEXCOORD0;
     float4 lightPos : TEXCOORD1;
+    uint blockFaces : BLOCKFACES1;
+    uint vertexID : ID1;
 };
 
 struct GeometryOut
@@ -15,9 +17,14 @@ struct GeometryOut
 };
 
 [maxvertexcount(3)]
-void main(triangle GeometryIn input[3], inout TriangleStream<GeometryOut> output
-)
+void main(triangle GeometryIn input[3], inout TriangleStream<GeometryOut> output)
 {
+    // Between 0-35
+    int faceIndex = input[0].vertexID / 6;
+    
+    // Check if face should not be rendered. If not, return
+    if (input[0].blockFaces & (1 << faceIndex) == 0) return;
+    
     float3 ptOne = input[2].pos.xyz - input[0].pos.xyz;
     float3 ptTwo = input[1].pos.xyz - input[0].pos.xyz;
     

@@ -212,8 +212,9 @@ void DebugRendererShader::BindObjects()
 	context->IASetInputLayout(m_inputLayout);
 
 	// Set the vertex and pixel shaders that will be used to render this line.
-	context->VSSetShader(m_vertexShader, NULL, 0);
-	context->PSSetShader(m_pixelShader, NULL, 0);
+	context->VSSetShader(m_vertexShader, nullptr, 0);
+	context->GSSetShader(nullptr, nullptr, 0);
+	context->PSSetShader(m_pixelShader, nullptr, 0);
 
 	// Set the type of primitive that should be rendered from this vertex buffer, in this case lines.
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);

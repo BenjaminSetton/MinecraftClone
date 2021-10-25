@@ -2,49 +2,75 @@
 #define _BLOCK_H
 
 #include <DirectXMath.h>
+#include "../Utility/Utility.h"
 
-struct BlockVertex
+struct BlockInstanceData
+{
+	DirectX::XMFLOAT3 worldPos;
+	uint32_t blockType;
+	uint32_t blockFaces;
+
+};
+
+struct BlockVertexData
 {
 	DirectX::XMFLOAT3 pos;
-	//DirectX::XMFLOAT3 norm;
-	DirectX::XMFLOAT2 uv;
+	uint32_t vertexIndex;
 };
 
 /// NOTE!
 // This is only a definition of how a block is created from neighboring vertices, as well as it's normals and UVs
 
 
-static BlockVertex verts[24] =
+static BlockVertexData verts[36] =
 {
-	{ DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),		/*DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), */   DirectX::XMFLOAT2(1.0f, 0.0f) },	// TLF(0)
-	{ DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f),		/*DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), */   DirectX::XMFLOAT2(0.0f, 0.0f) },	// TRF(1)
-	{ DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f),		/*DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), */   DirectX::XMFLOAT2(0.0f, 1.0f) },	// TRB(2)
-	{ DirectX::XMFLOAT3(0.0f, 1.0f, 1.0f),		/*DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), */   DirectX::XMFLOAT2(1.0f, 1.0f) },	// TLB(3)
-												/*									   */
-	{ DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f),		/*DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f),*/   DirectX::XMFLOAT2(0.0f, 1.0f) },	// BLF(4)
-	{ DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f),		/*DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f),*/   DirectX::XMFLOAT2(1.0f, 1.0f) },	// BRF(5)
-	{ DirectX::XMFLOAT3(1.0f, 0.0f, 1.0f),		/*DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f),*/   DirectX::XMFLOAT2(1.0f, 0.0f) },	// BRB(6)
-	{ DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f),		/*DirectX::XMFLOAT3(0.0f, -1.0f, 0.0f),*/   DirectX::XMFLOAT2(0.0f, 0.0f) },	// BLB(7)
-												/*									   */
-	{ DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f),		/*DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f),*/   DirectX::XMFLOAT2(0.0f, 1.0f) },	// BLB(8)
-	{ DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f),		/*DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f),*/   DirectX::XMFLOAT2(1.0f, 1.0f) },	// BLF(9)
-	{ DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),		/*DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f),*/   DirectX::XMFLOAT2(1.0f, 0.0f) },	// TLF(10)
-	{ DirectX::XMFLOAT3(0.0f, 1.0f, 1.0f),		/*DirectX::XMFLOAT3(-1.0f, 0.0f, 0.0f),*/   DirectX::XMFLOAT2(0.0f, 0.0f) },	// TLB(11)
-												/*									   */
-	{ DirectX::XMFLOAT3(1.0f, 0.0f, 1.0f),		/*DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f), */   DirectX::XMFLOAT2(1.0f, 1.0f) },	// BRB(12) 
-	{ DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f),		/*DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f), */   DirectX::XMFLOAT2(0.0f, 1.0f) },	// BRF(13)
-	{ DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f),		/*DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f), */   DirectX::XMFLOAT2(0.0f, 0.0f) },	// TRF(14)
-	{ DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f),		/*DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f), */   DirectX::XMFLOAT2(1.0f, 0.0f) },	// TRB(15)
-												/*									   */
-	{ DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f),		/*DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f),*/	  DirectX::XMFLOAT2(0.0f, 1.0f) },	// BLF(16)
-	{ DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f),		/*DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f),*/	  DirectX::XMFLOAT2(1.0f, 1.0f) },	// BRF(17)
-	{ DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f),		/*DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f),*/   DirectX::XMFLOAT2(1.0f, 0.0f) },	// TRF(18)
-	{ DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),		/*DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f),*/	  DirectX::XMFLOAT2(0.0f, 0.0f) },	// TLF(19)
-												/*									   */
-	{ DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f),		/*DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f),	*/   DirectX::XMFLOAT2(1.0f, 1.0f) },	// BLB(20)
-	{ DirectX::XMFLOAT3(1.0f, 0.0f, 1.0f),		/*DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f), */   DirectX::XMFLOAT2(0.0f, 1.0f) },	// BRB(21)
-	{ DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f),		/*DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f), */   DirectX::XMFLOAT2(0.0f, 0.0f) },	// TRB(22)
-	{ DirectX::XMFLOAT3(0.0f, 1.0f, 1.0f),		/*DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f), */   DirectX::XMFLOAT2(1.0f, 0.0f) },	// TLB(23)
+	 // TOP
+	 { DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f), 0  },	// TRB
+	 { DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f), 1  },	// TRF
+	 { DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), 2  },	// TLF
+	 { DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), 3  },	// TLF
+	 { DirectX::XMFLOAT3(0.0f, 1.0f, 1.0f), 4  },	// TLB
+	 { DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f), 5  },	// TRB
+	   									       
+	  // BOTTOM						  	       
+	 { DirectX::XMFLOAT3(1.0f, 0.0f, 1.0f), 6  },	// BRB
+	 { DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f), 7  },	// BRF
+	 { DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), 8  },	// BLF
+	 { DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), 9  },	// BLF
+	 { DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f), 10 },	// BLB
+	 { DirectX::XMFLOAT3(1.0f, 0.0f, 1.0f), 11 },	// BRB
+	   									      
+	  // LEFT							      
+	 { DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), 12 },	// TLF
+	 { DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), 13 },	// BLF
+	 { DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f), 14 },	// BLB
+	 { DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f), 15 },	// BLB
+	 { DirectX::XMFLOAT3(0.0f, 1.0f, 1.0f), 16 },	// TLB
+	 { DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), 17 },	// TLF
+		 								       
+	  // RIGHT							       
+	 { DirectX::XMFLOAT3(1.0f, 0.0f, 1.0f), 18 },	// BRB 
+	 { DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f), 19 },	// BRF
+	 { DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f), 20 },	// TRF
+	 { DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f), 21 },	// TRF
+	 { DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f), 22 },	// TRB
+	 { DirectX::XMFLOAT3(1.0f, 0.0f, 1.0f), 23 },	// BRB 
+		 								       
+	  // FRONT							       
+	 { DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f), 24 },	// TRF
+	 { DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f), 25 },	// BRF
+	 { DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), 26 },	// BLF
+	 { DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f), 27 },	// TLF
+	 { DirectX::XMFLOAT3(1.0f, 1.0f, 0.0f), 28 },	// TRF
+	 { DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f), 29 },	// BLF
+		 								       
+	  // BACK							       
+	 { DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f), 30 },	// BLB
+	 { DirectX::XMFLOAT3(1.0f, 0.0f, 1.0f), 31 },	// BRB
+	 { DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f), 32 },	// TRB
+	 { DirectX::XMFLOAT3(0.0f, 0.0f, 1.0f), 33 },	// BLB
+	 { DirectX::XMFLOAT3(1.0f, 1.0f, 1.0f), 34 },	// TRB
+	 { DirectX::XMFLOAT3(0.0f, 1.0f, 1.0f), 35 },	// TLB
 };
 
 static unsigned int indicies[36] =
@@ -57,14 +83,14 @@ static unsigned int indicies[36] =
 	22, 20, 21, 23, 20, 22		// BACK FACE
 };
 
-enum class BlockFace
+enum class BlockFace : uint8_t
 {
-	TOP = 0,
-	BOTTOM = 6,
-	LEFT = 12,
-	RIGHT = 18,
-	FRONT = 24,
-	BACK = 30
+	TOP = BIT(0),
+	BOTTOM = BIT(1),
+	LEFT = BIT(2),
+	RIGHT = BIT(3),
+	FRONT = BIT(4),
+	BACK = BIT(5)
 };
 
 enum class BlockType : uint8_t

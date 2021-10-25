@@ -180,7 +180,13 @@ void PlayerController::Update(const float& dt, Player* player)
 	// If collision is detected after applying gravity, revert
 	if (isCollidingWithFloor)
 	{
-		worldMatrix.r[3] = playerPosAfterMovement;
+		worldMatrix.r[3] = 
+		{ 
+			playerPosAfterMovement.m128_f32[0], 
+			floor(playerPosAfterMovement.m128_f32[1]),
+			playerPosAfterMovement.m128_f32[2]
+		};
+
 		// Set the W component of the position to 1
 		worldMatrix.r[3].m128_f32[3] = 1.0f;
 

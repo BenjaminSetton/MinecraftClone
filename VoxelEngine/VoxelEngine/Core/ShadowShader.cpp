@@ -26,7 +26,7 @@ void ShadowShader::Initialize(const uint32_t width, const uint32_t height)
 	HRESULT hr;
 	MatrixBuffer* matrixBufferPtr;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	BlockVertex* vertexBufferPtr;
+	BlockInstanceData* vertexBufferPtr;
 	XMFLOAT3 lightDirection = DayNightCycle::GetLightDirection(DayNightCycle::CelestialBody::SUN);
 
 	XMFLOAT4 camPos = { -4.0f, 50.0f, -10.0f, 1.0f};
@@ -274,7 +274,7 @@ void ShadowShader::BindVertexBuffers()
 
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
 	ID3D11Buffer* buffers[] = { ChunkBufferManager::GetVertexBuffer() };
-	unsigned int stride[] = { sizeof(BlockVertex) };
+	unsigned int stride[] = { sizeof(BlockInstanceData) };
 	unsigned int offset[] = { 0 };
 	context->IASetVertexBuffers(0, ARRAYSIZE(buffers), buffers, stride, offset);
 }

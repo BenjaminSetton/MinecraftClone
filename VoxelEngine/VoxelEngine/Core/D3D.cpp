@@ -1,7 +1,7 @@
 #include "../Misc/pch.h"
 
 #include "D3D.h"
-#include "../Utility/Utility.h";
+#include "../Utility/Utility.h"
 
 using namespace DirectX;
 
@@ -31,18 +31,18 @@ DirectX::XMMATRIX D3D::m_orthoMatrix = XMMatrixIdentity();
 
 bool D3D::m_depthDisabled = false;
 
-bool D3D::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd, const bool& vsync,
+bool D3D::Initialize(int32_t* out_screenWidth, int32_t* out_screenHeight, HWND hwnd, const bool& vsync,
 					 const bool& fullscreen, const float& screenFar, const float& screenNear)
 {
 	HRESULT result;
 	IDXGIFactory* factory;
 	IDXGIAdapter* adapter;
 	IDXGIOutput* adapterOutput;
-	unsigned int numModes, i, numerator, denominator, stringLength;
+	unsigned int numModes = 0;
+	unsigned int i, numerator, denominator, stringLength;
 	DXGI_MODE_DESC* displayModeList;
 	DXGI_ADAPTER_DESC adapterDesc;
 	int error;
-	DXGI_SWAP_CHAIN_DESC swapChainDesc;
 	D3D_FEATURE_LEVEL featureLevel;
 	D3D11_RASTERIZER_DESC defaultRasterDesc;
 	D3D11_RASTERIZER_DESC wireframeRasterDesc;
@@ -83,17 +83,19 @@ bool D3D::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd,
 
 	// Now go through all the display modes and find the one that matches the screen width and height.
 	// When a match is found store the numerator and denominator of the refresh rate for that monitor.
-	for (i = 0; i < numModes; i++)
-	{
-		if (displayModeList[i].Width == (UINT)screenWidth)
-		{
-			if (displayModeList[i].Height == (UINT)screenHeight)
-			{
-				numerator = displayModeList[i].RefreshRate.Numerator;
-				denominator = displayModeList[i].RefreshRate.Denominator;
-			}
-		}
-	}
+	//for (i = 0; i < numModes; i++)
+	//{
+	//	if (displayModeList[i].Width == (UINT)screenWidth)
+	//	{
+	//		if (displayModeList[i].Height == (UINT)screenHeight)
+	//		{
+	//		}
+	//	}
+	//}
+
+	// Default refresh rate of 60FPS
+	numerator = 60; //displayModeList[i].RefreshRate.Numerator;
+	denominator = 1; //displayModeList[i].RefreshRate.Denominator;
 
 	// Get the adapter (video card) description.
 	result = adapter->GetDesc(&adapterDesc);
@@ -129,18 +131,16 @@ bool D3D::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd,
 
 #pragma region _D3D_OBJECT_INIT
 
-	// Initialize the swap chain description.
+	DXGI_SWAP_CHAIN_DESC swapChainDesc;
 	ZeroMemory(&swapChainDesc, sizeof(swapChainDesc));
 
-	// Set to a single back buffer.
-	swapChainDesc.BufferCount = 1;
+	swapChainDesc.BufferCount = 2;
 
 	// Set the width and height of the back buffer.
 	swapChainDesc.BufferDesc.Width = 0;
 	swapChainDesc.BufferDesc.Height = 0;
 
-	// Set regular 32-bit surface for the back buffer.
-	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // Set regular 32-bit surface for the back buffer.
 
 	// Set the refresh rate of the back buffer.
 	if (m_vsync_enabled)
@@ -156,23 +156,18 @@ bool D3D::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd,
 
 	// Set the usage of the back buffer.
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swapChainDesc.OutputWindow = hwnd; // Set the handle for the window to render to.
 
-	// Set the handle for the window to render to.
-	swapChainDesc.OutputWindow = hwnd;
-
-	// Turn multisampling off.
-	swapChainDesc.SampleDesc.Count = 1;
+	swapChainDesc.SampleDesc.Count = 1; // Turn multisampling off.
 	swapChainDesc.SampleDesc.Quality = 0;
 
-	// Set to full screen or windowed mode.
-	swapChainDesc.Windowed = !fullscreen;
+	swapChainDesc.Windowed = !fullscreen; // Set to full screen or windowed mode.
 
-	// Set the scan line ordering and scaling to unspecified.
-	swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+	swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED; // Set the scan line ordering and scaling to unspecified.
 	swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
 
 	// Discard the back buffer contents after presenting.
-	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
 	// Don't set the advanced flags.
 	swapChainDesc.Flags = 0;
@@ -181,12 +176,26 @@ bool D3D::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd,
 	featureLevel = D3D_FEATURE_LEVEL_11_0;
 
 	// Create the swap chain, Direct3D device, and Direct3D device context.
-	result = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, &featureLevel, 1,
+	result = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL,
+#ifdef _DEBUG
+		D3D11_CREATE_DEVICE_DEBUG,
+#else
+		0, 
+#endif
+		&featureLevel, 1,
 		D3D11_SDK_VERSION, &swapChainDesc, &m_swapChain, &m_device, NULL, &m_deviceContext);
 	if (FAILED(result)){ return false; }
 
+	// Retrieve the runtime-generated width and height values
+	// These should be considered to be the "real" width/height values
+	HRESULT hr = m_swapChain->GetDesc(&swapChainDesc);
+	VX_ASSERT(!FAILED(hr));
+	*out_screenWidth = swapChainDesc.BufferDesc.Width;
+	*out_screenHeight = swapChainDesc.BufferDesc.Height;
+
+
 	// Create the depth/stencil view and all of it's related objects
-	CreateDepthStencilView(screenWidth, screenHeight);
+	CreateDepthStencilView(*out_screenWidth, *out_screenHeight);
 
 	// Setup the default raster description which will determine how and what polygons will be drawn.
 	defaultRasterDesc.AntialiasedLineEnable = false;
@@ -227,8 +236,8 @@ bool D3D::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd,
 
 	// Setup the viewport for rendering.
 	D3D11_VIEWPORT viewport;
-	viewport.Width = static_cast<float>(screenWidth);
-	viewport.Height = static_cast<float>(screenHeight);
+	viewport.Width = static_cast<float>(*out_screenWidth);
+	viewport.Height = static_cast<float>(*out_screenHeight);
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
 	viewport.TopLeftX = 0.0f;
@@ -239,12 +248,12 @@ bool D3D::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd,
 
 	// Create the projection matrix for 3D rendering.
 	m_projectionMatrix = XMMatrixPerspectiveFovLH(XM_PIDIV4, 
-		(float)screenWidth / screenHeight, screenNear, screenFar);
+		(float)*out_screenWidth / *out_screenHeight, screenNear, screenFar);
 
 	// Create an orthographic projection matrix for 2D rendering.
 	m_orthoMatrix = XMMatrixOrthographicOffCenterLH(
-		(-screenWidth / 20.0f), (screenWidth / 20.0f), 
-		(-screenHeight / 20.0f), (screenHeight / 20.0f),
+		(-static_cast<int32_t>(*out_screenWidth) / 20.0f), (static_cast<int32_t>(*out_screenWidth) / 20.0f),
+		(-static_cast<int32_t>(*out_screenHeight) / 20.0f), (static_cast<int32_t>(*out_screenHeight) / 20.0f),
 		screenNear, screenFar);
 	
 	// Initialize the world matrix to the identity matrix.
@@ -429,6 +438,7 @@ void D3D::CreateRenderTargetView()
 	hr = m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBufferPtr);
 	VX_ASSERT(!FAILED(hr));
 
+	//D3D11_DSV_DIMENSION_TEXTURE2D
 	hr = m_device->CreateRenderTargetView(backBufferPtr, NULL, &m_renderTargetView);
 	VX_ASSERT(!FAILED(hr));
 

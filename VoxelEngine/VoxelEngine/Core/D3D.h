@@ -20,7 +20,7 @@ public:
 	D3D(const D3D&) = default;
 	~D3D() = default;
 
-	static bool Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd, const bool& vsync, 
+	static bool Initialize(int32_t* out_screenWidth, int32_t* out_screenHeight, HWND hwnd, const bool& vsync, 
 					const bool& fullscreen, const float& screenFar, const float& screenNear);
 	static void Shutdown();
 

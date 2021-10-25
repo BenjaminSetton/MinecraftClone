@@ -21,14 +21,16 @@ public:
 	static void UpdateBuffers();
 
 	static ID3D11Buffer* GetVertexBuffer();
+	static ID3D11Buffer* GetInstanceBuffer();
 
-	static std::vector<BlockVertex>& GetVertexArray();
+	static std::vector<BlockInstanceData>& GetVertexArray();
 
 private: 
 
-	static std::vector<BlockVertex> m_vertices;
+	static std::vector<BlockInstanceData> m_vertices;
 
 	static ID3D11Buffer* m_blockVertexBuffer;
+	static ID3D11Buffer* m_blockInstanceBuffer;
 
 };
 

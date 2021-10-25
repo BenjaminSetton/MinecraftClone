@@ -18,7 +18,8 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 {
 	bool initResult;
 
-	initResult = D3D::Initialize(screenWidth, screenHeight, hwnd, VSYNC_ENABLED, FULL_SCREEN, SCREEN_FAR, SCREEN_NEAR);
+	int32_t rtWidth, rtHeight;
+	initResult = D3D::Initialize(&rtWidth, &rtHeight, hwnd, VSYNC_ENABLED, FULL_SCREEN, SCREEN_FAR, SCREEN_NEAR);
 	if (!initResult) return false;
 
 	// Set internal player pointer to player parameter
@@ -27,13 +28,13 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	m_screenWidth = screenWidth;
 	m_screenHeight = screenHeight;
 
-	m_frustumCam = new FrustumCamera;
+	m_frustumCam = new FrustumCamera();
 	m_frustumCam->ConstructMatrix({ -15.0f, 20.0f, 15.0f });
 	FrustumCulling::CalculateFrustum(XM_PIDIV4, (float)screenWidth / screenHeight,
 		SCREEN_NEAR, SCREEN_FAR, player->GetCamera()->GetWorldMatrix(), player->GetPosition());
 
 	// Create and initialize the texture manager
-	m_textureManager = new TextureManager;
+	m_textureManager = new TextureManager();
 	m_textureManager->Init(D3D::GetDevice());
 	
 	// Initialize ChunkManager class (DefaultBlockShader will use it's data so initialization has to take place before it)
@@ -42,24 +43,24 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	ChunkBufferManager::Initialize();
 
 	// Create the shadow shader class
-	m_shadowShader = new ShadowShader;
+	m_shadowShader = new ShadowShader();
 	m_shadowShader->CreateObjects(L"./Shaders/ShadowMap_VS.hlsl", L"./Shaders/ShadowMap_PS.hlsl");
-	m_shadowShader->Initialize(screenWidth, screenHeight);
+	m_shadowShader->Initialize(rtWidth, rtHeight);
 
 
 	// Create the chunk shader class object
-	m_chunkShader = new DefaultBlockShader;
+	m_chunkShader = new DefaultBlockShader();
 	m_chunkShader->CreateObjects(L"./Shaders/DefaultBlock_VS.hlsl", L"./Shaders/DefaultBlock_GS.hlsl", L"./Shaders/DefaultBlock_PS.hlsl");
 	m_chunkShader->Initialize(m_player->GetCamera()->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
 
 	// Create the debug renderer class object
-	m_debugShader = new DebugRendererShader;
+	m_debugShader = new DebugRendererShader();
 	m_debugShader->CreateObjects(L"./Shaders/DebugRenderer_VS.hlsl", L"./Shaders/DebugRenderer_PS.hlsl");
 	m_debugShader->Initialize(m_player->GetCamera()->GetViewMatrix());
 	
 
 	// Create and initialize the ImGuiLayer
-	m_imGuiLayer = new ImGuiLayer;
+	m_imGuiLayer = new ImGuiLayer();
 	m_imGuiLayer->Initialize(hwnd, D3D::GetDevice(), D3D::GetDeviceContext());
 
 	m_texViewer = new TextureViewer(nullptr, 5, 5, 0.15f);
@@ -172,11 +173,11 @@ bool Graphics::Frame(const float dt)
 			m_chunkShader->UpdateLightMatrix();
 		}
 
-		{
-			VX_PROFILE_SCOPE("[RENDER] Shadow Pass");
-			// Render the shadow map
-			m_shadowShader->Render();
-		}
+		//{
+		//	VX_PROFILE_SCOPE("[RENDER] Shadow Pass");
+		//	// Render the shadow map
+		//	m_shadowShader->Render();
+		//}
 
 		ID3D11ShaderResourceView* srvs[2];
 		{
@@ -200,8 +201,8 @@ bool Graphics::Frame(const float dt)
 		{
 			VX_PROFILE_SCOPE("[RENDER] Debug Lines");
 			// Render all debug lines and spheres
-			m_debugShader->UpdateViewMatrix(m_player->GetCamera()->GetViewMatrix());
-			m_debugShader->Render();
+			//m_debugShader->UpdateViewMatrix(m_player->GetCamera()->GetViewMatrix());
+			//m_debugShader->Render();
 		}
 
 		{
@@ -231,7 +232,6 @@ bool Graphics::Frame(const float dt)
 
 bool Graphics::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-	bool result;
 
 	// Call the ImGuiLayer WndProc
 	if (m_imGuiLayer->WndProc(hwnd, msg, wparam, lparam)) return true;

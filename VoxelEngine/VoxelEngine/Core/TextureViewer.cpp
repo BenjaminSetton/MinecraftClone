@@ -169,8 +169,9 @@ void TextureViewer::BindObjects()
 	context->IASetInputLayout(m_inputLayout);
 
 	// Set the vertex and pixel shaders that will be used to render this triangle.
-	context->VSSetShader(m_vertexShader, NULL, 0);
-	context->PSSetShader(m_pixelShader, NULL, 0);
+	context->VSSetShader(m_vertexShader, nullptr, 0);
+	context->GSSetShader(nullptr, nullptr, 0);
+	context->PSSetShader(m_pixelShader, nullptr, 0);
 
 	// Bind the quad vertex buffer
 	ID3D11Buffer* buffer[] = { m_vertexBuffer };

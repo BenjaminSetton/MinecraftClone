@@ -72,6 +72,8 @@ private:
 	ID3D11Buffer* m_matrixBuffer;
 	ID3D11Buffer* m_lightBuffer;
 
+	ID3D11Buffer* m_UVBuffer;
+
 	ID3D11InputLayout* m_inputLayout;
 
 	ID3D11SamplerState* m_samplerWrap;

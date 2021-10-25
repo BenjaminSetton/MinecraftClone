@@ -9,6 +9,7 @@
 #include "../Utility/ImGuiLayer.h"
 
 #include "Block.h"
+#include "BlockUVs.h"
 #include "ChunkBufferManager.h"
 
 using namespace DirectX;
@@ -32,7 +33,7 @@ void DefaultBlockShader::Initialize(XMMATRIX camViewMatrix, XMMATRIX lightViewMa
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	MatrixBuffer* matrixBufferPtr;
 	LightBuffer* lightBufferPtr;
-	BlockVertex* vertexBufferPtr;
+	BlockInstanceData* vertexBufferPtr;
 
 	m_camPM = D3D::GetProjectionMatrix();
 	m_lightPM = D3D::GetOrthoMatrix();
@@ -89,7 +90,7 @@ void DefaultBlockShader::Render(ID3D11ShaderResourceView* const* srvs)
 	BlockShader_Data::debugVerts = size;
 	BlockShader_Data::numDrawCalls = 1;
 
-	context->Draw(size, 0);
+	context->DrawInstanced(ARRAYSIZE(verts), size, 0, 0);
 }
 
 void DefaultBlockShader::Shutdown()
@@ -104,6 +105,12 @@ void DefaultBlockShader::Shutdown()
 	{
 		m_samplerClamp->Release();
 		m_samplerClamp = nullptr;
+	}
+
+	if (m_UVBuffer)
+	{
+		m_UVBuffer->Release();
+		m_UVBuffer = nullptr;
 	}
 
 	if (m_lightBuffer)
@@ -176,6 +183,23 @@ void DefaultBlockShader::CreateD3DObjects()
 	hr = device->CreateBuffer(&lightBufferDesc, NULL, &m_lightBuffer);
 	VX_ASSERT(!FAILED(hr));
 
+	// Setup the description of the UV constant buffer
+	D3D11_BUFFER_DESC uvBufferDesc;
+	uvBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+	uvBufferDesc.ByteWidth = (36 * sizeof(DirectX::XMFLOAT2)) * NUM_BLOCKS;
+	uvBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	uvBufferDesc.CPUAccessFlags = 0;
+	uvBufferDesc.MiscFlags = 0;
+	uvBufferDesc.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA uvBufferData;
+	uvBufferData.pSysMem = uvs;
+	uvBufferData.SysMemPitch = 0;
+	uvBufferData.SysMemSlicePitch = 0;
+
+	hr = device->CreateBuffer(&uvBufferDesc, &uvBufferData, &m_UVBuffer);
+	VX_ASSERT(!FAILED(hr));
+
 	// Create a wrap texture sampler state description.
 	D3D11_SAMPLER_DESC samplerDesc = {};
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
@@ -216,7 +240,7 @@ void DefaultBlockShader::CreateShaders(const WCHAR* vsFilename, const WCHAR* gsF
 	ID3D10Blob* PSBlob;
 
 	// Compile the vertex shader
-	hr = D3DCompileFromFile(vsFilename, nullptr, nullptr, "main", "vs_5_0",
+	hr = D3DCompileFromFile(vsFilename, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "vs_5_0",
 		D3DCOMPILE_ENABLE_STRICTNESS
 #ifdef _DEBUG 
 		| D3DCOMPILE_DEBUG
@@ -253,8 +277,14 @@ void DefaultBlockShader::CreateShaders(const WCHAR* vsFilename, const WCHAR* gsF
 	// Create the input element description
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
 	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		// Per-vertex data
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "ID", 0, DXGI_FORMAT_R32_UINT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+
+		// Per-instance data
+		{ "WORLDPOS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+		{ "BLOCKTYPE", 0, DXGI_FORMAT_R32_UINT, 2, 12, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+		{ "BLOCKFACES", 0, DXGI_FORMAT_R32_UINT, 3, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
 	};
 
 	// Create the vertex input layout.
@@ -276,9 +306,9 @@ void DefaultBlockShader::BindVertexBuffers()
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
-	ID3D11Buffer* buffers[] = { ChunkBufferManager::GetVertexBuffer() };
-	unsigned int stride[] = { sizeof(BlockVertex) };
-	unsigned int offset[] = { 0 };
+	ID3D11Buffer* buffers[] = { ChunkBufferManager::GetVertexBuffer(), ChunkBufferManager::GetInstanceBuffer() };
+	unsigned int stride[] = { sizeof(BlockVertexData), sizeof(BlockInstanceData) };
+	unsigned int offset[] = { 0, 0 };
 	context->IASetVertexBuffers(0, ARRAYSIZE(buffers), buffers, stride, offset);
 }
 
@@ -292,7 +322,8 @@ void DefaultBlockShader::BindObjects(ID3D11ShaderResourceView* const* srvs)
 	context->OMSetRenderTargets(1, &backBuffer, D3D::GetDepthStencilView());
 
 	// Now set the matrix constant buffer in the vertex shader with the updated values.
-	context->VSSetConstantBuffers(0, 1, &m_matrixBuffer);
+	ID3D11Buffer* buffers[] = { m_UVBuffer, m_matrixBuffer };
+	context->VSSetConstantBuffers(0, ARRAYSIZE(buffers), buffers);
 
 	// Set the light constant buffer in the pixel shader
 	context->PSSetConstantBuffers(0, 1, &m_lightBuffer);

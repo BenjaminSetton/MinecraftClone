@@ -9,11 +9,12 @@
 
 using namespace DirectX;
 
-constexpr int32_t NUM_BLOCK_VERTS = (6 * 6 * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * (RENDER_DIST + 1) * (RENDER_DIST + 1) * (RENDER_DIST + 1)) * 0.1f;
+constexpr int32_t NUM_BLOCK_VERTS = (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * (RENDER_DIST + 1) * (RENDER_DIST + 1) * (RENDER_DIST + 1)) * 0.1f;
 
-std::vector<BlockVertex> ChunkBufferManager::m_vertices = std::vector<BlockVertex>();
+std::vector<BlockInstanceData> ChunkBufferManager::m_vertices = std::vector<BlockInstanceData>();
 
 ID3D11Buffer* ChunkBufferManager::m_blockVertexBuffer = nullptr;
+ID3D11Buffer* ChunkBufferManager::m_blockInstanceBuffer = nullptr;
 
 void ChunkBufferManager::Initialize()
 {
@@ -21,21 +22,39 @@ void ChunkBufferManager::Initialize()
 
 	// Create the block vertex buffer
 	D3D11_BUFFER_DESC vertexBufferDesc;
+	vertexBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
+	vertexBufferDesc.ByteWidth = ARRAYSIZE(verts) * sizeof(decltype(*verts));
+	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertexBufferDesc.CPUAccessFlags = 0;
+	vertexBufferDesc.MiscFlags = 0;
+	vertexBufferDesc.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA vertexBufferData;
+	vertexBufferData.pSysMem = verts;
+	vertexBufferData.SysMemPitch = 0;
+	vertexBufferData.SysMemSlicePitch = 0;
+
+	hr = D3D::GetDevice()->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &m_blockVertexBuffer);
+	VX_ASSERT(!FAILED(hr));
+
+
+	// Create the block instance buffer
 	vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	vertexBufferDesc.ByteWidth = NUM_BLOCK_VERTS * sizeof(BlockVertex);
+	vertexBufferDesc.ByteWidth = NUM_BLOCK_VERTS * sizeof(BlockInstanceData);
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	vertexBufferDesc.MiscFlags = 0;
 	vertexBufferDesc.StructureByteStride = 0;
 
-	//ID3D11Buffer* pBuffer = m_blockVertexBuffer.get();
-	hr = D3D::GetDevice()->CreateBuffer(&vertexBufferDesc, nullptr, &m_blockVertexBuffer);
+	hr = D3D::GetDevice()->CreateBuffer(&vertexBufferDesc, nullptr, &m_blockInstanceBuffer);
 	VX_ASSERT(!FAILED(hr));
 }
 
 void ChunkBufferManager::Shutdown()
 {
 	if (m_blockVertexBuffer) m_blockVertexBuffer->Release();
+	if (m_blockInstanceBuffer) m_blockInstanceBuffer->Release();
+
 	m_vertices.clear();
 }
 
@@ -48,16 +67,16 @@ void ChunkBufferManager::UpdateBuffers()
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 
 	// Update the dynamic vertex buffer
-	D3D::GetDeviceContext()->Map(m_blockVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	D3D::GetDeviceContext()->Map(m_blockInstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	{
 		VX_PROFILE_SCOPE("[UPDATE] Updating mapped resource");
-		int64_t numBytes = (int64_t)sizeof(BlockVertex) * m_vertices.size();
+		int64_t numBytes = (int64_t)sizeof(decltype(m_vertices)) * m_vertices.size();
 		ImGui::Begin("Timing Panel");
 		ImGui::Text("Number of bytes copied: %i", numBytes);
 		ImGui::End();
 		memcpy(mappedResource.pData, &m_vertices[0], numBytes);
 	}
-	D3D::GetDeviceContext()->Unmap(m_blockVertexBuffer, 0);
+	D3D::GetDeviceContext()->Unmap(m_blockInstanceBuffer, 0);
 
 	
 
@@ -65,4 +84,6 @@ void ChunkBufferManager::UpdateBuffers()
 
 ID3D11Buffer* ChunkBufferManager::GetVertexBuffer() { return m_blockVertexBuffer; }
 
-std::vector<BlockVertex>& ChunkBufferManager::GetVertexArray() { return m_vertices; }
+ID3D11Buffer* ChunkBufferManager::GetInstanceBuffer() { return m_blockInstanceBuffer; }
+
+std::vector<BlockInstanceData>& ChunkBufferManager::GetVertexArray() { return m_vertices; }

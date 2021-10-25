@@ -332,4 +332,9 @@
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\BlockUVs.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
 </Project>

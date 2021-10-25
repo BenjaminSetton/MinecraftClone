@@ -42,11 +42,6 @@ private:
 
 	void ShutdownVertexBuffer();
 
-	void CreateVertexBuffer();
-
-	void AppendBlockFaceToArray(const BlockFace& face, const BlockType& type, const DirectX::XMFLOAT3& blockPos, 
-		std::vector<BlockVertex>& out_blockArray);
-
 private:
 
 	// The chunk's position stored in CHUNK SPACE
@@ -57,7 +52,7 @@ private:
 
 	// Variables used for ChunkBufferManager
 	uint32_t m_vertexBufferStartIndex;
-	uint32_t m_vertexCount;
+	uint32_t m_blockCount;
 
 };
 
