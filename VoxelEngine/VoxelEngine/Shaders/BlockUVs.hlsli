@@ -4,7 +4,7 @@
 #define NUM_BLOCKS 4
 
 // 2D array storing all the UV coordinates for each block type
-cbuffer UV_COORDINATES
+cbuffer UV_COORDINATES : register(b0)
 {
-    float2 blockUVs[NUM_BLOCKS][36];
+    float4 blockUVs[NUM_BLOCKS][36];
 };

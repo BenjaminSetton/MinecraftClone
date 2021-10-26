@@ -21,9 +21,10 @@ void main(triangle GeometryIn input[3], inout TriangleStream<GeometryOut> output
 {
     // Between 0-35
     int faceIndex = input[0].vertexID / 6;
+    int faceMask = 1 << faceIndex;
     
     // Check if face should not be rendered. If not, return
-    if (input[0].blockFaces & (1 << faceIndex) == 0) return;
+    if (input[0].blockFaces & faceMask == 0) return;
     
     float3 ptOne = input[2].pos.xyz - input[0].pos.xyz;
     float3 ptTwo = input[1].pos.xyz - input[0].pos.xyz;

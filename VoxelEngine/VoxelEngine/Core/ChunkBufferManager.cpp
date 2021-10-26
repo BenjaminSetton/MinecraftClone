@@ -39,14 +39,15 @@ void ChunkBufferManager::Initialize()
 
 
 	// Create the block instance buffer
-	vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	vertexBufferDesc.ByteWidth = NUM_BLOCK_VERTS * sizeof(BlockInstanceData);
-	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	vertexBufferDesc.MiscFlags = 0;
-	vertexBufferDesc.StructureByteStride = 0;
+	D3D11_BUFFER_DESC instanceBufferDesc;
+	instanceBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	instanceBufferDesc.ByteWidth = NUM_BLOCK_VERTS * sizeof(BlockInstanceData);
+	instanceBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	instanceBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	instanceBufferDesc.MiscFlags = 0;
+	instanceBufferDesc.StructureByteStride = 0;
 
-	hr = D3D::GetDevice()->CreateBuffer(&vertexBufferDesc, nullptr, &m_blockInstanceBuffer);
+	hr = D3D::GetDevice()->CreateBuffer(&instanceBufferDesc, nullptr, &m_blockInstanceBuffer);
 	VX_ASSERT(!FAILED(hr));
 }
 
@@ -70,7 +71,7 @@ void ChunkBufferManager::UpdateBuffers()
 	D3D::GetDeviceContext()->Map(m_blockInstanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	{
 		VX_PROFILE_SCOPE("[UPDATE] Updating mapped resource");
-		int64_t numBytes = (int64_t)sizeof(decltype(m_vertices)) * m_vertices.size();
+		int64_t numBytes = (int64_t)sizeof(decltype(m_vertices[0])) * m_vertices.size();
 		ImGui::Begin("Timing Panel");
 		ImGui::Text("Number of bytes copied: %i", numBytes);
 		ImGui::End();

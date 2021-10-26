@@ -147,10 +147,12 @@ void ChunkManager::Shutdown()
 
 void ChunkManager::Update()
 {
+	// Keep track of the previous chunk pos of the player to know how many chunks to check
+	// this frame!
+	//static XMFLOAT3 prevPosChunkSpace = WorldToChunkSpace(m_playerPos);
 
 	VX_PROFILE_OUT(&ChunkManager_Data::updateTimer);
 
-	// Chunk coord
 	XMFLOAT3 playerPosChunkSpace = WorldToChunkSpace(m_playerPos);
 
 	{
@@ -305,6 +307,9 @@ void ChunkManager::Update()
 	// Clear the temporary vectors
 	m_newChunkList.clear();
 	m_deletedChunkList.clear();
+
+	// Store the current pos and the previous pos
+	//prevPosChunkSpace = playerPosChunkSpace;
 
 }
 

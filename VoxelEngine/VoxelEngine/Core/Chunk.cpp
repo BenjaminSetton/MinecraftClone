@@ -145,6 +145,9 @@ void Chunk::InitializeVertexBuffer()
 	Chunk* frontChunk = ChunkManager::GetChunkAtPos({ m_pos.x, m_pos.y, m_pos.z - 1 });
 	Chunk* backChunk = ChunkManager::GetChunkAtPos({ m_pos.x, m_pos.y, m_pos.z + 1 });
 
+	// Retrieve a reference to the vertex array
+	auto& vertexArray = ChunkBufferManager::GetVertexArray();
+
 	for (int x = 0; x < CHUNK_SIZE; x++)
 	{
 		for (int y = CHUNK_SIZE - 1; y >= 0; y--)
@@ -225,7 +228,6 @@ void Chunk::InitializeVertexBuffer()
 					// Add the new block to the ChunkBufferManager vertex array if we can render faces
 					if(blockFaces != 0)
 					{
-						auto& vertexArray = ChunkBufferManager::GetVertexArray();
 						BlockInstanceData currBlock;
 						currBlock.blockFaces = blockFaces;
 						currBlock.blockType = static_cast<unsigned int>(blockType);

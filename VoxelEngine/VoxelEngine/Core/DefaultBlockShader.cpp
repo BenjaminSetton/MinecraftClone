@@ -186,7 +186,7 @@ void DefaultBlockShader::CreateD3DObjects()
 	// Setup the description of the UV constant buffer
 	D3D11_BUFFER_DESC uvBufferDesc;
 	uvBufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-	uvBufferDesc.ByteWidth = (36 * sizeof(DirectX::XMFLOAT2)) * NUM_BLOCKS;
+	uvBufferDesc.ByteWidth = (36 * sizeof(DirectX::XMFLOAT4)) * NUM_BLOCKS;
 	uvBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	uvBufferDesc.CPUAccessFlags = 0;
 	uvBufferDesc.MiscFlags = 0;
@@ -283,8 +283,8 @@ void DefaultBlockShader::CreateShaders(const WCHAR* vsFilename, const WCHAR* gsF
 
 		// Per-instance data
 		{ "WORLDPOS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-		{ "BLOCKTYPE", 0, DXGI_FORMAT_R32_UINT, 2, 12, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-		{ "BLOCKFACES", 0, DXGI_FORMAT_R32_UINT, 3, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+		{ "BLOCKTYPE", 0, DXGI_FORMAT_R32_UINT, 1, 12, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
+		{ "BLOCKFACES", 0, DXGI_FORMAT_R32_UINT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
 	};
 
 	// Create the vertex input layout.

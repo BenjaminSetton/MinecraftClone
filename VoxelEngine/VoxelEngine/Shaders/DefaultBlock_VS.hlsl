@@ -1,7 +1,7 @@
 
 #include "BlockUVs.hlsli"
 
-cbuffer WVP
+cbuffer WVP : register(b1)
 {
     float4x4 worldMatrix;
     float4x4 viewMatrix;
