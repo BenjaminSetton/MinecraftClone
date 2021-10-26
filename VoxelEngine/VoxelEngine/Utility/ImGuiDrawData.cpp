@@ -20,7 +20,7 @@ const char* Cycle_Data::time = "";
 //
 int BlockShader_Data::debugVerts = 0;
 int BlockShader_Data::numDrawCalls = 0;
-bool BlockShader_Data::enableFrustumCulling = true;
+bool BlockShader_Data::enableFrustumCulling = false;
 
 //
 //	RENDERER_DATA

@@ -73,6 +73,18 @@ void Graphics::Shutdown()
 	ChunkManager::Shutdown();
 	ChunkBufferManager::Shutdown();
 
+	if(m_player)
+	{
+		delete m_player;
+		m_player = nullptr;
+	}
+
+	if(m_frustumCam)
+	{
+		delete m_frustumCam;
+		m_frustumCam = nullptr;
+	}
+
 	if(m_texViewer)
 	{
 		delete m_texViewer;

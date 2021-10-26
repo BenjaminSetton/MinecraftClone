@@ -76,6 +76,13 @@ void ShadowShader::Render()
 
 void ShadowShader::Shutdown()
 {
+
+	if(m_shadowTex)
+	{
+		m_shadowTex->Release();
+		m_shadowTex = nullptr;
+	}
+
 	if(m_depthState)
 	{
 		m_depthState->Release();

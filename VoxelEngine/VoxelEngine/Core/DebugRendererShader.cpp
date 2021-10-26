@@ -70,6 +70,12 @@ void DebugRendererShader::Shutdown()
 		m_matrixBuffer = nullptr;
 	}
 
+	if(m_vertexBuffer)
+	{
+		m_vertexBuffer->Release();
+		m_vertexBuffer = nullptr;
+	}
+
 	if (m_inputLayout)
 	{
 		m_inputLayout->Release();

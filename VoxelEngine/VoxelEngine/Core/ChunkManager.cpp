@@ -21,7 +21,7 @@ std::mutex ChunkManager::m_canAccessVec;
 bool ChunkManager::m_isShuttingDown = false;
 
 #define ALLOW_HARD_CODED_MAX_INIT_THREADS 1
-#define USE_DEFAULT_SEED 0
+#define USE_DEFAULT_SEED 1
 #define USE_SEED_BASED_ON_SYSTEM_TIME 1
 
 constexpr int CHUNK_GENERATION_SEED = 12346;
@@ -50,6 +50,8 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 #else
 	Noise2D::SetSeed(static_cast<int>(std::chrono::high_resolution_clock::now().time_since_epoch().count()));
 #endif // USE_SEED_BASED_ON_SYSTEM_TIME
+#else
+	Noise2D::SetSeed(CHUNK_GENERATION_SEED);
 #endif // USE_DEFAULT_SEED
 
 	m_playerPos = playerPosWS;

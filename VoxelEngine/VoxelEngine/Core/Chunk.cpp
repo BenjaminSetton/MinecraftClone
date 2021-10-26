@@ -19,7 +19,7 @@ using namespace DirectX;
 
 constexpr uint32_t BUFFER_SIZE = 6 * 6 * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * 0.1f;
 
-constexpr int32_t TERRAIN_STARTING_HEIGHT = 105;
+constexpr int32_t TERRAIN_STARTING_HEIGHT = 115;
 constexpr int32_t TERRAIN_HEIGHT_RANGE = 40;
 
 constexpr int32_t LOW_CHUNK_LIMIT = -256;
@@ -131,7 +131,7 @@ void Chunk::InitializeVertexBuffer()
 
 	if (BlockShader_Data::enableFrustumCulling)
 	{
-		if (FrustumCulling::CalculateChunkPosAgainstFrustum(posWS)) return;
+		if (!FrustumCulling::CalculateChunkPosAgainstFrustum(posWS)) return;
 	}
 
 	// Get start index
@@ -234,6 +234,8 @@ void Chunk::InitializeVertexBuffer()
 						currBlock.worldPos = blockPos;
 
 						vertexArray.emplace_back(currBlock);
+
+						m_blockCount++;
 					}
 				}
 			}
@@ -251,35 +253,35 @@ void Chunk::InitializeVertexBuffer()
 void Chunk::ShutdownVertexBuffer()
 {
 
-	//if(m_blockCount > 0)
-	//{
-	//	VX_ASSERT(m_vertexBufferStartIndex < ChunkBufferManager::GetVertexArray().size());
+	if(m_blockCount > 0)
+	{
+		VX_ASSERT(m_vertexBufferStartIndex < ChunkBufferManager::GetVertexArray().size());
 
-	//	// Remove vertices from the ChunkBufferManager
-	//	ChunkBufferManager::GetVertexArray().erase(
-	//		ChunkBufferManager::GetVertexArray().begin() + m_vertexBufferStartIndex,
-	//		ChunkBufferManager::GetVertexArray().begin() + m_vertexBufferStartIndex + m_blockCount);
+		// Remove vertices from the ChunkBufferManager
+		ChunkBufferManager::GetVertexArray().erase(
+			ChunkBufferManager::GetVertexArray().begin() + m_vertexBufferStartIndex,
+			ChunkBufferManager::GetVertexArray().begin() + m_vertexBufferStartIndex + m_blockCount);
 
-	//	// Update all other chunk start indicies if they were displaced
-	//	auto chunkVector = ChunkManager::GetChunkPool();
-	//	for (uint32_t i = 0; i < chunkVector.Size(); i++)
-	//	{
-	//		Chunk* chunk = chunkVector[i];
+		// Update all other chunk start indicies if they were displaced
+		auto chunkVector = ChunkManager::GetChunkPool();
+		for (uint32_t i = 0; i < chunkVector.Size(); i++)
+		{
+			Chunk* chunk = chunkVector[i];
 
-	//		if (!chunk) continue;
+			if (!chunk) continue;
 
-	//		if (chunk->GetVertexBufferStartIndex() <= m_vertexBufferStartIndex ||
-	//			chunk->GetVertexCount() <= 0) continue;
+			if (chunk->GetVertexBufferStartIndex() <= m_vertexBufferStartIndex ||
+				chunk->GetVertexCount() <= 0) continue;
 
-	//		// else update the chunks' start position
-	//		int32_t newStartIndex = chunk->GetVertexBufferStartIndex() - m_blockCount;
-	//		VX_ASSERT(newStartIndex < ChunkBufferManager::GetVertexArray().size());
-	//		VX_ASSERT(newStartIndex >= 0);
-	//		chunk->SetVertexBufferStartIndex(newStartIndex);
-	//	}
-	//}
-	//
-	//// Reset these variables
-	//m_vertexBufferStartIndex = m_blockCount = 0;
+			// else update the chunks' start position
+			int32_t newStartIndex = chunk->GetVertexBufferStartIndex() - m_blockCount;
+			VX_ASSERT(newStartIndex < ChunkBufferManager::GetVertexArray().size());
+			VX_ASSERT(newStartIndex >= 0);
+			chunk->SetVertexBufferStartIndex(newStartIndex);
+		}
+	}
+	
+	// Reset these variables
+	m_vertexBufferStartIndex = m_blockCount = 0;
 }
 
