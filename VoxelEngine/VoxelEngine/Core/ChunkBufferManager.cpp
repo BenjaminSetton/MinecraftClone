@@ -53,8 +53,17 @@ void ChunkBufferManager::Initialize()
 
 void ChunkBufferManager::Shutdown()
 {
-	if (m_blockVertexBuffer) m_blockVertexBuffer->Release();
-	if (m_blockInstanceBuffer) m_blockInstanceBuffer->Release();
+	if (m_blockVertexBuffer)
+	{
+		m_blockVertexBuffer->Release();
+		m_blockVertexBuffer = nullptr;
+	}
+
+	if (m_blockInstanceBuffer) 
+	{
+		m_blockInstanceBuffer->Release();
+		m_blockInstanceBuffer = nullptr;
+	}
 
 	m_vertices.clear();
 }

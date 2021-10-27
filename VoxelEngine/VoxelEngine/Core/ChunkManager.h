@@ -62,6 +62,8 @@ private:
 
 	static uint64_t GetHashKeyFromChunkPosition(const DirectX::XMFLOAT3& chunkPos);
 
+	static bool CheckForOutOfRangeChunks(const DirectX::XMFLOAT3& currentPlayerPosCS, const DirectX::XMFLOAT3& prevPlayerPosCS);
+
 
 private:
 	

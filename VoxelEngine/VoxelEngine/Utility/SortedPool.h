@@ -59,7 +59,11 @@ public:
 	// Returns the pointer to the newly-allocated T object
 	T* Insert_Move(const T&& object)
 	{
-		if (m_size >= m_capacity) return nullptr;
+		if (m_size >= m_capacity)
+		{
+			VX_LOG_WARN("%s returned nullptr on insertion", __FUNCTION__);
+			return nullptr;
+		}
 
 		m_pool[m_size++] = object;
 
