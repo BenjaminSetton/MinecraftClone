@@ -134,7 +134,7 @@ void Chunk::InitializeVertexBuffer()
 	}
 
 	// Get start index
-	size_t initialArraySize = ChunkBufferManager::GetVertexArray().size();
+	uint32_t initialArraySize = ChunkBufferManager::GetVertexArray().size();
 
 	// Retrieve neighboring chunks
 	Chunk* leftChunk = ChunkManager::GetChunkAtPos({ m_pos.x - 1, m_pos.y, m_pos.z });

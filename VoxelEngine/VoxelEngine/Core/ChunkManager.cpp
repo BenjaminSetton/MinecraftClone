@@ -168,100 +168,108 @@ void ChunkManager::Update()
 
 		// We have to unload however many chunks go out of range when
 		// prevPos != currentPos in the axis where the difference happens
-		//bool tempCheck = CheckForOutOfRangeChunks(playerPosChunkSpace, prevPosChunkSpace);
+		int32_t numChunksUnloaded = CheckForChunksToLoadOrUnload(playerPosChunkSpace, prevPosChunkSpace, 0);
+		if(numChunksUnloaded != 0)
+		{
+			VX_LOG("Queued %i chunks to unload", numChunksUnloaded);
+		}
 
 		// 1. Unload chunks outside of render distance
-		for (uint32_t i = 0; i < m_activeChunks.Size(); i++)
-		{
-			if (!m_activeChunks[i]) continue;
-			Chunk* chunk = m_activeChunks[i];
+		//for (uint32_t i = 0; i < m_activeChunks.Size(); i++)
+		//{
+		//	if (!m_activeChunks[i]) continue;
+		//	Chunk* chunk = m_activeChunks[i];
 
-			XMFLOAT3 chunkPosChunkSpace = chunk->GetPosition();
+		//	XMFLOAT3 chunkPosChunkSpace = chunk->GetPosition();
 
-			XMFLOAT3 chunkDistFromPlayer =
-			{
-				abs(chunkPosChunkSpace.x - playerPosChunkSpace.x),
-				abs(chunkPosChunkSpace.y - playerPosChunkSpace.y),
-				abs(chunkPosChunkSpace.z - playerPosChunkSpace.z),
-			};
+		//	XMFLOAT3 chunkDistFromPlayer =
+		//	{
+		//		abs(chunkPosChunkSpace.x - playerPosChunkSpace.x),
+		//		abs(chunkPosChunkSpace.y - playerPosChunkSpace.y),
+		//		abs(chunkPosChunkSpace.z - playerPosChunkSpace.z),
+		//	};
 
-			// 1. Unload chunks if they are too far away from "player"
-			if (chunkDistFromPlayer.x > RENDER_DIST || chunkDistFromPlayer.y > RENDER_DIST || chunkDistFromPlayer.z > RENDER_DIST)
-			{
-				m_deletedChunkList.push_back(chunk->GetPosition());
-			}
+		//	// 1. Unload chunks if they are too far away from "player"
+		//	if (chunkDistFromPlayer.x > RENDER_DIST || chunkDistFromPlayer.y > RENDER_DIST || chunkDistFromPlayer.z > RENDER_DIST)
+		//	{
+		//		m_deletedChunkList.push_back(chunk->GetPosition());
+		//	}
 
-		}
+		//}
 	}
 
-	int debug_timesLooped = 0;
 	{
 		VX_PROFILE_OUT(&ChunkManager_Data::creationLoop);
 		// 2. Load chunks if they are inside render distance
+		int32_t numChunksLoaded = CheckForChunksToLoadOrUnload(playerPosChunkSpace, prevPosChunkSpace, 1);
+		if (numChunksLoaded != 0)
+		{
+			VX_LOG("Queued %i chunks to load", numChunksLoaded);
+		}
 
 		// Z-axis chunk checking (includes corner chunks)
-		for (int16_t x = -RENDER_DIST; x <= RENDER_DIST; x += 2 * RENDER_DIST)
-		{
-			for (int16_t y = -RENDER_DIST; y <= RENDER_DIST; y++)
-			{
-				for (int16_t z = -RENDER_DIST; z <= RENDER_DIST; z++)
-				{
-					debug_timesLooped++;
-					// A coordinate in chunk space
-					XMFLOAT3 newChunkPosCS = { playerPosChunkSpace.x + x, playerPosChunkSpace.y + y, playerPosChunkSpace.z + z };
+		//for (int16_t x = -RENDER_DIST; x <= RENDER_DIST; x += 2 * RENDER_DIST)
+		//{
+		//	for (int16_t y = -RENDER_DIST; y <= RENDER_DIST; y++)
+		//	{
+		//		for (int16_t z = -RENDER_DIST; z <= RENDER_DIST; z++)
+		//		{
+		//			debug_timesLooped++;
+		//			// A coordinate in chunk space
+		//			XMFLOAT3 newChunkPosCS = { playerPosChunkSpace.x + x, playerPosChunkSpace.y + y, playerPosChunkSpace.z + z };
 
-					// If this new chunk is not already active, allocate a new chunk
-					if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
-					else
-					{
-						m_newChunkList.push_back(newChunkPosCS);
-					}
+		//			// If this new chunk is not already active, allocate a new chunk
+		//			if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
+		//			else
+		//			{
+		//				m_newChunkList.push_back(newChunkPosCS);
+		//			}
 
-				}
-			}
-		}
+		//		}
+		//	}
+		//}
 
-		// X-axis chunk checking (excludes corner chunks)
-		for (int16_t z = -RENDER_DIST; z <= RENDER_DIST; z += 2 * RENDER_DIST)
-		{
-			for (int16_t y = -RENDER_DIST; y <= RENDER_DIST; y++)
-			{
-				for (int16_t x = -RENDER_DIST + 1; x < RENDER_DIST; x++)
-				{
-					debug_timesLooped++;
-					// A coordinate in chunk space
-					XMFLOAT3 newChunkPosCS = { playerPosChunkSpace.x + x, playerPosChunkSpace.y + y, playerPosChunkSpace.z + z };
+		//// X-axis chunk checking (excludes corner chunks)
+		//for (int16_t z = -RENDER_DIST; z <= RENDER_DIST; z += 2 * RENDER_DIST)
+		//{
+		//	for (int16_t y = -RENDER_DIST; y <= RENDER_DIST; y++)
+		//	{
+		//		for (int16_t x = -RENDER_DIST + 1; x < RENDER_DIST; x++)
+		//		{
+		//			debug_timesLooped++;
+		//			// A coordinate in chunk space
+		//			XMFLOAT3 newChunkPosCS = { playerPosChunkSpace.x + x, playerPosChunkSpace.y + y, playerPosChunkSpace.z + z };
 
-					// If this new chunk is not already active, allocate a new chunk
-					if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
-					else
-					{
-						m_newChunkList.push_back(newChunkPosCS);
-					}
-				}
-			}
-		}
+		//			// If this new chunk is not already active, allocate a new chunk
+		//			if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
+		//			else
+		//			{
+		//				m_newChunkList.push_back(newChunkPosCS);
+		//			}
+		//		}
+		//	}
+		//}
 
-		// Y-axis chunk checking (no need to check the outer XZ plane outline)
-		for (int16_t y = -RENDER_DIST; y <= RENDER_DIST; y += 2 * RENDER_DIST)
-		{
-			for (int16_t x = -RENDER_DIST + 1; x < RENDER_DIST; x++)
-			{
-				for (int16_t z = -RENDER_DIST + 1; z < RENDER_DIST; z++)
-				{
-					debug_timesLooped++;
-					// A coordinate in chunk space
-					XMFLOAT3 newChunkPosCS = { playerPosChunkSpace.x + x, playerPosChunkSpace.y + y, playerPosChunkSpace.z + z };
+		//// Y-axis chunk checking (no need to check the outer XZ plane outline)
+		//for (int16_t y = -RENDER_DIST; y <= RENDER_DIST; y += 2 * RENDER_DIST)
+		//{
+		//	for (int16_t x = -RENDER_DIST + 1; x < RENDER_DIST; x++)
+		//	{
+		//		for (int16_t z = -RENDER_DIST + 1; z < RENDER_DIST; z++)
+		//		{
+		//			debug_timesLooped++;
+		//			// A coordinate in chunk space
+		//			XMFLOAT3 newChunkPosCS = { playerPosChunkSpace.x + x, playerPosChunkSpace.y + y, playerPosChunkSpace.z + z };
 
-					// If this new chunk is not already active, allocate a new chunk
-					if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
-					else
-					{
-						m_newChunkList.push_back(newChunkPosCS);
-					}
-				}
-			}
-		}
+		//			// If this new chunk is not already active, allocate a new chunk
+		//			if (GetChunkAtPos(newChunkPosCS) != nullptr) continue;
+		//			else
+		//			{
+		//				m_newChunkList.push_back(newChunkPosCS);
+		//			}
+		//		}
+		//	}
+		//}
 	}
 
 	{
@@ -273,6 +281,11 @@ void ChunkManager::Update()
 			// Use the map to map chunk position to index inside pool
 			uint32_t index = m_poolMap[GetHashKeyFromChunkPosition(chunkPos)];
 			UnloadChunk(index);
+		}
+
+		if (m_deletedChunkList.size() > 0)
+		{
+			VX_LOG("Unloaded %i chunks", m_deletedChunkList.size());
 		}
 	}
 	
@@ -312,6 +325,11 @@ void ChunkManager::Update()
 
 			// Current chunk
 			newChunk->InitializeVertexBuffer();
+		}
+
+		if(m_newChunkList.size() > 0)
+		{
+			VX_LOG("Loaded %i chunks", m_newChunkList.size());
 		}
 	}
 	
@@ -369,9 +387,11 @@ void ChunkManager::UnloadChunk(const uint32_t& index)
 	// Consider swapping chunk with last one from vector, and ZeroMemory the chunk
 	// When all the chunks have been unloaded (i.e. swapped to the last available chunk)
 	// all the zero'd chunks will be deleted from the vector
+
 	m_chunkMap.erase(GetHashKeyFromChunkPosition(m_activeChunks[index]->GetPosition()));
 	Chunk* chunkPtr = m_activeChunks.Remove(index);
 	m_poolMap[GetHashKeyFromChunkPosition(chunkPtr->GetPosition())] = m_activeChunks.GetIndexFromPointer(chunkPtr);
+
 }
 
 const uint16_t ChunkManager::GetNumActiveChunks()
@@ -450,20 +470,31 @@ uint64_t ChunkManager::GetHashKeyFromChunkPosition(const DirectX::XMFLOAT3& chun
 		+ (static_cast<double>(chunkPos.x) + CHUNK_SIZE);
 }
 
-bool ChunkManager::CheckForOutOfRangeChunks(const XMFLOAT3& currentPlayerPosCS, const XMFLOAT3& prevPlayerPosCS)
+const int32_t ChunkManager::CheckForChunksToLoadOrUnload(const XMFLOAT3& currentPlayerPosCS, const XMFLOAT3& prevPlayerPosCS, const int checkFlag)
 {
-	bool chunksWereDeleted = false;
+	int32_t chunksUpdated = 0;
+
+	std::unordered_map<uint64_t, Chunk*> checkForDuplicateDeletions;
+	std::unordered_map<uint64_t, Chunk*> checkForDuplicateCreations;
+
+	VX_ASSERT(checkFlag == 0 || checkFlag == 1);
 
 	// prev pos.x = 2 | currpos.x = 4
 	// render dist = 2
 
 	// unload chunks in currpos.x - sign * (renderDist + difference) = 5 - 2 - 3 = 0
 
+	// X AXIS
 	if (prevPlayerPosCS.x != currentPlayerPosCS.x)
 	{
 		int32_t difference = prevPlayerPosCS.x - currentPlayerPosCS.x;
 		difference = min(difference, RENDER_DIST);
+
+		// If deleting
 		int8_t sign = difference > 0 ? 1 : -1;
+
+		// If creating
+		if(checkFlag == 1) sign = -sign;
 
 		// Loop through all the new chunks
 		for (int32_t x = 0; x < abs(difference); x++)
@@ -472,77 +503,163 @@ bool ChunkManager::CheckForOutOfRangeChunks(const XMFLOAT3& currentPlayerPosCS, 
 			{
 				for (int32_t z = -RENDER_DIST; z <= RENDER_DIST; z++)
 				{
-					float newXPos = currentPlayerPosCS.x - sign * (RENDER_DIST + difference);
-					XMFLOAT3 chunkPos = { newXPos, static_cast<float>(y), static_cast<float>(z) };
-					Chunk* chunkToDelete = m_chunkMap[GetHashKeyFromChunkPosition(chunkPos)];
+					float newXPos = 0;
+					if (checkFlag == 0) // unloading
+						newXPos = prevPlayerPosCS.x + sign * (RENDER_DIST + (abs(difference) - 1));
+					else // loading
+						newXPos = currentPlayerPosCS.x + sign * (RENDER_DIST + (abs(difference) - 1));
 
-					if(chunkToDelete)
+					float newYPos = currentPlayerPosCS.y + y;
+					float newZPos = currentPlayerPosCS.z + z;
+					XMFLOAT3 chunkPos = { newXPos, newYPos, newZPos };
+					Chunk* chunkToUpdate = m_chunkMap[GetHashKeyFromChunkPosition(chunkPos)];
+
+					if(checkFlag == 0)
 					{
-						m_deletedChunkList.push_back(chunkToDelete->GetPosition());
-						chunksWereDeleted = true;
+						if(chunkToUpdate)
+						{
+							if (checkForDuplicateDeletions.find(GetHashKeyFromChunkPosition(chunkPos)) == checkForDuplicateDeletions.end())
+							{
+								m_deletedChunkList.push_back(chunkToUpdate->GetPosition());
+								chunksUpdated++;
+							}
+						}
+					}
+					else // checkFlag == 1
+					{
+						if (checkForDuplicateCreations.find(GetHashKeyFromChunkPosition(chunkPos)) == checkForDuplicateCreations.end())
+						{
+							m_newChunkList.push_back(chunkPos);
+							chunksUpdated++;
+						}
 					}
 				}
 			}
 		}
 	}
 
-	int chunksDeleted = 0;
+	// Y AXIS
 	if (prevPlayerPosCS.y != currentPlayerPosCS.y)
 	{
 		int32_t difference = prevPlayerPosCS.y - currentPlayerPosCS.y;
 		difference = min(difference, RENDER_DIST);
+
+		// If deleting
 		int8_t sign = difference > 0 ? 1 : -1;
+
+		// If creating
+		if (checkFlag == 1) sign = -sign;
 
 		// Loop through all the new chunks
 		for (int32_t y = 0; y < abs(difference); y++)
 		{
-			for (int32_t x = -RENDER_DIST; x < RENDER_DIST; x++)
+			for (int32_t x = -RENDER_DIST; x <= RENDER_DIST; x++)
 			{
-				for (int32_t z = -RENDER_DIST; z < RENDER_DIST; z++)
+				for (int32_t z = -RENDER_DIST; z <= RENDER_DIST; z++)
 				{
-					float newYPos = currentPlayerPosCS.y - sign * (RENDER_DIST + difference);
-					XMFLOAT3 chunkPos = { static_cast<float>(x), newYPos, static_cast<float>(z) };
-					Chunk* chunkToDelete = m_chunkMap[GetHashKeyFromChunkPosition(chunkPos)];
+					float newXPos = currentPlayerPosCS.x + x;
 
-					if(chunkToDelete)
+					float newYPos = 0;
+					if (checkFlag == 0) // unloading
+						newYPos = prevPlayerPosCS.y + sign * (RENDER_DIST + (abs(difference) - 1));
+					else // loading
+						newYPos = currentPlayerPosCS.y + sign * (RENDER_DIST + (abs(difference) - 1));
+
+					float newZPos = currentPlayerPosCS.z + z;
+					XMFLOAT3 chunkPos = { newXPos, newYPos, newZPos };
+					Chunk* chunkToUpdate = m_chunkMap[GetHashKeyFromChunkPosition(chunkPos)];
+
+					if (checkFlag == 0)
 					{
-						m_deletedChunkList.push_back(chunkToDelete->GetPosition());
-						chunksWereDeleted = true;
-						chunksDeleted++;
+						if (chunkToUpdate)
+						{
+							if (checkForDuplicateDeletions.find(GetHashKeyFromChunkPosition(chunkPos)) == checkForDuplicateDeletions.end())
+							{
+								m_deletedChunkList.push_back(chunkToUpdate->GetPosition());
+								chunksUpdated++;
+							}
+						}
+					}
+					else // checkFlag == 1
+					{
+						if (checkForDuplicateCreations.find(GetHashKeyFromChunkPosition(chunkPos)) == checkForDuplicateCreations.end())
+						{
+							m_newChunkList.push_back(chunkPos);
+							chunksUpdated++;
+						}
 					}
 				}
 			}
 		}
 	}
 
+	// Z AXIS
 	if (prevPlayerPosCS.z != currentPlayerPosCS.z)
 	{
 		int32_t difference = prevPlayerPosCS.z - currentPlayerPosCS.z;
 		difference = min(difference, RENDER_DIST);
+
+		// If deleting
 		int8_t sign = difference > 0 ? 1 : -1;
+
+		// If creating
+		if (checkFlag == 1) sign *= -1;
+
+		// DEBUG
+		float debug = prevPlayerPosCS.z + sign * (RENDER_DIST + (abs(difference) - 1));
+		if (checkFlag == 0)
+		{
+			VX_LOG("[UNLOAD] Looped through %2.2f Z axis on prev player Z %2.2f", debug, prevPlayerPosCS.z);
+		}
+		else {
+			VX_LOG("[LOAD] Looped through %2.2f Z axis on prev player Z %2.2f", debug, prevPlayerPosCS.z);
+		}
 
 		// Loop through all the new chunks
 		for (int32_t z = 0; z < abs(difference); z++)
 		{
-			for (int32_t x = -RENDER_DIST; x < RENDER_DIST; x++)
+			for (int32_t x = -RENDER_DIST; x <= RENDER_DIST; x++)
 			{
-				for (int32_t y = -RENDER_DIST; y < RENDER_DIST; y++)
+				for (int32_t y = -RENDER_DIST; y <= RENDER_DIST; y++)
 				{
-					float newZPos = currentPlayerPosCS.z - sign * (RENDER_DIST + difference);
-					XMFLOAT3 chunkPos = { static_cast<float>(x), static_cast<float>(y), newZPos };
-					Chunk* chunkToDelete = m_chunkMap[GetHashKeyFromChunkPosition(chunkPos)];
+					float newXPos = currentPlayerPosCS.x + x;
+					float newYPos = currentPlayerPosCS.y + y;
 
-					if(chunkToDelete)
+					float newZPos = 0;
+					if(checkFlag == 0) // unloading
+						newZPos = prevPlayerPosCS.z + sign * (RENDER_DIST + (abs(difference) - 1));
+					else // loading
+						newZPos = currentPlayerPosCS.z + sign * (RENDER_DIST + (abs(difference) - 1));
+					XMFLOAT3 chunkPos = { newXPos, newYPos, newZPos };
+					auto chunkToUpdate = m_chunkMap.find(GetHashKeyFromChunkPosition(chunkPos));
+
+					if (checkFlag == 0)
 					{
-						m_deletedChunkList.push_back(chunkToDelete->GetPosition());
-						chunksWereDeleted = true;
+						if (chunkToUpdate != m_chunkMap.end() && chunkToUpdate->second)
+						{
+							if (checkForDuplicateDeletions.find(GetHashKeyFromChunkPosition(chunkPos)) == checkForDuplicateDeletions.end())
+							{
+								m_deletedChunkList.push_back(chunkToUpdate->second->GetPosition());
+								chunksUpdated++;
+							}
+						}
+					}
+					else // checkFlag == 1
+					{
+						if (checkForDuplicateCreations.find(GetHashKeyFromChunkPosition(chunkPos)) == checkForDuplicateCreations.end())
+						{
+							m_newChunkList.push_back(chunkPos);
+							chunksUpdated++;
+						}
 					}
 				}
 			}
 		}
 	}
 
-	return chunksWereDeleted;
+	VX_ASSERT(chunksUpdated % ((2 * RENDER_DIST + 1) * (2 * RENDER_DIST + 1)) == 0);
+
+	return chunksUpdated;
 }
 
 void ChunkManager::InitChunksMultithreaded(const int32_t& startChunk, const int32_t& numChunksToInit, const XMFLOAT3& playerPosCS)
