@@ -30,6 +30,7 @@ struct VertexOut
     float4 lightPos : TEXCOORD1;
     uint blockFaces : BLOCKFACES1;
     uint vertexID : ID1;
+    float3 worldPos : POS0;
 };
 
 
@@ -38,6 +39,8 @@ VertexOut main(VertexIn input)
     VertexOut output;
     
     float4 outPos = float4(input.wpos + input.lpos, 1.0f);
+    
+    output.worldPos = outPos.xyz;
     
     output.pos = mul(outPos, worldMatrix);
     output.pos = mul(output.pos, viewMatrix);

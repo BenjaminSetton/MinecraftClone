@@ -19,8 +19,8 @@ using namespace DirectX;
 
 constexpr uint32_t BUFFER_SIZE = 6 * 6 * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * 0.1f;
 
-constexpr int32_t TERRAIN_STARTING_HEIGHT = 115;
-constexpr int32_t TERRAIN_HEIGHT_RANGE = 40;
+constexpr int32_t TERRAIN_STARTING_HEIGHT = 95;
+constexpr int32_t TERRAIN_HEIGHT_RANGE = 45;
 
 constexpr int32_t LOW_CHUNK_LIMIT = -256;
 constexpr int32_t HIGH_CHUNK_LIMIT = -LOW_CHUNK_LIMIT;
@@ -106,8 +106,7 @@ void Chunk::InitializeChunk()
 		for (int64_t z = 0; z < CHUNK_SIZE; z++)
 		{
 			// Returns a values between MAXIMUM_TERRAIN_HEIGHT and MINIMUM_TERRAIN_HEIGHT
-			float height = Noise2D::GenerateValue(static_cast<double>(x + posWS.x), static_cast<double>(z + posWS.z)) 
-				* (TERRAIN_HEIGHT_RANGE) + TERRAIN_STARTING_HEIGHT;
+			float height = (Noise2D::GenerateValue(static_cast<double>(x + posWS.x), static_cast<double>(z + posWS.z)) * TERRAIN_HEIGHT_RANGE) + TERRAIN_STARTING_HEIGHT;
 			for(int64_t y = 0; y < CHUNK_SIZE; y++)
 			{
 				float yWS = posWS.y + y;

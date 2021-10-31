@@ -6,6 +6,7 @@ struct GeometryIn
     float4 lightPos : TEXCOORD1;
     uint blockFaces : BLOCKFACES1;
     uint vertexID : ID1;
+    float3 worldPos : POS0;
 };
 
 struct GeometryOut
@@ -27,8 +28,8 @@ void main(triangle GeometryIn input[3], inout TriangleStream<GeometryOut> output
     // Check if face should not be rendered. If not, return
     if (renderFace == 0) return;
     
-    float3 ptOne = input[2].pos.xyz - input[0].pos.xyz;
-    float3 ptTwo = input[1].pos.xyz - input[0].pos.xyz;
+    float3 ptOne = input[2].worldPos - input[0].worldPos;
+    float3 ptTwo = input[1].worldPos - input[0].worldPos;
     
     // Creates flat shading, but since we're dealing with voxels
     // we don't need smooth shading anyway

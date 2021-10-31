@@ -328,8 +328,7 @@ void ChunkManager::Update()
 
 Chunk* ChunkManager::LoadChunk(const XMFLOAT3 chunkCS) 
 {
-	Chunk chunk(chunkCS);
-	Chunk* chunkPtr = m_activeChunks.Insert_Move(std::move(chunk));
+	Chunk* chunkPtr = m_activeChunks.Insert_Move(std::move(Chunk(chunkCS)));
 
 	uint64_t hashKey = GetHashKeyFromChunkPosition(chunkCS);
 	m_chunkMap[hashKey] = chunkPtr;
