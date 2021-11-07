@@ -10,7 +10,7 @@
 
 #include "Chunk.h"
 
-constexpr int32_t RENDER_DIST = 6;
+constexpr int32_t RENDER_DIST = 1;
 
 
 // This is a work in progress!!
@@ -59,8 +59,6 @@ private:
 	static void Update();
 
 	static void ResetChunkMemory(const uint16_t index);
-
-	static uint64_t GetHashKeyFromChunkPosition(const DirectX::XMFLOAT3& chunkPos);
 
 	// CHECKFLAG:
 	// 0 - deleting

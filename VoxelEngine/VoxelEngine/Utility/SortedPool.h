@@ -101,6 +101,8 @@ public:
 
 	const uint32_t GetIndexFromPointer(T* obj)
 	{
+		if ((char*)obj > (char*)&m_pool[m_size]) VX_ASSERT_MSG(false, "Pointer out of bounds");
+
 		if ((char*)obj >= (char*)&m_pool[0]) return ((char*)obj - (char*)&m_pool[0]) / sizeof(T);
 		
 		VX_ASSERT_MSG(false, "Invalid pointer");

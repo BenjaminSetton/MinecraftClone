@@ -30,7 +30,7 @@ public:
 	const uint32_t GetVertexBufferStartIndex();
 	void SetVertexBufferStartIndex(const uint32_t startIndex);
 
-	const uint32_t GetVertexCount();
+	const uint32_t GetBlockCount();
 	void SetVertexCount(const uint32_t vertexCount);
 
 private:
@@ -40,7 +40,7 @@ private:
 	// TODO: Work on optimizing this function!!
 	void InitializeVertexBuffer();
 
-	void ShutdownVertexBuffer();
+	void ShutdownVertexBuffer(const bool isBeingReset = false);
 
 private:
 

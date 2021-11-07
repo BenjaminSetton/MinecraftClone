@@ -13,14 +13,15 @@
 
 #include "../Utility/Utility.h"
 #include "../Utility/ImGuiLayer.h"
+#include "../Utility/Math.h"
 
 
 using namespace DirectX;
 
 constexpr uint32_t BUFFER_SIZE = 6 * 6 * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * 0.1f;
 
-constexpr int32_t TERRAIN_STARTING_HEIGHT = 95;
-constexpr int32_t TERRAIN_HEIGHT_RANGE = 45;
+constexpr int32_t TERRAIN_STARTING_HEIGHT = 75;
+constexpr int32_t TERRAIN_HEIGHT_RANGE = 85;
 
 constexpr int32_t LOW_CHUNK_LIMIT = -256;
 constexpr int32_t HIGH_CHUNK_LIMIT = -LOW_CHUNK_LIMIT;
@@ -50,7 +51,7 @@ Block* Chunk::GetBlock(unsigned int x, unsigned int y, unsigned int z) { return 
 
 const DirectX::XMFLOAT3 Chunk::GetPosition() { return m_pos; }
 
-const uint32_t Chunk::GetFaceCount() { return static_cast<uint32_t>(m_blockCount / 6); }
+const uint32_t Chunk::GetFaceCount() { return static_cast<uint32_t>(m_blockCount * 6); }
 
 void Chunk::DrawChunkBorder()
 {
@@ -90,7 +91,7 @@ void Chunk::DrawChunkBorder()
 const uint32_t Chunk::GetVertexBufferStartIndex() { return m_vertexBufferStartIndex; }
 void Chunk::SetVertexBufferStartIndex(const uint32_t startIndex) { m_vertexBufferStartIndex = startIndex; }
 
-const uint32_t Chunk::GetVertexCount() { return m_blockCount; }
+const uint32_t Chunk::GetBlockCount() { return m_blockCount; }
 void Chunk::SetVertexCount(const uint32_t vertexCount) { m_blockCount = vertexCount; }
 
 void Chunk::InitializeChunk()
@@ -124,14 +125,9 @@ void Chunk::InitializeVertexBuffer()
 	// We need this here because the chunk will not necessarily
 	// be deleted if it's being used by other system because
 	// of the shared_ptr
-	ShutdownVertexBuffer();
+	ShutdownVertexBuffer(true);
 
 	XMFLOAT3 posWS = { m_pos.x * CHUNK_SIZE, m_pos.y * CHUNK_SIZE, m_pos.z * CHUNK_SIZE };
-
-	if (BlockShader_Data::enableFrustumCulling)
-	{
-		if (!FrustumCulling::CalculateChunkPosAgainstFrustum(posWS)) return;
-	}
 
 	// Get start index
 	uint32_t initialArraySize = ChunkBufferManager::GetVertexArray().size();
@@ -245,38 +241,49 @@ void Chunk::InitializeVertexBuffer()
 	if(m_blockCount > 0) 
 	{
 		m_vertexBufferStartIndex = initialArraySize;
+
+		//VX_LOG("[%lli] Added %i blocks at index %i (from %i to %i)", VX_MATH::GetHashKeyFromChunkPosition(m_pos),
+		//	m_blockCount, m_vertexBufferStartIndex, initialArraySize, vertexArray.size());
 	}
 
 }
 
-void Chunk::ShutdownVertexBuffer()
+void Chunk::ShutdownVertexBuffer(const bool isBeingReset)
 {
 
 	if(m_blockCount > 0)
 	{
-		VX_ASSERT(m_vertexBufferStartIndex < ChunkBufferManager::GetVertexArray().size());
+		auto& vertexArray = ChunkBufferManager::GetVertexArray();
+		VX_ASSERT(m_vertexBufferStartIndex < vertexArray.size());
+
+		int debug_vertexArraySize = vertexArray.size();
 
 		// Remove vertices from the ChunkBufferManager
-		ChunkBufferManager::GetVertexArray().erase(
-			ChunkBufferManager::GetVertexArray().begin() + m_vertexBufferStartIndex,
-			ChunkBufferManager::GetVertexArray().begin() + m_vertexBufferStartIndex + m_blockCount);
+		vertexArray.erase(vertexArray.begin() + m_vertexBufferStartIndex, vertexArray.begin() + m_vertexBufferStartIndex + m_blockCount);
+
+		//VX_LOG("[%lli] Removed %i blocks at index %i (from %i to %i)", VX_MATH::GetHashKeyFromChunkPosition(m_pos),
+		//	m_blockCount, m_vertexBufferStartIndex, debug_vertexArraySize, vertexArray.size());
 
 		// Update all other chunk start indicies if they were displaced
-		auto chunkVector = ChunkManager::GetChunkPool();
-		for (uint32_t i = 0; i < chunkVector.Size(); i++)
+		// and if this chunk is not being reset (we call Shutdown from destructor)
+		if(!isBeingReset)
 		{
-			Chunk* chunk = chunkVector[i];
+			auto chunkPool = ChunkManager::GetChunkPool();
+			for (uint32_t i = 0; i < chunkPool.Size(); i++)
+			{
+				Chunk* chunk = chunkPool[i];
 
-			if (!chunk) continue;
+				if (!chunk) continue;
 
-			if (chunk->GetVertexBufferStartIndex() <= m_vertexBufferStartIndex ||
-				chunk->GetVertexCount() <= 0) continue;
+				if (chunk->GetVertexBufferStartIndex() <= m_vertexBufferStartIndex ||
+					chunk->GetBlockCount() == 0) continue;
 
-			// else update the chunks' start position
-			int32_t newStartIndex = chunk->GetVertexBufferStartIndex() - m_blockCount;
-			VX_ASSERT(newStartIndex < ChunkBufferManager::GetVertexArray().size());
-			VX_ASSERT(newStartIndex >= 0);
-			chunk->SetVertexBufferStartIndex(newStartIndex);
+				// else update the chunks' start position
+				int32_t newStartIndex = chunk->GetVertexBufferStartIndex() - m_blockCount;
+				VX_ASSERT(newStartIndex < vertexArray.size());
+				VX_ASSERT(newStartIndex >= 0);
+				chunk->SetVertexBufferStartIndex(newStartIndex);
+			}
 		}
 	}
 	

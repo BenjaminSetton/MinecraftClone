@@ -293,6 +293,7 @@
     <ClInclude Include="Utility\ImGuiLayer.h" />
     <ClInclude Include="Utility\Input.h" />
     <ClInclude Include="Utility\Log.h" />
+    <ClInclude Include="Utility\Math.h" />
     <ClInclude Include="Utility\Noise.h" />
     <ClInclude Include="Utility\ScopeTimer.h" />
     <ClInclude Include="Utility\SortedPool.h" />
