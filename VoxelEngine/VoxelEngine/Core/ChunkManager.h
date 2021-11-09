@@ -10,7 +10,7 @@
 
 #include "Chunk.h"
 
-constexpr int32_t RENDER_DIST = 1;
+constexpr int32_t RENDER_DIST = 2;
 
 
 // This is a work in progress!!

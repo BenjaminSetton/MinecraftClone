@@ -237,13 +237,17 @@ void Chunk::InitializeVertexBuffer()
 		}
 	}
 
+	if (m_pos.x == -1 && m_pos.y == 8 && m_pos.z == -1)
+	{
+		VX_LOG("Added %i blocks at index %i (from %i to %i)",
+			m_blockCount, m_vertexBufferStartIndex, initialArraySize, vertexArray.size());
+	}
+
 	// If vertices were allocated, populate the starting index
 	if(m_blockCount > 0) 
 	{
 		m_vertexBufferStartIndex = initialArraySize;
 
-		//VX_LOG("[%lli] Added %i blocks at index %i (from %i to %i)", VX_MATH::GetHashKeyFromChunkPosition(m_pos),
-		//	m_blockCount, m_vertexBufferStartIndex, initialArraySize, vertexArray.size());
 	}
 
 }
@@ -253,6 +257,8 @@ void Chunk::ShutdownVertexBuffer(const bool isBeingReset)
 
 	if(m_blockCount > 0)
 	{
+		VX_LOG("Shutting down VB with %i vertices", m_blockCount);
+
 		auto& vertexArray = ChunkBufferManager::GetVertexArray();
 		VX_ASSERT(m_vertexBufferStartIndex < vertexArray.size());
 

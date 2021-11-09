@@ -201,10 +201,10 @@ void ChunkManager::Update()
 			m_poolMap.erase(hashKey);
 		}
 
-		if (m_deletedChunkList.size() > 0)
-		{
-			VX_LOG("Unloaded %i chunks", m_deletedChunkList.size());
-		}
+		//if (m_deletedChunkList.size() > 0)
+		//{
+		//	VX_LOG("Unloaded %i chunks", m_deletedChunkList.size());
+		//}
 	}
 	
 
@@ -221,34 +221,100 @@ void ChunkManager::Update()
 			Chunk* leftNeighbor = GetChunkAtPos({ chunkPosCS.x - 1, chunkPosCS.y, chunkPosCS.z });
 			if (leftNeighbor) leftNeighbor->InitializeVertexBuffer();
 
+			{
+				if(leftNeighbor)
+				{
+					XMFLOAT3 currPos = leftNeighbor->GetPosition();
+					if(currPos.x == 1 && currPos.y == 9 && currPos.z == -2)
+					{
+						VX_ASSERT(false);
+					}
+				}
+			}
+
 			// Right neighbor
 			Chunk* rightNeighbor = GetChunkAtPos({ chunkPosCS.x + 1, chunkPosCS.y, chunkPosCS.z });
 			if (rightNeighbor) rightNeighbor->InitializeVertexBuffer();
+
+			{
+				if(rightNeighbor)
+				{
+					XMFLOAT3 currPos = rightNeighbor->GetPosition();
+					if (currPos.x == 1 && currPos.y == 9 && currPos.z == -2)
+					{
+						VX_ASSERT(false);
+					}
+				}
+			}
 
 			// Top neighbor
 			Chunk* topNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y + 1, chunkPosCS.z });
 			if (topNeighbor) topNeighbor->InitializeVertexBuffer();
 
+			{
+				if (topNeighbor)
+				{
+					XMFLOAT3 currPos = topNeighbor->GetPosition();
+					if (currPos.x == 1 && currPos.y == 9 && currPos.z == -2)
+					{
+						VX_ASSERT(false);
+					}
+				}
+			}
+
 			// Bottom neighbor
 			Chunk* bottomNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y - 1, chunkPosCS.z });
 			if (bottomNeighbor) bottomNeighbor->InitializeVertexBuffer();
+
+			{
+				if(bottomNeighbor)
+				{
+					XMFLOAT3 currPos = bottomNeighbor->GetPosition();
+					if (currPos.x == 1 && currPos.y == 9 && currPos.z == -2)
+					{
+						VX_ASSERT(false);
+					}
+				}
+			}
 
 			// Front neighbor
 			Chunk* frontNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y, chunkPosCS.z - 1 });
 			if (frontNeighbor) frontNeighbor->InitializeVertexBuffer();
 
+			{
+				if(frontNeighbor)
+				{
+					XMFLOAT3 currPos = frontNeighbor->GetPosition();
+					if (currPos.x == 1 && currPos.y == 9 && currPos.z == -2)
+					{
+						VX_ASSERT(false);
+					}
+				}
+			}
+
 			// Back neighbor
 			Chunk* backNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y, chunkPosCS.z + 1 });
 			if (backNeighbor) backNeighbor->InitializeVertexBuffer();
+
+			{
+				if(backNeighbor)
+				{
+					XMFLOAT3 currPos = backNeighbor->GetPosition();
+					if (currPos.x == 1 && currPos.y == 9 && currPos.z == -2)
+					{
+						VX_ASSERT(false);
+					}
+				}
+			}
 
 			// Current chunk
 			newChunk->InitializeVertexBuffer();
 		}
 
-		if(m_newChunkList.size() > 0)
-		{
-			VX_LOG("Loaded %i chunks", m_newChunkList.size());
-		}
+		//if(m_newChunkList.size() > 0)
+		//{
+		//	VX_LOG("Loaded %i chunks", m_newChunkList.size());
+		//}
 	}
 
 	// DEBUG LOOP
@@ -574,19 +640,19 @@ const int32_t ChunkManager::CheckForChunksToLoadOrUnload(const XMFLOAT3& current
 		if (checkFlag == 1) sign *= -1;
 
 #pragma region _DEBUG
-		// DEBUG
-		float debug = 0;
-		if (checkFlag == 0) // unloading
-			debug = prevPlayerPosCS.z + sign * (RENDER_DIST + (abs(difference) - 1));
-		else // loading
-			debug = currentPlayerPosCS.z + sign * (RENDER_DIST + (abs(difference) - 1));
-		if (checkFlag == 0)
-		{
-			VX_LOG("[UNLOAD] Through %2.2f Z on player ZPos %2.2f with diff %i", debug, currentPlayerPosCS.z, difference);
-		}
-		else {
-			VX_LOG("[LOAD] Through %2.2f Z on player ZPos %2.2f with diff %i", debug, currentPlayerPosCS.z, difference);
-		}
+		//// DEBUG
+		//float debug = 0;
+		//if (checkFlag == 0) // unloading
+		//	debug = prevPlayerPosCS.z + sign * (RENDER_DIST + (abs(difference) - 1));
+		//else // loading
+		//	debug = currentPlayerPosCS.z + sign * (RENDER_DIST + (abs(difference) - 1));
+		//if (checkFlag == 0)
+		//{
+		//	VX_LOG("[UNLOAD] Through %2.2f Z on player ZPos %2.2f with diff %i", debug, currentPlayerPosCS.z, difference);
+		//}
+		//else {
+		//	VX_LOG("[LOAD] Through %2.2f Z on player ZPos %2.2f with diff %i", debug, currentPlayerPosCS.z, difference);
+		//}
 #pragma endregion
 
 

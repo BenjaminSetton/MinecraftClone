@@ -89,17 +89,23 @@ void PlayerController::Update(const float& dt, Player* player)
 		deltaTranslation.m128_f32[0], deltaTranslation.m128_f32[1], deltaTranslation.m128_f32[2]
 	);
 
-	// Calculate the new world matrix
 	worldMatrix.r[3] = { 0, 0, 0, 1.0f };
 	worldMatrix = worldMatrix * rotYMatrix;
 	worldMatrix = rotXMatrix * worldMatrix;
 	worldMatrix.r[3] = { prevPos.x, prevPos.y, prevPos.z, 1.0f };
 
 	// Apply translation
+	XMVECTOR realZ = worldMatrix.r[2];
+
+	XMVECTOR modifiedZ = worldMatrix.r[2];
+	modifiedZ.m128_f32[1] = 0.0f;
+	modifiedZ = XMVector3Normalize(modifiedZ);
+	worldMatrix.r[2] = modifiedZ;
 	worldMatrix = translationMatrixXZ * worldMatrix; // Local XZ translation
+	worldMatrix.r[2] = realZ;
+
 	// NOTE!
-	// Y offset due to matrix multiplication is reverted, and deltaTranslation
-	// is added on top of it
+	// Y offset due to matrix multiplication is reverted, and deltaTranslation is added on top of it
 	worldMatrix.r[3].m128_f32[1] = prevPos.y + deltaTranslation.m128_f32[1]; // Global Y translation
 
 
