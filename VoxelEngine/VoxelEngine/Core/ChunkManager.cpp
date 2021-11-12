@@ -221,91 +221,25 @@ void ChunkManager::Update()
 			Chunk* leftNeighbor = GetChunkAtPos({ chunkPosCS.x - 1, chunkPosCS.y, chunkPosCS.z });
 			if (leftNeighbor) leftNeighbor->InitializeVertexBuffer();
 
-			{
-				if(leftNeighbor)
-				{
-					XMFLOAT3 currPos = leftNeighbor->GetPosition();
-					if(currPos.x == 1 && currPos.y == 9 && currPos.z == -2)
-					{
-						VX_ASSERT(false);
-					}
-				}
-			}
-
 			// Right neighbor
 			Chunk* rightNeighbor = GetChunkAtPos({ chunkPosCS.x + 1, chunkPosCS.y, chunkPosCS.z });
 			if (rightNeighbor) rightNeighbor->InitializeVertexBuffer();
-
-			{
-				if(rightNeighbor)
-				{
-					XMFLOAT3 currPos = rightNeighbor->GetPosition();
-					if (currPos.x == 1 && currPos.y == 9 && currPos.z == -2)
-					{
-						VX_ASSERT(false);
-					}
-				}
-			}
 
 			// Top neighbor
 			Chunk* topNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y + 1, chunkPosCS.z });
 			if (topNeighbor) topNeighbor->InitializeVertexBuffer();
 
-			{
-				if (topNeighbor)
-				{
-					XMFLOAT3 currPos = topNeighbor->GetPosition();
-					if (currPos.x == 1 && currPos.y == 9 && currPos.z == -2)
-					{
-						VX_ASSERT(false);
-					}
-				}
-			}
-
 			// Bottom neighbor
 			Chunk* bottomNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y - 1, chunkPosCS.z });
 			if (bottomNeighbor) bottomNeighbor->InitializeVertexBuffer();
-
-			{
-				if(bottomNeighbor)
-				{
-					XMFLOAT3 currPos = bottomNeighbor->GetPosition();
-					if (currPos.x == 1 && currPos.y == 9 && currPos.z == -2)
-					{
-						VX_ASSERT(false);
-					}
-				}
-			}
 
 			// Front neighbor
 			Chunk* frontNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y, chunkPosCS.z - 1 });
 			if (frontNeighbor) frontNeighbor->InitializeVertexBuffer();
 
-			{
-				if(frontNeighbor)
-				{
-					XMFLOAT3 currPos = frontNeighbor->GetPosition();
-					if (currPos.x == 1 && currPos.y == 9 && currPos.z == -2)
-					{
-						VX_ASSERT(false);
-					}
-				}
-			}
-
 			// Back neighbor
 			Chunk* backNeighbor = GetChunkAtPos({ chunkPosCS.x, chunkPosCS.y, chunkPosCS.z + 1 });
 			if (backNeighbor) backNeighbor->InitializeVertexBuffer();
-
-			{
-				if(backNeighbor)
-				{
-					XMFLOAT3 currPos = backNeighbor->GetPosition();
-					if (currPos.x == 1 && currPos.y == 9 && currPos.z == -2)
-					{
-						VX_ASSERT(false);
-					}
-				}
-			}
 
 			// Current chunk
 			newChunk->InitializeVertexBuffer();
@@ -402,6 +336,7 @@ void ChunkManager::UnloadChunk(const uint32_t& index)
 	// all the zero'd chunks will be deleted from the vector
 	Chunk* chunkToUnload = m_activeChunks[index];
 
+
 	XMFLOAT3 CTUPos = chunkToUnload->GetPosition();
 	//VX_LOG("Unloaded chunk (%2.2f, %2.2f, %2.2f)", CTUPos.x, CTUPos.y, CTUPos.z);
 
@@ -413,6 +348,9 @@ void ChunkManager::UnloadChunk(const uint32_t& index)
 
 	m_chunkMap.erase(hashKey);
 	Chunk* chunkPtr = m_activeChunks.Remove(index);
+
+	// Shut down the VB of the chunk we removed (now in size() because we removed it)
+	//m_activeChunks[m_activeChunks.Size()]->ShutdownVertexBuffer();
 
 	// Only update the pool map with the new index if we're not removing the Chunk
 	// from the last index (in that case there is no other chunk needing to update it's index)

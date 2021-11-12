@@ -237,17 +237,22 @@ void Chunk::InitializeVertexBuffer()
 		}
 	}
 
-	if (m_pos.x == -1 && m_pos.y == 8 && m_pos.z == -1)
-	{
-		VX_LOG("Added %i blocks at index %i (from %i to %i)",
-			m_blockCount, m_vertexBufferStartIndex, initialArraySize, vertexArray.size());
-	}
 
 	// If vertices were allocated, populate the starting index
 	if(m_blockCount > 0) 
 	{
 		m_vertexBufferStartIndex = initialArraySize;
 
+	}
+
+	if (
+		(m_pos.x == -1 && m_pos.y == 7 && m_pos.z == -2) ||
+		(m_pos.x == -1 && m_pos.y == 7 && m_pos.z == -3)
+		)
+	{
+		VX_LOG("[%2.2f, %2.2f, %2.2f] Added %i blocks at index %i (from %i to %i)",
+			m_pos.x, m_pos.y, m_pos.z, m_blockCount, 
+			m_vertexBufferStartIndex, initialArraySize, vertexArray.size());
 	}
 
 }
@@ -257,18 +262,22 @@ void Chunk::ShutdownVertexBuffer(const bool isBeingReset)
 
 	if(m_blockCount > 0)
 	{
-		VX_LOG("Shutting down VB with %i vertices", m_blockCount);
 
 		auto& vertexArray = ChunkBufferManager::GetVertexArray();
 		VX_ASSERT(m_vertexBufferStartIndex < vertexArray.size());
 
 		int debug_vertexArraySize = vertexArray.size();
 
+		if(m_blockCount == 34)
+		{
+			int test = 0;// VX_ASSERT_MSG(false, "fuck this");
+		}
+
 		// Remove vertices from the ChunkBufferManager
 		vertexArray.erase(vertexArray.begin() + m_vertexBufferStartIndex, vertexArray.begin() + m_vertexBufferStartIndex + m_blockCount);
 
-		//VX_LOG("[%lli] Removed %i blocks at index %i (from %i to %i)", VX_MATH::GetHashKeyFromChunkPosition(m_pos),
-		//	m_blockCount, m_vertexBufferStartIndex, debug_vertexArraySize, vertexArray.size());
+		VX_LOG("[%lli] Removed %i blocks at index %i (from %i to %i)", VX_MATH::GetHashKeyFromChunkPosition(m_pos),
+			m_blockCount, m_vertexBufferStartIndex, m_vertexBufferStartIndex + m_blockCount, m_vertexBufferStartIndex);
 
 		// Update all other chunk start indicies if they were displaced
 		// and if this chunk is not being reset (we call Shutdown from destructor)
@@ -279,15 +288,24 @@ void Chunk::ShutdownVertexBuffer(const bool isBeingReset)
 			{
 				Chunk* chunk = chunkPool[i];
 
-				if (!chunk) continue;
-
-				if (chunk->GetVertexBufferStartIndex() <= m_vertexBufferStartIndex ||
+				if (chunk->GetVertexBufferStartIndex() < m_vertexBufferStartIndex ||
 					chunk->GetBlockCount() == 0) continue;
 
 				// else update the chunks' start position
 				int32_t newStartIndex = chunk->GetVertexBufferStartIndex() - m_blockCount;
 				VX_ASSERT(newStartIndex < vertexArray.size());
 				VX_ASSERT(newStartIndex >= 0);
+
+				/*if (newStartIndex == 1064 || newStartIndex == 1037)
+				{
+					VX_ASSERT_MSG(false, "im getting closer?");
+				}
+
+				if(m_vertexBufferStartIndex != 0 && m_vertexBufferStartIndex == chunk->GetVertexBufferStartIndex())
+				{
+					VX_ASSERT(false);
+				}*/
+
 				chunk->SetVertexBufferStartIndex(newStartIndex);
 			}
 		}
