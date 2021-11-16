@@ -107,7 +107,7 @@ void Chunk::InitializeChunk()
 		for (int64_t z = 0; z < CHUNK_SIZE; z++)
 		{
 			// Returns a values between MAXIMUM_TERRAIN_HEIGHT and MINIMUM_TERRAIN_HEIGHT
-			float height = (Noise2D::GenerateValue(static_cast<double>(x + posWS.x), static_cast<double>(z + posWS.z)) * TERRAIN_HEIGHT_RANGE) + TERRAIN_STARTING_HEIGHT;
+			float height = (Noise2D::GenerateValue(static_cast<double>(x + posWS.x) + 0.5f, static_cast<double>(z + posWS.z)) * TERRAIN_HEIGHT_RANGE) + TERRAIN_STARTING_HEIGHT;
 			for(int64_t y = 0; y < CHUNK_SIZE; y++)
 			{
 				float yWS = posWS.y + y;
@@ -125,7 +125,7 @@ void Chunk::InitializeVertexBuffer()
 	// We need this here because the chunk will not necessarily
 	// be deleted if it's being used by other system because
 	// of the shared_ptr
-	ShutdownVertexBuffer(true);
+	ShutdownVertexBuffer();
 
 	XMFLOAT3 posWS = { m_pos.x * CHUNK_SIZE, m_pos.y * CHUNK_SIZE, m_pos.z * CHUNK_SIZE };
 
@@ -243,21 +243,17 @@ void Chunk::InitializeVertexBuffer()
 	{
 		m_vertexBufferStartIndex = initialArraySize;
 
+		//VX_LOG("[%2.2f, %2.2f, %2.2f] Added %i blocks at index %i (to %i) NS %i",
+		//	m_pos.x, m_pos.y, m_pos.z, m_blockCount, 
+		//	m_vertexBufferStartIndex, m_vertexBufferStartIndex + m_blockCount, vertexArray.size());
 	}
 
-	if (
-		(m_pos.x == -1 && m_pos.y == 7 && m_pos.z == -2) ||
-		(m_pos.x == -1 && m_pos.y == 7 && m_pos.z == -3)
-		)
-	{
-		VX_LOG("[%2.2f, %2.2f, %2.2f] Added %i blocks at index %i (from %i to %i)",
-			m_pos.x, m_pos.y, m_pos.z, m_blockCount, 
-			m_vertexBufferStartIndex, initialArraySize, vertexArray.size());
-	}
+
+	
 
 }
 
-void Chunk::ShutdownVertexBuffer(const bool isBeingReset)
+void Chunk::ShutdownVertexBuffer()
 {
 
 	if(m_blockCount > 0)
@@ -276,39 +272,27 @@ void Chunk::ShutdownVertexBuffer(const bool isBeingReset)
 		// Remove vertices from the ChunkBufferManager
 		vertexArray.erase(vertexArray.begin() + m_vertexBufferStartIndex, vertexArray.begin() + m_vertexBufferStartIndex + m_blockCount);
 
-		VX_LOG("[%lli] Removed %i blocks at index %i (from %i to %i)", VX_MATH::GetHashKeyFromChunkPosition(m_pos),
-			m_blockCount, m_vertexBufferStartIndex, m_vertexBufferStartIndex + m_blockCount, m_vertexBufferStartIndex);
+		//VX_LOG("[%2.2f, %2.2f, %2.2f] Removed %i blocks at index %i (to %i) NS %i", m_pos.x, m_pos.y, m_pos.z,
+		//	m_blockCount, m_vertexBufferStartIndex, m_vertexBufferStartIndex + m_blockCount, vertexArray.size());
 
-		// Update all other chunk start indicies if they were displaced
-		// and if this chunk is not being reset (we call Shutdown from destructor)
-		if(!isBeingReset)
+		auto chunkPool = ChunkManager::GetChunkPool();
+		for (uint32_t i = 0; i < chunkPool.Size(); i++)
 		{
-			auto chunkPool = ChunkManager::GetChunkPool();
-			for (uint32_t i = 0; i < chunkPool.Size(); i++)
-			{
-				Chunk* chunk = chunkPool[i];
+			Chunk* chunk = chunkPool[i];
 
-				if (chunk->GetVertexBufferStartIndex() < m_vertexBufferStartIndex ||
-					chunk->GetBlockCount() == 0) continue;
+			if  (
+				chunk->GetVertexBufferStartIndex() < m_vertexBufferStartIndex   ||
+				chunk->GetBlockCount() == 0										||
+				chunk == this
+				) continue;
 
-				// else update the chunks' start position
-				int32_t newStartIndex = chunk->GetVertexBufferStartIndex() - m_blockCount;
-				VX_ASSERT(newStartIndex < vertexArray.size());
-				VX_ASSERT(newStartIndex >= 0);
-
-				/*if (newStartIndex == 1064 || newStartIndex == 1037)
-				{
-					VX_ASSERT_MSG(false, "im getting closer?");
-				}
-
-				if(m_vertexBufferStartIndex != 0 && m_vertexBufferStartIndex == chunk->GetVertexBufferStartIndex())
-				{
-					VX_ASSERT(false);
-				}*/
-
-				chunk->SetVertexBufferStartIndex(newStartIndex);
-			}
+			// else update the chunks' start position
+			int32_t newStartIndex = chunk->GetVertexBufferStartIndex() - m_blockCount;
+			VX_ASSERT(newStartIndex < vertexArray.size());
+			VX_ASSERT(newStartIndex >= 0);
+			chunk->SetVertexBufferStartIndex(newStartIndex);
 		}
+	
 	}
 	
 	// Reset these variables

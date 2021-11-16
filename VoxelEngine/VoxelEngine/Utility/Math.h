@@ -3,7 +3,7 @@
 
 #include <DirectXMath.h>
 
-//#include "../Core/ChunkManager.h"
+#include "../Core/ChunkManager.h"
 
 namespace VX_MATH
 {
@@ -29,6 +29,33 @@ namespace VX_MATH
 		result = ((x << 32) & 0x0000FFFF00000000) | ((y << 16) & 0x00000000FFFF0000) | (z & 0x000000000000FFFF);
 
 		return result;
+	}
+
+	inline DirectX::XMFLOAT3 WorldToChunkSpace(const DirectX::XMFLOAT3& pos)
+	{
+		DirectX::XMFLOAT3 convertedPos = { (float)((int32_t)pos.x / CHUNK_SIZE), (float)((int32_t)pos.y / CHUNK_SIZE), (float)((int32_t)pos.z / CHUNK_SIZE) };
+
+		// Adjust for negative coordinates
+		convertedPos.x = pos.x < 0 ? --convertedPos.x : convertedPos.x;
+		convertedPos.y = pos.y < 0 ? --convertedPos.y : convertedPos.y;
+		convertedPos.z = pos.z < 0 ? --convertedPos.z : convertedPos.z;
+		return convertedPos;
+	}
+
+	inline DirectX::XMFLOAT3 ChunkToWorldSpace(const DirectX::XMFLOAT3& pos)
+	{
+		// NOTE! pos should contain whole numbers only
+		return { pos.x * CHUNK_SIZE, pos.y * CHUNK_SIZE, pos.z * CHUNK_SIZE };
+	}
+
+	inline float Lerp(const float& a, const float& b, const float& ratio)
+	{
+		return (b - a) * ratio + a;
+	}
+
+	inline double Lerp(const double& a, const double& b, const double& ratio)
+	{
+		return (b - a) * ratio + a;
 	}
 }
 

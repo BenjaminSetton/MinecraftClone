@@ -174,7 +174,7 @@ void PlayerController::Update(const float& dt, Player* player)
 	XMVECTOR vel = XMLoadFloat3(&player->m_velocity);
 
 	// Apply gravity
-	//Physics::ApplyAcceleration(vel, { 0.0f, GRAVITY, 0.0f }, dt);
+	Physics::ApplyAcceleration(vel, { 0.0f, GRAVITY, 0.0f }, dt);
 
 	// Cap velocity at a reasonable terminal velocity value
 	if (abs(vel.m128_f32[1]) > TERMINAL_VELOCITY) vel.m128_f32[1] = vel.m128_f32[1] > 0 ? TERMINAL_VELOCITY : -TERMINAL_VELOCITY;

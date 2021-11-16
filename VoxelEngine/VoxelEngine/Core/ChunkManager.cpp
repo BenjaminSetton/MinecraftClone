@@ -61,7 +61,7 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 
 	m_playerPos = playerPosWS;
 
-	XMFLOAT3 playerPosCS = WorldToChunkSpace(playerPosWS);
+	XMFLOAT3 playerPosCS = VX_MATH::WorldToChunkSpace(playerPosWS);
 
 #if ALLOW_HARD_CODED_MAX_INIT_THREADS == 0
 	// hardware_concurrency() will only work for Windows builds...not particularly important
@@ -163,11 +163,11 @@ void ChunkManager::Update()
 
 	// Keep track of the previous chunk pos of the player to know how many chunks to check
 	// this frame!
-	static XMFLOAT3 prevPosChunkSpace = WorldToChunkSpace(m_playerPos);
+	static XMFLOAT3 prevPosChunkSpace = VX_MATH::WorldToChunkSpace(m_playerPos);
 
 	VX_PROFILE_OUT(&ChunkManager_Data::updateTimer);
 
-	XMFLOAT3 playerPosChunkSpace = WorldToChunkSpace(m_playerPos);
+	XMFLOAT3 playerPosChunkSpace = VX_MATH::WorldToChunkSpace(m_playerPos);
 
 	{
 		VX_PROFILE_OUT(&ChunkManager_Data::deletionLoop);
@@ -273,7 +273,7 @@ void ChunkManager::Update()
 		sumOfBlocks += m_activeChunks[i]->GetBlockCount();
 	}
 
-	VX_ASSERT(sumOfBlocks == ChunkBufferManager::GetVertexArray().size());
+	//VX_ASSERT(sumOfBlocks == ChunkBufferManager::GetVertexArray().size());
 
 }
 
@@ -409,23 +409,6 @@ void ChunkManager::UpdaterEntryPoint()
 }
 
 void ChunkManager::SetPlayerPos(DirectX::XMFLOAT3 playerPos) { m_playerPos = playerPos; }
-
-XMFLOAT3 ChunkManager::WorldToChunkSpace(const XMFLOAT3& pos)
-{
-	XMFLOAT3 convertedPos = { (float)((int32_t)pos.x / CHUNK_SIZE), (float)((int32_t)pos.y / CHUNK_SIZE), (float)((int32_t)pos.z / CHUNK_SIZE) };
-	
-	// Adjust for negative coordinates
-	convertedPos.x = pos.x < 0 ? --convertedPos.x : convertedPos.x;
-	convertedPos.y = pos.y < 0 ? --convertedPos.y : convertedPos.y;
-	convertedPos.z = pos.z < 0 ? --convertedPos.z : convertedPos.z;
-	return convertedPos;
-}
-
-XMFLOAT3 ChunkManager::ChunkToWorldSpace(const XMFLOAT3& pos)
-{
-	// NOTE! pos should contain whole numbers only
-	return { pos.x * CHUNK_SIZE, pos.y * CHUNK_SIZE, pos.z * CHUNK_SIZE };
-}
 
 void ChunkManager::ResetChunkMemory(const uint16_t index)
 {

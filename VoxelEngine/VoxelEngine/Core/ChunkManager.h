@@ -10,7 +10,7 @@
 
 #include "Chunk.h"
 
-constexpr int32_t RENDER_DIST = 2;
+constexpr int32_t RENDER_DIST = 6;
 
 
 // This is a work in progress!!
@@ -39,11 +39,6 @@ public:
 	static void UpdaterEntryPoint();
 
 	static void SetPlayerPos(DirectX::XMFLOAT3 playerPos);
-
-	// Helper methods. Consider moving to a Utility library
-	static DirectX::XMFLOAT3 WorldToChunkSpace(const DirectX::XMFLOAT3& pos);
-	static DirectX::XMFLOAT3 ChunkToWorldSpace(const DirectX::XMFLOAT3& pos);
-
 
 	// MULTI-THREADED METHODS
 	static void InitChunksMultithreaded(const int32_t &startChunk, const int32_t& numChunksToInit, const DirectX::XMFLOAT3& playerPosCS);

@@ -3,6 +3,7 @@
 
 #include "ChunkManager.h"
 #include "../Utility/Utility.h"
+#include "../Utility/Math.h"
 
 using namespace DirectX;
 
@@ -58,8 +59,8 @@ const bool Physics::DetectCollision(const DirectX::XMVECTOR& pos)
 	XMFLOAT3 pos_f3;
 	XMStoreFloat3(&pos_f3, pos);
 
-	XMFLOAT3 posCS = ChunkManager::WorldToChunkSpace(pos_f3);
-	XMFLOAT3 chunkPosWS = ChunkManager::ChunkToWorldSpace(posCS);
+	XMFLOAT3 posCS = VX_MATH::WorldToChunkSpace(pos_f3);
+	XMFLOAT3 chunkPosWS = VX_MATH::ChunkToWorldSpace(posCS);
 
 	Chunk* chunk = ChunkManager::GetChunkAtPos(posCS);
 	// No chunk exists, so collision can't happen

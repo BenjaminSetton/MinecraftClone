@@ -33,14 +33,15 @@ public:
 	const uint32_t GetBlockCount();
 	void SetVertexCount(const uint32_t vertexCount);
 
+	// TODO: Work on optimizing this function!!
+	void InitializeVertexBuffer();
+
+	void ShutdownVertexBuffer();
+
 private:
 
 	void InitializeChunk();
 
-	// TODO: Work on optimizing this function!!
-	void InitializeVertexBuffer();
-
-	void ShutdownVertexBuffer(const bool isBeingReset = false);
 
 private:
 

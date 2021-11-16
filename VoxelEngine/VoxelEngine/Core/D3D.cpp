@@ -108,7 +108,9 @@ bool D3D::Initialize(int32_t* out_screenWidth, int32_t* out_screenHeight, HWND h
 	m_videoCardMemory = (int)(adapterDesc.DedicatedVideoMemory / 1024 / 1024);
 
 	// Convert the name of the video card to a character array and store it.
-	error = wcstombs_s(&stringLength, m_videoCardDescription, 128, adapterDesc.Description, 128);
+	stringLength = 0;
+	size_t stringLengthSz_t = static_cast<size_t>(stringLength);
+	error = wcstombs_s(&stringLengthSz_t, m_videoCardDescription, 128, adapterDesc.Description, 128);
 	if (error != 0) { return false; }
 
 	// Release the display mode list.

@@ -11,6 +11,8 @@
 
 #include "../Utility/ImGuiLayer.h"
 
+#include "../Utility/Math.h"
+
 using namespace DirectX;
 
 
@@ -175,6 +177,13 @@ bool Graphics::Frame(const float dt)
 	// Begin the D3D scene
 	D3D::BeginScene(DayNightCycle::GetSkyColor());
 
+	auto& chunkPool = ChunkManager::GetChunkPool();
+	for (int i = 0; i < chunkPool.Size(); i++) 
+	{
+		Chunk* currChunk = chunkPool[i];
+		if (!FrustumCulling::CalculateChunkPosAgainstFrustum(currChunk->GetPosition())) currChunk->ShutdownVertexBuffer();
+	}
+
 	{
 		VX_PROFILE_SCOPE("Render Loop");
 
@@ -225,7 +234,7 @@ bool Graphics::Frame(const float dt)
 	}
 
 	Renderer_Data::playerPos = m_player->GetPosition();
-	Renderer_Data::playerPosChunkSpace = ChunkManager::WorldToChunkSpace(m_player->GetPosition());
+	Renderer_Data::playerPosChunkSpace = VX_MATH::WorldToChunkSpace(m_player->GetPosition());
 	Renderer_Data::numActiveChunks = ChunkManager::GetNumActiveChunks();
 
 	// End the ImGui frame
