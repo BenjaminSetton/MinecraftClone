@@ -11,6 +11,12 @@ Noise2D::Noise2D()
 {
 }
 
+/////////////////////////////////////////////////////////
+//
+//  Perlin noise algorithm taken from Perlin Noise wikipedia page
+//  https://en.wikipedia.org/wiki/Perlin_noise
+//
+/////////////////////////////////////////////////////////
 double Noise2D::GenerateValue(double x, double y)
 {
     // Determine grid cell coordinates
