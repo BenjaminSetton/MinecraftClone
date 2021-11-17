@@ -177,13 +177,6 @@ bool Graphics::Frame(const float dt)
 	// Begin the D3D scene
 	D3D::BeginScene(DayNightCycle::GetSkyColor());
 
-	auto& chunkPool = ChunkManager::GetChunkPool();
-	for (int i = 0; i < chunkPool.Size(); i++) 
-	{
-		Chunk* currChunk = chunkPool[i];
-		if (!FrustumCulling::CalculateChunkPosAgainstFrustum(currChunk->GetPosition())) currChunk->ShutdownVertexBuffer();
-	}
-
 	{
 		VX_PROFILE_SCOPE("Render Loop");
 

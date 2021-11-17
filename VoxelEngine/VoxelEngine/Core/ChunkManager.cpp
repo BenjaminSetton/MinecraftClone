@@ -59,6 +59,10 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 	Noise2D::SetSeed(CHUNK_GENERATION_SEED);
 #endif // USE_DEFAULT_SEED
 
+	Noise2D::SetScale(75.0);
+	Noise2D::SetOctaveCount(4);
+	Noise2D::SetPersistance(0.5);
+
 	m_playerPos = playerPosWS;
 
 	XMFLOAT3 playerPosCS = VX_MATH::WorldToChunkSpace(playerPosWS);
@@ -169,19 +173,21 @@ void ChunkManager::Update()
 
 	XMFLOAT3 playerPosChunkSpace = VX_MATH::WorldToChunkSpace(m_playerPos);
 
+	int32_t numChunksUnloaded = 0;
 	{
 		VX_PROFILE_OUT(&ChunkManager_Data::deletionLoop);
 
 		// We have to unload however many chunks go out of range when
 		// prevPos != currentPos in the axis where the difference happens
-		int32_t numChunksUnloaded = CheckForChunksToLoadOrUnload(playerPosChunkSpace, prevPosChunkSpace, 0);
+		numChunksUnloaded = CheckForChunksToLoadOrUnload(playerPosChunkSpace, prevPosChunkSpace, 0);
 
 	}
 
+	int32_t numChunksLoaded = 0;
 	{
 		VX_PROFILE_OUT(&ChunkManager_Data::creationLoop);
 		// 2. Load chunks if they are inside render distance
-		int32_t numChunksLoaded = CheckForChunksToLoadOrUnload(playerPosChunkSpace, prevPosChunkSpace, 1);
+		numChunksLoaded = CheckForChunksToLoadOrUnload(playerPosChunkSpace, prevPosChunkSpace, 1);
 
 	}
 
@@ -273,7 +279,7 @@ void ChunkManager::Update()
 		sumOfBlocks += m_activeChunks[i]->GetBlockCount();
 	}
 
-	//VX_ASSERT(sumOfBlocks == ChunkBufferManager::GetVertexArray().size());
+	VX_ASSERT(sumOfBlocks == ChunkBufferManager::GetVertexArray().size());
 
 }
 
@@ -299,16 +305,6 @@ Chunk* ChunkManager::LoadChunk(const XMFLOAT3 chunkCS)
 
 void ChunkManager::UnloadChunk(Chunk* chunk)
 {
-	///////////////////////////////////////
-	///
-	///		This is trash :)!!!!
-	/// 
-	///////////////////////////////////////
-
-	// TODO: 
-	// - Consider deleting un-modified chunks from memory (they can be loaded in again through a seed)
-	// - Modified chunks should be considered as "inactive" when unloaded, removed from
-	//   the m_activeChunks vector and serialized
 
 	for(uint32_t i = 0; i < m_activeChunks.Size(); i++)
 	{
@@ -348,9 +344,6 @@ void ChunkManager::UnloadChunk(const uint32_t& index)
 
 	m_chunkMap.erase(hashKey);
 	Chunk* chunkPtr = m_activeChunks.Remove(index);
-
-	// Shut down the VB of the chunk we removed (now in size() because we removed it)
-	//m_activeChunks[m_activeChunks.Size()]->ShutdownVertexBuffer();
 
 	// Only update the pool map with the new index if we're not removing the Chunk
 	// from the last index (in that case there is no other chunk needing to update it's index)
@@ -559,22 +552,6 @@ const int32_t ChunkManager::CheckForChunksToLoadOrUnload(const XMFLOAT3& current
 
 		// If creating
 		if (checkFlag == 1) sign *= -1;
-
-#pragma region _DEBUG
-		//// DEBUG
-		//float debug = 0;
-		//if (checkFlag == 0) // unloading
-		//	debug = prevPlayerPosCS.z + sign * (RENDER_DIST + (abs(difference) - 1));
-		//else // loading
-		//	debug = currentPlayerPosCS.z + sign * (RENDER_DIST + (abs(difference) - 1));
-		//if (checkFlag == 0)
-		//{
-		//	VX_LOG("[UNLOAD] Through %2.2f Z on player ZPos %2.2f with diff %i", debug, currentPlayerPosCS.z, difference);
-		//}
-		//else {
-		//	VX_LOG("[LOAD] Through %2.2f Z on player ZPos %2.2f with diff %i", debug, currentPlayerPosCS.z, difference);
-		//}
-#pragma endregion
 
 
 		// Loop through all the new chunks
