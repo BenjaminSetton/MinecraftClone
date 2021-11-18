@@ -107,7 +107,7 @@ void Chunk::InitializeChunk()
 		for (int64_t z = 0; z < CHUNK_SIZE; z++)
 		{
 			// Returns a values between MAXIMUM_TERRAIN_HEIGHT and MINIMUM_TERRAIN_HEIGHT
-			float height = (Noise2D::GenerateValue(static_cast<double>(x + posWS.x) + 0.5, static_cast<double>(z + posWS.z)) * TERRAIN_HEIGHT_RANGE) + TERRAIN_STARTING_HEIGHT;
+			float height = (Noise3D::GenerateValue(static_cast<double>(x + posWS.x) + 0.5, 0.5, static_cast<double>(z + posWS.z) + 0.5) * TERRAIN_HEIGHT_RANGE) + TERRAIN_STARTING_HEIGHT;
 			for(int64_t y = 0; y < CHUNK_SIZE; y++)
 			{
 				float yWS = posWS.y + y;

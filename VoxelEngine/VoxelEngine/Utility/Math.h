@@ -57,6 +57,12 @@ namespace VX_MATH
 	{
 		return (b - a) * ratio + a;
 	}
+
+	// Parameter "a" must have domain between [0, 1]
+	inline double MapToCubicSCurve(const double a)
+	{
+		return (a * a * (3.0 - 2.0 * a));
+	}
 }
 
 #endif

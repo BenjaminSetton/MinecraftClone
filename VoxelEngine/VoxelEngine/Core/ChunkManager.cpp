@@ -51,17 +51,17 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 
 #if USE_DEFAULT_SEED == 0
 #if USE_SEED_BASED_ON_SYSTEM_TIME == 0
-	Noise2D::SetSeed(CHUNK_GENERATION_SEED);
+	Noise3D::SetSeed(CHUNK_GENERATION_SEED);
 #else
-	Noise2D::SetSeed(static_cast<int>(std::chrono::high_resolution_clock::now().time_since_epoch().count()));
+	Noise3D::SetSeed(static_cast<int>(std::chrono::high_resolution_clock::now().time_since_epoch().count()));
 #endif // USE_SEED_BASED_ON_SYSTEM_TIME
 #else
-	Noise2D::SetSeed(CHUNK_GENERATION_SEED);
+	Noise3D::SetSeed(CHUNK_GENERATION_SEED);
 #endif // USE_DEFAULT_SEED
 
-	Noise2D::SetScale(75.0);
-	Noise2D::SetOctaveCount(4);
-	Noise2D::SetPersistance(0.5);
+	Noise3D::SetFrequency(75.0);
+	Noise3D::SetOctaveCount(4);
+	Noise3D::SetPersistance(0.5);
 
 	m_playerPos = playerPosWS;
 
