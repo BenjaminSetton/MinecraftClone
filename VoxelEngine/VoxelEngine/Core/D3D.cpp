@@ -574,7 +574,7 @@ void D3D::OnResize(LPARAM lparam)
 	CreateRenderTargetView();
 
 	// Resize the projection matrix
-	m_projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(XM_PIDIV4, (float)16.0f / 9.0f, m_screenNear, m_screenFar);
+	m_projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(XM_PIDIV4, (float)newWidth / newHeight, m_screenNear, m_screenFar);
 
 	// Resize the viewport
 	D3D11_VIEWPORT viewport;

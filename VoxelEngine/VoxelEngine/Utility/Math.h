@@ -55,13 +55,22 @@ namespace VX_MATH
 
 	inline double Lerp(const double& a, const double& b, const double& ratio)
 	{
-		return (b - a) * ratio + a;
+		return ((1.0 - ratio) * a) + (ratio * b);
+		//return (b - a) * ratio + a;
 	}
 
-	// Parameter "a" must have domain between [0, 1]
-	inline double MapToCubicSCurve(const double a)
+	inline double MapToCubicSCurve(const double x)
 	{
-		return (a * a * (3.0 - 2.0 * a));
+		// Parameter "x" must be between [0, 1]
+		VX_ASSERT(x >= 0 && x <= 1);
+		return (x * x * (3.0 - 2.0 * x));
+	}
+
+	inline double MapToQuinticSCurve(const double x)
+	{
+		// Parameter "x" must be between [0, 1]
+		VX_ASSERT(x >= 0 && x <= 1);
+		return x * x * x * (x * (x * 6 - 15) + 10);
 	}
 }
 

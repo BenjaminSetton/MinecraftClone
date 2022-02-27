@@ -14,7 +14,7 @@
 #include "../Utility/Input.h"
 #include "Graphics.h"
 #include "../Utility/Clock.h"
-#include "./Events/IEvent.h";
+#include "./Events/IEvent.h"
 #include "./Events/KeyboardEvent.h"
 #include "./Events/MouseEvent.h"
 
@@ -45,7 +45,6 @@ private:
 	void InitializeWindows(UINT& screenWidth, UINT& screenHeight);
 
 	void ShutdownWindows();
-
 
 	static HWND m_hwnd;
 

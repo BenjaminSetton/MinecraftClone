@@ -51,17 +51,13 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 
 #if USE_DEFAULT_SEED == 0
 #if USE_SEED_BASED_ON_SYSTEM_TIME == 0
-	Noise3D::SetSeed(CHUNK_GENERATION_SEED);
+	Noise3D::Init(CHUNK_GENERATION_SEED);
 #else
-	Noise3D::SetSeed(static_cast<int>(std::chrono::high_resolution_clock::now().time_since_epoch().count()));
+	Noise3D::Init(static_cast<int>(std::chrono::high_resolution_clock::now().time_since_epoch().count()));
 #endif // USE_SEED_BASED_ON_SYSTEM_TIME
 #else
-	Noise3D::SetSeed(CHUNK_GENERATION_SEED);
+	Noise3D::Init(CHUNK_GENERATION_SEED);
 #endif // USE_DEFAULT_SEED
-
-	Noise3D::SetFrequency(75.0);
-	Noise3D::SetOctaveCount(4);
-	Noise3D::SetPersistance(0.5);
 
 	m_playerPos = playerPosWS;
 
@@ -75,14 +71,14 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 
 	uint32_t desiredDepthSlicesPerThread, actualDepthSlicesPerThread;
 	desiredDepthSlicesPerThread = actualDepthSlicesPerThread = 2;
-	uint32_t numThreadsToRun = floor((2 * RENDER_DIST + 1) / desiredDepthSlicesPerThread);
+	uint32_t numThreadsToRun = static_cast<uint32_t>(floor((2 * RENDER_DIST + 1) / desiredDepthSlicesPerThread));
 
 	// If we need more threads to run desired depth slices per thread, cap at map threads and recalculate
 	// actualDepthSlicesPerThread to reflect change in numThreadsToRun
 	if (numThreadsToRun > g_maxNumThreadsForInit)
 	{
 		numThreadsToRun = g_maxNumThreadsForInit;
-		actualDepthSlicesPerThread = floor((2 * RENDER_DIST + 1) / numThreadsToRun);
+		actualDepthSlicesPerThread = static_cast<uint32_t>(floor((2 * RENDER_DIST + 1) / numThreadsToRun));
 	}
 
 
@@ -93,7 +89,7 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 		// [MULTI-THREADED]		Load all of the initial chunks
 		VX_LOG_INFO("%i Chunk initializer threads launched", numThreadsToRun);
 		std::vector<std::thread*> chunkLoaderThreads(numThreadsToRun);
-		for (int16_t threadID = 0; threadID < numThreadsToRun; threadID++)
+		for (int16_t threadID = 0; threadID < static_cast<int32_t>(numThreadsToRun); threadID++)
 		{
 			int32_t startingChunk = threadID * actualDepthSlicesPerThread - RENDER_DIST;
 			int32_t numChunksToInit = threadID == numThreadsToRun - 1 ? actualDepthSlicesPerThread + ((2 * RENDER_DIST + 1) - numThreadsToRun * actualDepthSlicesPerThread) : actualDepthSlicesPerThread;
@@ -116,7 +112,7 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 		VX_LOG_INFO("%i vertex buffer initializer threads launched", numThreadsToRun);
 		std::vector<std::thread*> vertexBufferThreads(numThreadsToRun);
 		uint32_t numIndicesPerChunk = m_activeChunks.Size() / numThreadsToRun;
-		for (int16_t threadID = 0; threadID < numThreadsToRun; threadID++)
+		for (int16_t threadID = 0; threadID < static_cast<int32_t>(numThreadsToRun); threadID++)
 		{
 			uint32_t startingIndex = threadID * numIndicesPerChunk;
 			uint32_t numIndiciesToInit = threadID == numThreadsToRun - 1 ? m_activeChunks.Size() - startingIndex : numIndicesPerChunk;
@@ -146,7 +142,7 @@ void ChunkManager::Shutdown()
 	}
 	else
 	{
-		VX_ASSERT(false, "Fatal error joining updater thread");
+		VX_ASSERT_MSG(false, "Fatal error joining updater thread");
 	}
 	delete m_updaterThread;
 
@@ -207,6 +203,7 @@ void ChunkManager::Update()
 			m_poolMap.erase(hashKey);
 		}
 
+
 		//if (m_deletedChunkList.size() > 0)
 		//{
 		//	VX_LOG("Unloaded %i chunks", m_deletedChunkList.size());
@@ -258,7 +255,7 @@ void ChunkManager::Update()
 	}
 
 	// DEBUG LOOP
-	for (int i = 0; i < m_activeChunks.Size(); i++)
+	for (uint32_t i = 0; i < m_activeChunks.Size(); i++)
 	{
 		Chunk* currChunk = m_activeChunks[i];
 		currChunk->DrawChunkBorder();
@@ -274,7 +271,7 @@ void ChunkManager::Update()
 	prevPosChunkSpace = playerPosChunkSpace;
 
 	int sumOfBlocks = 0;
-	for(int i = 0; i < m_activeChunks.Size(); i++)
+	for(uint32_t i = 0; i < m_activeChunks.Size(); i++)
 	{
 		sumOfBlocks += m_activeChunks[i]->GetBlockCount();
 	}
@@ -285,7 +282,9 @@ void ChunkManager::Update()
 
 Chunk* ChunkManager::LoadChunk(const XMFLOAT3 chunkCS) 
 {
-	Chunk* chunkPtr = m_activeChunks.Insert_Move(std::move(Chunk(chunkCS)));
+	Chunk chunk(chunkCS);
+	chunk.Init();
+	Chunk* chunkPtr = m_activeChunks.Insert_Move(std::move(chunk));
 
 	uint64_t hashKey = VX_MATH::GetHashKeyFromChunkPosition(chunkCS);
 	VX_ASSERT(m_chunkMap.find(hashKey) == m_chunkMap.end());
@@ -426,7 +425,7 @@ const int32_t ChunkManager::CheckForChunksToLoadOrUnload(const XMFLOAT3& current
 	// X AXIS
 	if (prevPlayerPosCS.x != currentPlayerPosCS.x)
 	{
-		int32_t difference = prevPlayerPosCS.x - currentPlayerPosCS.x;
+		int32_t difference = static_cast<int32_t>(prevPlayerPosCS.x - currentPlayerPosCS.x);
 
 		// If deleting
 		int8_t sign = difference > 0 ? 1 : -1;
@@ -484,7 +483,7 @@ const int32_t ChunkManager::CheckForChunksToLoadOrUnload(const XMFLOAT3& current
 	// Y AXIS
 	if (prevPlayerPosCS.y != currentPlayerPosCS.y)
 	{
-		int32_t difference = prevPlayerPosCS.y - currentPlayerPosCS.y;
+		int32_t difference = static_cast<int32_t>(prevPlayerPosCS.y - currentPlayerPosCS.y);
 
 		// If deleting
 		int8_t sign = difference > 0 ? 1 : -1;
@@ -543,7 +542,7 @@ const int32_t ChunkManager::CheckForChunksToLoadOrUnload(const XMFLOAT3& current
 	// Z AXIS
 	if (prevPlayerPosCS.z != currentPlayerPosCS.z)
 	{
-		int32_t difference = prevPlayerPosCS.z - currentPlayerPosCS.z;
+		int32_t difference = static_cast<int32_t>(prevPlayerPosCS.z - currentPlayerPosCS.z);
 
 		// If deleting
 		int8_t sign = difference > 0 ? 1 : -1;
@@ -654,6 +653,7 @@ Chunk* ChunkManager::LoadChunkMultithreaded(const DirectX::XMFLOAT3 chunkCS)
 	uint64_t hashKey = VX_MATH::GetHashKeyFromChunkPosition(chunkCS);
 
 	Chunk chunk(chunkCS);
+	chunk.Init();
 
 	m_canAccessVec.lock();
 	Chunk* chunkPtr = m_activeChunks.Insert_Move(std::move(chunk));

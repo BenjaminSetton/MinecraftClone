@@ -38,10 +38,7 @@ public:
 
 	void ShutdownVertexBuffer();
 
-private:
-
-	void InitializeChunk();
-
+	void Init();
 
 private:
 

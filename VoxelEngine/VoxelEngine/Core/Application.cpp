@@ -12,7 +12,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 
 Application::Application() : EventSubject(),
-	m_Input(nullptr), m_Graphics(nullptr), m_Clock(nullptr), m_player(nullptr)
+	m_applicationName(L""), m_hinstance(nullptr), m_Input(nullptr), m_Graphics(nullptr), m_Clock(nullptr), m_player(nullptr)
 {
 }
 
@@ -86,25 +86,20 @@ bool Application::Initialize()
 void Application::Run() 
 {
 	MSG msg;
-	bool running = true;
+	bool isRunning = true;
 
-	while (running) 
+	while (isRunning) 
 	{
-		// Handle the windows messages.
-		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		// Handle the windows messages
+		while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
+
+			if (msg.message == WM_QUIT) return;
 		}
 
-		// Check if the quit message is given and stop running if it has
-		if (msg.message == WM_QUIT) running = false;
-		else // we can go to the next frame
-		{
-			running = Frame();
-		}
-
-
+		isRunning = Frame();
 	}
 
 }
@@ -144,10 +139,9 @@ bool Application::Frame()
 
 	// Store the frame's delta time in dt
 	float dt = m_Clock->GetDeltaTime(Clock::TimePrecision::SECONDS);
+	// Prevent delta time from giving wack results after moving game window
 	dt = dt > 0.5f ? 0.016666f : dt;
 
-	// Quick hack!
-	// Prevent delta time from giving wack results after moving game window
 
 	
 	// Update physics
@@ -258,6 +252,7 @@ LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT msg, WPARAM wparam,
 	{
 		KeyboardDownEvent keyDown = KeyboardDownEvent(static_cast<uint16_t>(wparam));
 		Broadcast(keyDown);
+		//VX_LOG("Key down: %c", static_cast<uint16_t>(wparam));
 		return 0;
 	}
 	case WM_KEYUP:
@@ -270,6 +265,7 @@ LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT msg, WPARAM wparam,
 	{
 		MouseMovedEvent mouseMoved = MouseMovedEvent(LOWORD(lparam), HIWORD(lparam));
 		Broadcast(mouseMoved);
+		//VX_LOG("Mouse moved: %2.2f, %2.2f", LOWORD(lparam), HIWORD(lparam));
 		return 0;
 	}
 	case WM_LBUTTONDOWN:
@@ -302,13 +298,9 @@ LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT msg, WPARAM wparam,
 		Broadcast(scroll);
 		return 0;
 	}
+	}
 
-	// Any other messages send to the default message handler as our application won't make use of them.
-	default:
-	{
-		return DefWindowProc(hwnd, msg, wparam, lparam);
-	}
-	}
+	return DefWindowProc(hwnd, msg, wparam, lparam);
 
 }
 

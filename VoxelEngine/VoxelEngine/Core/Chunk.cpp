@@ -27,11 +27,8 @@ constexpr int32_t LOW_CHUNK_LIMIT = -256;
 constexpr int32_t HIGH_CHUNK_LIMIT = -LOW_CHUNK_LIMIT;
 
 
-Chunk::Chunk(const DirectX::XMFLOAT3 pos) : m_pos(pos), m_vertexBufferStartIndex(0), m_blockCount(0)
+Chunk::Chunk(const DirectX::XMFLOAT3 pos) : m_pos(pos), m_vertexBufferStartIndex(0), m_blockCount(0) 
 {
-	//VX_PROFILE_SCOPE_MODE("Chunk Constructor", 1);
-
-	InitializeChunk();
 
 }
 
@@ -94,7 +91,7 @@ void Chunk::SetVertexBufferStartIndex(const uint32_t startIndex) { m_vertexBuffe
 const uint32_t Chunk::GetBlockCount() { return m_blockCount; }
 void Chunk::SetVertexCount(const uint32_t vertexCount) { m_blockCount = vertexCount; }
 
-void Chunk::InitializeChunk()
+void Chunk::Init()
 {
 	VX_ASSERT(TERRAIN_HEIGHT_RANGE > 0);
 
@@ -107,7 +104,7 @@ void Chunk::InitializeChunk()
 		for (int64_t z = 0; z < CHUNK_SIZE; z++)
 		{
 			// Returns a values between MAXIMUM_TERRAIN_HEIGHT and MINIMUM_TERRAIN_HEIGHT
-			float height = (Noise3D::GenerateValue(static_cast<double>(x + posWS.x) + 0.5, 0.5, static_cast<double>(z + posWS.z) + 0.5) * TERRAIN_HEIGHT_RANGE) + TERRAIN_STARTING_HEIGHT;
+			float height = (Noise3D::GetValue(static_cast<double>(x + posWS.x), static_cast<double>(z + posWS.z), 0.5) * TERRAIN_HEIGHT_RANGE) + TERRAIN_STARTING_HEIGHT;
 			for(int64_t y = 0; y < CHUNK_SIZE; y++)
 			{
 				float yWS = posWS.y + y;

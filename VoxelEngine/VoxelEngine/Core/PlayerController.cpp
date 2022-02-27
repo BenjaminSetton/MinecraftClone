@@ -6,7 +6,6 @@
 #include "../Utility/Input.h"
 #include "Events/KeyCodes.h"
 #include "Physics.h"
-#include <DirectXMath.h>
 
 // DEBUG
 #include "../Utility/ImGuiLayer.h"
@@ -79,7 +78,10 @@ void PlayerController::Update(const float& dt, Player* player)
 		// Rotation around the Y axis (look left/right)
 		deltaRotation.m128_f32[1] = Input::GetMouseDeltaX() * player->m_camera->GetRotationSpeed() * 0.001f;
 	}
-
+	
+	PlayerPhysics_Data::deltaXRot = deltaRotation.m128_f32[1];
+	PlayerPhysics_Data::deltaYRot = deltaRotation.m128_f32[0];
+	VX_LOG("(%u) [ %2.2f, %2.2f ] -> [%2.2f, %2.2f]", (unsigned int)Input::IsMouseDown(MouseCode::LBUTTON), deltaRotation.m128_f32[0], deltaRotation.m128_f32[1], Input::GetMouseDeltaY(), Input::GetMouseDeltaX());
 
 	// Build the rotation and translation matrices
 	XMMATRIX rotXMatrix = XMMatrixRotationX(deltaRotation.m128_f32[0]);
@@ -115,7 +117,7 @@ void PlayerController::Update(const float& dt, Player* player)
 
 	XMVECTOR upVec = { 0.0f, 1.0f, 0.0f, 0.0f };
 
-
+	// Don't let camera go upside down
 	if (abs(zAxis.m128_f32[1]) + epsilon < 1.0f)
 	{
 		// Calculate the X (right) axis
@@ -131,10 +133,35 @@ void PlayerController::Update(const float& dt, Player* player)
 	}
 
 
+	CheckForCollision(player, worldMatrix, prevPos, prevPlayerFeetPos, dt);
+
+
+	// Update the position and rotation camera values
+	XMStoreFloat3(&player->m_position, worldMatrix.r[3]);
+
+	XMFLOAT3 cameraRot = player->m_camera->GetRotation();
+	player->m_camera->SetRotation(
+		{
+			cameraRot.x + deltaRotation.m128_f32[0],
+			cameraRot.x + deltaRotation.m128_f32[1],
+			cameraRot.x + deltaRotation.m128_f32[2]
+		});
+
+	// DEBUG SETTINGS
+	PlayerPhysics_Data::accel = player->m_acceleration;
+	PlayerPhysics_Data::vel = player->m_velocity;
+
+	// Re-assign the view matrix with all the changes
+	player->m_camera->SetWorldMatrix(worldMatrix);
+}
+
+void PlayerController::CheckForCollision(Player* player, DirectX::XMMATRIX& worldMatrix, DirectX::XMFLOAT3& prevPos, DirectX::XMVECTOR& prevFootPos, const float& dt)
+{
 	// We have "moved into collision", so don't apply translation
 	XMVECTOR newPlayerFeetPos = { worldMatrix.r[3].m128_f32[0], worldMatrix.r[3].m128_f32[1] - 2.0f, worldMatrix.r[3].m128_f32[2] };
 	XMFLOAT3 newPos = { worldMatrix.r[3].m128_f32[0], worldMatrix.r[3].m128_f32[1], worldMatrix.r[3].m128_f32[2] };
 	bool isCollidingWithWall = Physics::DetectCollision(newPlayerFeetPos);
+	PlayerPhysics_Data::isCollidingWall = isCollidingWithWall;
 	if (isCollidingWithWall)
 	{
 		XMFLOAT3 velocityToAdd = { newPos.x - prevPos.x, newPos.y - prevPos.y, newPos.z - prevPos.z };
@@ -142,19 +169,19 @@ void PlayerController::Update(const float& dt, Player* player)
 		// Test every component of velocity to check which component to nullify
 		// TEST X COMPONENT
 		{
-			XMVECTOR testXComp = prevPlayerFeetPos;
+			XMVECTOR testXComp = prevFootPos;
 			testXComp.m128_f32[0] += velocityToAdd.x;
 			if (Physics::DetectCollision(testXComp)) velocityToAdd.x = 0;
 		}
 		// TEST Y COMPONENT (IF 0, SKIP?)
 		{
-			XMVECTOR testYComp = prevPlayerFeetPos;
+			XMVECTOR testYComp = prevFootPos;
 			testYComp.m128_f32[1] += velocityToAdd.y;
 			if (Physics::DetectCollision(testYComp)) velocityToAdd.y = 0;
 		}
 		// TEST Z COMPONENT
 		{
-			XMVECTOR testZComp = prevPlayerFeetPos;
+			XMVECTOR testZComp = prevFootPos;
 			testZComp.m128_f32[2] += velocityToAdd.z;
 			if (Physics::DetectCollision(testZComp)) velocityToAdd.z = 0;
 		}
@@ -183,12 +210,13 @@ void PlayerController::Update(const float& dt, Player* player)
 
 	XMVECTOR playerFeetPosAfterGravity = { worldMatrix.r[3].m128_f32[0], worldMatrix.r[3].m128_f32[1] - 2.0f, worldMatrix.r[3].m128_f32[2] };
 	bool isCollidingWithFloor = Physics::DetectCollision(playerFeetPosAfterGravity);
+	PlayerPhysics_Data::isCollidingFloor = isCollidingWithFloor;
 	// If collision is detected after applying gravity, revert
 	if (isCollidingWithFloor)
 	{
-		worldMatrix.r[3] = 
-		{ 
-			playerPosAfterMovement.m128_f32[0], 
+		worldMatrix.r[3] =
+		{
+			playerPosAfterMovement.m128_f32[0],
 			floor(playerPosAfterMovement.m128_f32[1]),
 			playerPosAfterMovement.m128_f32[2]
 		};
@@ -200,7 +228,7 @@ void PlayerController::Update(const float& dt, Player* player)
 		vel = { 0.0f, 0.0f, 0.0f };
 
 		// Allow the player to jump
-		if(Input::IsKeyDown(KeyCode::SPACE))
+		if (Input::IsKeyDown(KeyCode::SPACE))
 		{
 			// Apply an initial vertical velocity
 			vel.m128_f32[1] += INITIAL_JUMP_VELOCITY;
@@ -209,24 +237,4 @@ void PlayerController::Update(const float& dt, Player* player)
 	}
 
 	XMStoreFloat3(&player->m_velocity, vel);
-
-	// Update the position and rotation camera values
-	XMStoreFloat3(&player->m_position, worldMatrix.r[3]);
-
-	XMFLOAT3 cameraRot = player->m_camera->GetRotation();
-	player->m_camera->SetRotation(
-		{
-			cameraRot.x + deltaRotation.m128_f32[0],
-			cameraRot.x + deltaRotation.m128_f32[1],
-			cameraRot.x + deltaRotation.m128_f32[2]
-		});
-
-	// DEBUG SETTINGS
-	PlayerPhysics_Data::accel = player->m_acceleration;
-	PlayerPhysics_Data::vel = player->m_velocity;
-	PlayerPhysics_Data::isCollidingFloor = isCollidingWithFloor;
-	PlayerPhysics_Data::isCollidingWall = isCollidingWithWall;
-
-	// Re-assign the view matrix with all the changes
-	player->m_camera->SetWorldMatrix(worldMatrix);
 }
