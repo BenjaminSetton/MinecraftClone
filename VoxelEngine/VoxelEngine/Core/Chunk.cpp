@@ -1,6 +1,5 @@
 #include "../Misc/pch.h"
 #include "Chunk.h"
-#include "../Utility/Noise.h"
 #include "../Utility/Utility.h"
 #include "BlockUVs.h"
 
@@ -14,6 +13,7 @@
 #include "../Utility/Utility.h"
 #include "../Utility/ImGuiLayer.h"
 #include "../Utility/Math.h"
+#include "../Utility/SimplexNoise.h"
 
 
 using namespace DirectX;
@@ -104,7 +104,9 @@ void Chunk::Init()
 		for (int64_t z = 0; z < CHUNK_SIZE; z++)
 		{
 			// Returns a values between MAXIMUM_TERRAIN_HEIGHT and MINIMUM_TERRAIN_HEIGHT
-			float height = (Noise3D::GetValue(static_cast<double>(x + posWS.x), static_cast<double>(z + posWS.z), 0.5) * TERRAIN_HEIGHT_RANGE) + TERRAIN_STARTING_HEIGHT;
+			SimplexNoise noiseGenerator( 0.012f, 1.0f, 2.0f, 0.5f );
+			float sampledNoise = noiseGenerator.fractal(4, static_cast<double>(x + posWS.x), static_cast<double>(z + posWS.z));
+			float height = ((sampledNoise * 0.5f + 0.5f) * TERRAIN_HEIGHT_RANGE) + TERRAIN_STARTING_HEIGHT;
 			for(int64_t y = 0; y < CHUNK_SIZE; y++)
 			{
 				float yWS = posWS.y + y;

@@ -292,8 +292,13 @@
     <ClCompile Include="Utility\ImGuiLayer.cpp" />
     <ClCompile Include="Utility\Input.cpp" />
     <ClCompile Include="Utility\Log.cpp" />
-    <ClCompile Include="Utility\Noise.cpp" />
     <ClCompile Include="Utility\ScopeTimer.cpp" />
+    <ClCompile Include="Utility\SimplexNoise.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="Utility\SortedPool.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -341,8 +346,8 @@
     <ClInclude Include="Utility\Input.h" />
     <ClInclude Include="Utility\Log.h" />
     <ClInclude Include="Utility\Math.h" />
-    <ClInclude Include="Utility\Noise.h" />
     <ClInclude Include="Utility\ScopeTimer.h" />
+    <ClInclude Include="Utility\SimplexNoise.h" />
     <ClInclude Include="Utility\SortedPool.h" />
     <ClInclude Include="Utility\Utility.h" />
   </ItemGroup>

@@ -49,8 +49,6 @@ struct PlayerPhysics_Data
 	static DirectX::XMFLOAT3 vel;
 	static bool isCollidingFloor;
 	static bool isCollidingWall;
-	static float deltaXRot;
-	static float deltaYRot;
 };
 
 struct ChunkManager_Data

@@ -252,7 +252,6 @@ LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT msg, WPARAM wparam,
 	{
 		KeyboardDownEvent keyDown = KeyboardDownEvent(static_cast<uint16_t>(wparam));
 		Broadcast(keyDown);
-		//VX_LOG("Key down: %c", static_cast<uint16_t>(wparam));
 		return 0;
 	}
 	case WM_KEYUP:
@@ -265,7 +264,6 @@ LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT msg, WPARAM wparam,
 	{
 		MouseMovedEvent mouseMoved = MouseMovedEvent(LOWORD(lparam), HIWORD(lparam));
 		Broadcast(mouseMoved);
-		//VX_LOG("Mouse moved: %2.2f, %2.2f", LOWORD(lparam), HIWORD(lparam));
 		return 0;
 	}
 	case WM_LBUTTONDOWN:

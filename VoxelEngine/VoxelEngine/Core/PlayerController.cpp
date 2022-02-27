@@ -65,12 +65,6 @@ void PlayerController::Update(const float& dt, Player* player)
 
 
 	// Update rotation only if LMB is held down
-
-	// NOTE!
-	//
-	//	THERE IS AN ISSUE WITH WINDOW RESIZING/FRAMERATE WHERE
-	//	CAMREA ROTATION SPEEDS UP OR SLOWS DOWN
-	//
 	if (Input::IsMouseDown(MouseCode::LBUTTON))
 	{
 		// Rotation around the X axis (look up/down)
@@ -78,10 +72,6 @@ void PlayerController::Update(const float& dt, Player* player)
 		// Rotation around the Y axis (look left/right)
 		deltaRotation.m128_f32[1] = Input::GetMouseDeltaX() * player->m_camera->GetRotationSpeed() * 0.001f;
 	}
-	
-	PlayerPhysics_Data::deltaXRot = deltaRotation.m128_f32[1];
-	PlayerPhysics_Data::deltaYRot = deltaRotation.m128_f32[0];
-	VX_LOG("(%u) [ %2.2f, %2.2f ] -> [%2.2f, %2.2f]", (unsigned int)Input::IsMouseDown(MouseCode::LBUTTON), deltaRotation.m128_f32[0], deltaRotation.m128_f32[1], Input::GetMouseDeltaY(), Input::GetMouseDeltaX());
 
 	// Build the rotation and translation matrices
 	XMMATRIX rotXMatrix = XMMatrixRotationX(deltaRotation.m128_f32[0]);
@@ -201,7 +191,7 @@ void PlayerController::CheckForCollision(Player* player, DirectX::XMMATRIX& worl
 	XMVECTOR vel = XMLoadFloat3(&player->m_velocity);
 
 	// Apply gravity
-	//Physics::ApplyAcceleration(vel, { 0.0f, GRAVITY, 0.0f }, dt);
+	Physics::ApplyAcceleration(vel, { 0.0f, GRAVITY, 0.0f }, dt);
 
 	// Cap velocity at a reasonable terminal velocity value
 	if (abs(vel.m128_f32[1]) > TERMINAL_VELOCITY) vel.m128_f32[1] = vel.m128_f32[1] > 0 ? TERMINAL_VELOCITY : -TERMINAL_VELOCITY;

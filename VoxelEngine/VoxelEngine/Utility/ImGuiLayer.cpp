@@ -102,8 +102,6 @@ void ImGuiLayer::Draw()
 		PlayerPhysics_Data::accel.x, PlayerPhysics_Data::accel.y, PlayerPhysics_Data::accel.z);
 	ImGui::Text("IsCollidingWall: %i", PlayerPhysics_Data::isCollidingWall);
 	ImGui::Text("IsCollidingFloor: %i", PlayerPhysics_Data::isCollidingFloor);
-	ImGui::Text("Delta X Rot: %2.2f", PlayerPhysics_Data::deltaXRot);
-	ImGui::Text("Delta Y Rot: %2.2f", PlayerPhysics_Data::deltaYRot);
 	ImGui::End();
 
 #pragma endregion

@@ -7,8 +7,6 @@
 #include "../Utility/ImGuiLayer.h"
 #include "../Utility/Math.h"
 
-#include "../Utility/Noise.h"
-
 
 // TEMP FOR DEBUG
 #include "ChunkBufferManager.h"
@@ -56,7 +54,7 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 	Noise3D::Init(static_cast<int>(std::chrono::high_resolution_clock::now().time_since_epoch().count()));
 #endif // USE_SEED_BASED_ON_SYSTEM_TIME
 #else
-	Noise3D::Init(CHUNK_GENERATION_SEED);
+	//Noise3D::Init(CHUNK_GENERATION_SEED);
 #endif // USE_DEFAULT_SEED
 
 	m_playerPos = playerPosWS;
