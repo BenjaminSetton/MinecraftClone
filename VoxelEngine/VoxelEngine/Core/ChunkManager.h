@@ -10,7 +10,7 @@
 
 #include "Chunk.h"
 
-constexpr int32_t RENDER_DIST = 5;
+constexpr int32_t RENDER_DIST = 8;
 
 
 // This is a work in progress!!
@@ -48,6 +48,9 @@ public:
 	static Chunk* LoadChunkMultithreaded(const DirectX::XMFLOAT3 chunkCS);
 
 	static const bool IsShuttingDown();
+
+	// TEMP UTILITY FOR TESTING PURPOSES
+	static bool CheckBlockRaycast(const DirectX::XMFLOAT3& pos);
 
 private:
 

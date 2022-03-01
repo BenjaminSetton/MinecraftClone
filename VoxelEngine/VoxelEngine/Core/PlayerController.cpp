@@ -6,6 +6,8 @@
 #include "../Utility/Input.h"
 #include "Events/KeyCodes.h"
 #include "Physics.h"
+#include "../Utility/Math.h"
+#include "ChunkManager.h"
 
 // DEBUG
 #include "../Utility/ImGuiLayer.h"
@@ -143,6 +145,30 @@ void PlayerController::Update(const float& dt, Player* player)
 
 	// Re-assign the view matrix with all the changes
 	player->m_camera->SetWorldMatrix(worldMatrix);
+
+
+
+	// TEST RAYCASTING, PLEASE REMOVE
+	{
+		XMFLOAT3 rayHit = { 0, 0, 0 };
+		if (Input::IsMouseDown(MouseCode::RBUTTON))
+		{
+			XMFLOAT3 rayPos, rayDir;
+			XMStoreFloat3(&rayPos, player->m_camera->GetWorldMatrix().r[3]);
+			XMStoreFloat3(&rayDir, player->m_camera->GetWorldMatrix().r[2]);
+			float scale = 10.0f;
+			if (VX_MATH::Raycast(rayPos, rayDir, 10, ChunkManager::CheckBlockRaycast, &rayHit))
+			{
+				VX_LOG("Target Hit");
+			}
+			else
+			{
+				VX_LOG("Target Missed");
+			}
+			XMFLOAT3 rayEnd = { rayPos.x + rayDir.x * scale, rayPos.y + rayDir.y * scale, rayPos.z + rayDir.z * scale };
+			DebugLine::AddLine(rayPos, rayEnd, { 1.0f, 0, 0, 1.0f });
+		}
+	}
 }
 
 void PlayerController::CheckForCollision(Player* player, DirectX::XMMATRIX& worldMatrix, DirectX::XMFLOAT3& prevPos, DirectX::XMVECTOR& prevFootPos, const float& dt)

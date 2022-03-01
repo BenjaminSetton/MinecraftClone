@@ -106,6 +106,7 @@ public:
 		if ((char*)obj >= (char*)&m_pool[0]) return static_cast<uint32_t>(((char*)obj - (char*)&m_pool[0]) / sizeof(T));
 		
 		VX_ASSERT_MSG(false, "Invalid pointer");
+		return 0;
 	}
 
 private:

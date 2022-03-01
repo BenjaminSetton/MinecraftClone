@@ -253,11 +253,11 @@ void ChunkManager::Update()
 	}
 
 	// DEBUG LOOP
-	for (uint32_t i = 0; i < m_activeChunks.Size(); i++)
-	{
-		Chunk* currChunk = m_activeChunks[i];
-		currChunk->DrawChunkBorder();
-	}
+	//for (uint32_t i = 0; i < m_activeChunks.Size(); i++)
+	//{
+	//	Chunk* currChunk = m_activeChunks[i];
+	//	currChunk->DrawChunkBorder();
+	//}
 	
 	VX_ASSERT(m_activeChunks.Size() == pow((2 * RENDER_DIST + 1), 3));
 
@@ -664,3 +664,21 @@ Chunk* ChunkManager::LoadChunkMultithreaded(const DirectX::XMFLOAT3 chunkCS)
 }
 
 const bool ChunkManager::IsShuttingDown() { return m_isShuttingDown; }
+
+bool ChunkManager::CheckBlockRaycast(const DirectX::XMFLOAT3& pos)
+{
+	// pos = 58, 17, 45
+	// posInCS = 48, 16, 32
+	XMFLOAT3 posInCS = VX_MATH::WorldToChunkSpace(pos);
+	Chunk* chunk = GetChunkAtPos(posInCS);
+	if (chunk)
+	{
+		Block* block = chunk->GetBlock(static_cast<unsigned int>(pos.x - posInCS.x), static_cast<unsigned int>(pos.y - posInCS.y), static_cast<unsigned int>(pos.z - posInCS.z));
+		if (block && block->GetType() != BlockType::Air)	return true;
+		else												return false;
+	}
+	else
+	{
+		return false;
+	}
+}

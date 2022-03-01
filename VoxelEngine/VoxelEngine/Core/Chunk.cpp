@@ -20,8 +20,8 @@ using namespace DirectX;
 
 constexpr uint32_t BUFFER_SIZE = 6 * 6 * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * 0.1f;
 
-constexpr int32_t TERRAIN_STARTING_HEIGHT = 130;
-constexpr int32_t TERRAIN_HEIGHT_RANGE = 16;
+constexpr int32_t TERRAIN_STARTING_HEIGHT = 80;
+constexpr int32_t TERRAIN_HEIGHT_RANGE = 50;
 
 constexpr int32_t LOW_CHUNK_LIMIT = -256;
 constexpr int32_t HIGH_CHUNK_LIMIT = -LOW_CHUNK_LIMIT;

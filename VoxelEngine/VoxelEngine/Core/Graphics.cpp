@@ -215,8 +215,8 @@ bool Graphics::Frame(const float dt)
 		{
 			VX_PROFILE_SCOPE("[RENDER] Debug Lines");
 			// Render all debug lines and spheres
-			//m_debugShader->UpdateViewMatrix(m_player->GetCamera()->GetViewMatrix());
-			//m_debugShader->Render();
+			m_debugShader->UpdateViewMatrix(m_player->GetCamera()->GetViewMatrix());
+			m_debugShader->Render();
 		}
 
 		{
