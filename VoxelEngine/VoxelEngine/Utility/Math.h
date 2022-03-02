@@ -91,6 +91,7 @@ namespace VX_MATH
 	{
 		using namespace DirectX;
 
+#pragma region _COMMENT
 		//XMFLOAT3 p = rayPos;
 		//XMFLOAT3 step = {0, 0, 0};
 		//XMFLOAT3 counter = { 0, 0, 0 };
@@ -140,6 +141,7 @@ namespace VX_MATH
 		//	}
 		//	return (p[ix] != p1[ix] + step[ix]);
 		//}
+#pragma endregion
 		
 		XMFLOAT3 rayUnitStepSize =
 		{

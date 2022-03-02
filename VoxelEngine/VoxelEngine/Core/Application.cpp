@@ -210,8 +210,8 @@ void Application::InitializeWindows(UINT& screenWidth, UINT& screenHeight)
 	else
 	{
 		// If windowed then set it to 1600x900 (16:9) resolution.
-		screenWidth = 1600;
-		screenHeight = 900;
+		screenWidth = 2400;
+		screenHeight = 1350;
 
 		// Place the window in the middle of the screen.
 		posX = (GetSystemMetrics(SM_CXSCREEN) - screenWidth) / 2;

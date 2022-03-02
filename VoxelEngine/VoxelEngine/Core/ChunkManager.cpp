@@ -673,7 +673,8 @@ bool ChunkManager::CheckBlockRaycast(const DirectX::XMFLOAT3& pos)
 	Chunk* chunk = GetChunkAtPos(posInCS);
 	if (chunk)
 	{
-		Block* block = chunk->GetBlock(static_cast<unsigned int>(pos.x - posInCS.x), static_cast<unsigned int>(pos.y - posInCS.y), static_cast<unsigned int>(pos.z - posInCS.z));
+		XMFLOAT3 chunkPosInWS = VX_MATH::ChunkToWorldSpace(posInCS);
+		Block* block = chunk->GetBlock(static_cast<unsigned int>(pos.x - chunkPosInWS.x), static_cast<unsigned int>(pos.y - chunkPosInWS.y), static_cast<unsigned int>(pos.z - chunkPosInWS.z));
 		if (block && block->GetType() != BlockType::Air)	return true;
 		else												return false;
 	}
