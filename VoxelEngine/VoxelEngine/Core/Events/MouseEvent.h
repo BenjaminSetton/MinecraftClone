@@ -50,7 +50,7 @@ class MouseButtonEvent : public Event
 {
 public:
 	// Rule of three + overloaded constructor
-	MouseButtonEvent(const float button) : mouseButton(button) {}
+	MouseButtonEvent(const float button) : mouseButton(static_cast<uint16_t>(button)) {}
 	MouseButtonEvent(const MouseButtonEvent& other) = default;
 	~MouseButtonEvent() = default;
 

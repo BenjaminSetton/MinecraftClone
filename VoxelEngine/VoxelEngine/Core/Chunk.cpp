@@ -18,7 +18,7 @@
 
 using namespace DirectX;
 
-constexpr uint32_t BUFFER_SIZE = 6 * 6 * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * 0.1f;
+constexpr uint32_t BUFFER_SIZE = static_cast<uint32_t>(6 * 6 * CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * 0.1f);
 
 constexpr int32_t TERRAIN_STARTING_HEIGHT = 80;
 constexpr int32_t TERRAIN_HEIGHT_RANGE = 50;
@@ -65,24 +65,24 @@ void Chunk::DrawChunkBorder()
 	XMFLOAT3 brn = { posWS.x + CHUNK_SIZE, posWS.y - CHUNK_SIZE, posWS.z + CHUNK_SIZE };
 
 	// Back
-	DebugLine::AddLine(tln, trn, color);
-	DebugLine::AddLine(trn, brn, color);
-	DebugLine::AddLine(brn, bln, color);
-	DebugLine::AddLine(bln, tln, color);
+	DebugRenderer::DrawLine(tln, trn, color);
+	DebugRenderer::DrawLine(trn, brn, color);
+	DebugRenderer::DrawLine(brn, bln, color);
+	DebugRenderer::DrawLine(bln, tln, color);
 
 	// Front
-	DebugLine::AddLine(tlf, trf, color);
-	DebugLine::AddLine(trf, brf, color);
-	DebugLine::AddLine(brf, blf, color);
-	DebugLine::AddLine(blf, tlf, color);
+	DebugRenderer::DrawLine(tlf, trf, color);
+	DebugRenderer::DrawLine(trf, brf, color);
+	DebugRenderer::DrawLine(brf, blf, color);
+	DebugRenderer::DrawLine(blf, tlf, color);
 
 	// Left side
-	DebugLine::AddLine(tln, tlf, color);
-	DebugLine::AddLine(blf, bln, color);
+	DebugRenderer::DrawLine(tln, tlf, color);
+	DebugRenderer::DrawLine(blf, bln, color);
 
 	// Right side
-	DebugLine::AddLine(trn, trf, color);
-	DebugLine::AddLine(brf, brn, color);
+	DebugRenderer::DrawLine(trn, trf, color);
+	DebugRenderer::DrawLine(brf, brn, color);
 }
 
 const uint32_t Chunk::GetVertexBufferStartIndex() { return m_vertexBufferStartIndex; }
@@ -105,7 +105,7 @@ void Chunk::Init()
 		{
 			// Returns a values between MAXIMUM_TERRAIN_HEIGHT and MINIMUM_TERRAIN_HEIGHT
 			SimplexNoise noiseGenerator( 0.012f, 1.0f, 2.0f, 0.5f );
-			float sampledNoise = noiseGenerator.fractal(4, static_cast<double>(x + posWS.x), static_cast<double>(z + posWS.z));
+			float sampledNoise = noiseGenerator.fractal(4, static_cast<float>(x + posWS.x), static_cast<float>(z + posWS.z));
 			float height = ((sampledNoise * 0.5f + 0.5f) * TERRAIN_HEIGHT_RANGE) + TERRAIN_STARTING_HEIGHT;
 			for(int64_t y = 0; y < CHUNK_SIZE; y++)
 			{
@@ -129,7 +129,7 @@ void Chunk::InitializeVertexBuffer()
 	XMFLOAT3 posWS = { m_pos.x * CHUNK_SIZE, m_pos.y * CHUNK_SIZE, m_pos.z * CHUNK_SIZE };
 
 	// Get start index
-	uint32_t initialArraySize = ChunkBufferManager::GetVertexArray().size();
+	uint32_t initialArraySize = static_cast<uint32_t>(ChunkBufferManager::GetVertexArray().size());
 
 	// Retrieve neighboring chunks
 	Chunk* leftChunk = ChunkManager::GetChunkAtPos({ m_pos.x - 1, m_pos.y, m_pos.z });
@@ -261,7 +261,7 @@ void Chunk::ShutdownVertexBuffer()
 		auto& vertexArray = ChunkBufferManager::GetVertexArray();
 		VX_ASSERT(m_vertexBufferStartIndex < vertexArray.size());
 
-		int debug_vertexArraySize = vertexArray.size();
+		int debug_vertexArraySize = static_cast<int>(vertexArray.size());
 
 		if(m_blockCount == 34)
 		{

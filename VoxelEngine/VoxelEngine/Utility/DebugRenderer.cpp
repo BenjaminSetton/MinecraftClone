@@ -8,15 +8,79 @@ namespace
 	// In other words, these variables are global but are only visible in this source file.
 
 	// Maximum number of debug lines at one time (i.e: Capacity)
-	constexpr size_t MAX_LINE_VERTS = 100000;
+	constexpr size_t MAX_LINE_VERTS = 250000;
 
 	// CPU-side buffer of debug-line verts
 	// Copied to the GPU and reset every frame.
 	size_t line_vert_count = 0;	
-	std::array<DebugLine::ColoredVertex, MAX_LINE_VERTS> line_verts;
+	std::array<DebugRenderer::ColoredVertex, MAX_LINE_VERTS> line_verts;
 }
 
-void DebugLine::AddLine(DirectX::XMFLOAT3 ptA, DirectX::XMFLOAT3 ptB, DirectX::XMFLOAT4 clA, DirectX::XMFLOAT4 clB)
+
+float DebugRenderer::mClearMaxTimer = 10.0f;
+
+float DebugRenderer::mClearCurrentTimer = mClearMaxTimer;
+
+
+void DebugRenderer::DrawLine(const DirectX::XMFLOAT3& startPosition, const DirectX::XMFLOAT3& endPosition, const DirectX::XMFLOAT4& startColor, const DirectX::XMFLOAT4& endColor)
+{
+	DebugLine::AddLine(startPosition, endPosition, startColor, endColor);
+}
+
+void DebugRenderer::DrawLine(const DirectX::XMFLOAT3& startPosition, const DirectX::XMFLOAT3& endPosition, const DirectX::XMFLOAT4& lineColor)
+{
+	DebugRenderer::DrawLine(startPosition, endPosition, lineColor, lineColor);
+}
+
+void DebugRenderer::DrawSphere(const int32_t levelOfDetail, const DirectX::XMFLOAT3& position, const float radius, const DirectX::XMFLOAT4& color)
+{
+	DebugSphere::DrawSphere(levelOfDetail, position, radius, color);
+}
+
+void DebugRenderer::DrawCircle(const int32_t levelOfDetail, const DirectX::XMFLOAT3& position, const float radius, const DirectX::XMFLOAT4& color)
+{
+	DebugSphere::DrawCircle(levelOfDetail, position, radius, color);
+}
+
+void DebugRenderer::Clear()
+{
+	// Resets debug_vert_count
+	line_verts.fill(ColoredVertex());
+	line_vert_count = 0;
+}
+
+const DebugRenderer::ColoredVertex* DebugRenderer::GetLineVertices()
+{
+	return line_verts.data();
+}
+
+size_t DebugRenderer::GetVertexCount()
+{
+	return line_vert_count;
+}
+
+size_t DebugRenderer::GetVertexCapacity()
+{
+	return MAX_LINE_VERTS;
+}
+
+void DebugRenderer::SetMaxClearTimer(const float& clearTimer) 
+{ 
+	mClearMaxTimer = clearTimer;
+	mClearCurrentTimer = clearTimer;
+}
+
+void DebugRenderer::DecreaseCurrentClearTimer(const float& dt) 
+{
+	mClearCurrentTimer -= dt;
+	if (mClearCurrentTimer <= 0)
+	{
+		mClearCurrentTimer += mClearMaxTimer;
+		Clear();
+	}
+}
+
+void DebugRenderer::DebugLine::AddLine(DirectX::XMFLOAT3 ptA, DirectX::XMFLOAT3 ptB, DirectX::XMFLOAT4 clA, DirectX::XMFLOAT4 clB)
 {
 	if (line_vert_count >= MAX_LINE_VERTS) return;
 
@@ -28,28 +92,6 @@ void DebugLine::AddLine(DirectX::XMFLOAT3 ptA, DirectX::XMFLOAT3 ptB, DirectX::X
 	line_vert_count++;
 }
 
-void DebugLine::ClearLines()
-{
-	// Resets debug_vert_count
-	line_verts.fill(ColoredVertex());
-	line_vert_count = 0;
-}
-
-const DebugLine::ColoredVertex* DebugLine::GetLineVerts()
-{
-	return line_verts.data();
-}
-
-size_t DebugLine::GetLineVertCount()
-{
-	return line_vert_count;
-}
-
-size_t DebugLine::GetLineVertCapacity()
-{
-	return MAX_LINE_VERTS;
-}
-
 
 
 ////////////////////////////////////////////
@@ -58,19 +100,11 @@ size_t DebugLine::GetLineVertCapacity()
 /// 
 ////////////////////////////////////////////
 
-std::vector<DirectX::XMFLOAT3> DebugSphere::mGeometry = std::vector<DirectX::XMFLOAT3>();
-int32_t DebugSphere::mIndex = 0;
-std::map<int64_t, int32_t> DebugSphere::mMiddlePointIndexCache = std::map<int64_t, int32_t>();
+std::vector<DirectX::XMFLOAT3> DebugRenderer::DebugSphere::mGeometry = std::vector<DirectX::XMFLOAT3>();
+int32_t DebugRenderer::DebugSphere::mIndex = 0;
+std::map<int64_t, int32_t> DebugRenderer::DebugSphere::mMiddlePointIndexCache = std::map<int64_t, int32_t>();
 
-void DebugSphere::Initialize() {}
-
-void DebugSphere::Shutdown()
-{
-	Reset();
-	// No dynamic memory to deal with
-}
-
-int32_t DebugSphere::AddVertex(DirectX::XMFLOAT3 _vert, const float _radius, const DirectX::XMFLOAT3 _pos)
+int32_t DebugRenderer::DebugSphere::AddVertex(DirectX::XMFLOAT3 _vert, const float _radius, const DirectX::XMFLOAT3 _pos)
 {
 	float length = sqrt(_vert.x * _vert.x + _vert.y * _vert.y + _vert.z * _vert.z);
 	DirectX::XMFLOAT3 normPos = { _vert.x / length, _vert.y / length, _vert.z / length };
@@ -80,7 +114,7 @@ int32_t DebugSphere::AddVertex(DirectX::XMFLOAT3 _vert, const float _radius, con
 }
 
 
-int32_t DebugSphere::GetMiddlePoint(const int64_t _a, const int64_t _b, const float _radius, const DirectX::XMFLOAT3 _pos)
+int32_t DebugRenderer::DebugSphere::GetMiddlePoint(const int64_t _a, const int64_t _b, const float _radius, const DirectX::XMFLOAT3 _pos)
 {
 	// Check map to see if value is already stored there
 	bool firstIsSmaller = _a < _b;
@@ -116,7 +150,7 @@ int32_t DebugSphere::GetMiddlePoint(const int64_t _a, const int64_t _b, const fl
 
 }
 
-void DebugSphere::AddFaceToRenderer(const int32_t ind1, const int32_t ind2, const int32_t ind3, const DirectX::XMFLOAT3 _pos, DirectX::XMFLOAT4 _color)
+void DebugRenderer::DebugSphere::AddFaceToRenderer(const int32_t ind1, const int32_t ind2, const int32_t ind3, const DirectX::XMFLOAT3 _pos, DirectX::XMFLOAT4 _color)
 {
 	DebugLine::AddLine
 	(
@@ -138,7 +172,7 @@ void DebugSphere::AddFaceToRenderer(const int32_t ind1, const int32_t ind2, cons
 	);
 }
 
-void DebugSphere::DrawSphere(const int32_t _levelOfDetail, const DirectX::XMFLOAT3 _pos, const float _radius, const DirectX::XMFLOAT4 _color)
+void DebugRenderer::DebugSphere::DrawSphere(const int32_t _levelOfDetail, const DirectX::XMFLOAT3 _pos, const float _radius, const DirectX::XMFLOAT4 _color)
 {
 	// Reset all member variables
 	Reset();
@@ -230,7 +264,7 @@ void DebugSphere::DrawSphere(const int32_t _levelOfDetail, const DirectX::XMFLOA
 
 }
 
-void DebugSphere::DrawCircle(const int32_t _levelOfDetail, const DirectX::XMFLOAT3 _pos, const float _radius, const DirectX::XMFLOAT4 _color)
+void DebugRenderer::DebugSphere::DrawCircle(const int32_t _levelOfDetail, const DirectX::XMFLOAT3 _pos, const float _radius, const DirectX::XMFLOAT4 _color)
 {
 	// Reset all member variables
 	Reset();
@@ -296,7 +330,7 @@ void DebugSphere::DrawCircle(const int32_t _levelOfDetail, const DirectX::XMFLOA
 	}
 }
 
-void DebugSphere::Reset()
+void DebugRenderer::DebugSphere::Reset()
 {
 	mIndex = 0;
 	mMiddlePointIndexCache.clear();

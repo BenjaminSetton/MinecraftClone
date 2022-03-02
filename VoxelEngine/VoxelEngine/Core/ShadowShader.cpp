@@ -26,7 +26,7 @@ void ShadowShader::Initialize(const uint32_t width, const uint32_t height)
 	HRESULT hr;
 	MatrixBuffer* matrixBufferPtr;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	BlockInstanceData* vertexBufferPtr;
+	//BlockInstanceData* vertexBufferPtr;
 	XMFLOAT3 lightDirection = DayNightCycle::GetLightDirection(DayNightCycle::CelestialBody::SUN);
 
 	XMFLOAT4 camPos = { -4.0f, 50.0f, -10.0f, 1.0f};
@@ -69,7 +69,7 @@ void ShadowShader::Render()
 
 	BindVertexBuffers();
 
-	uint32_t size = ChunkBufferManager::GetVertexArray().size();
+	uint32_t size = static_cast<uint32_t>(ChunkBufferManager::GetVertexArray().size());
 	context->Draw(size, 0);
 
 }

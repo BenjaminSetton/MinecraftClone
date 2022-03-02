@@ -17,24 +17,24 @@ constexpr float BODY_POS_SCALE = 50.0f;
 // Sun colors
 constexpr XMFLOAT4 ce_sunColors[4] =
 {
-	{ 1.0f, 0.549f, 0.0f, 1.0f },		// SUNRISE
-	{ 0.991f, 0.913f, 0.89f, 1.0f },	// MIDDAY
+	{ 1.0f,   0.549f, 0.0f,   1.0f },	// SUNRISE
+	{ 0.991f, 0.913f, 0.89f,  1.0f },	// MIDDAY
 	{ 0.992f, 0.369f, 0.325f, 1.0f },	// SUNSET
-	{ 0.0f, 0.0f, 0.0f, 1.0f }			// MIDNIGHT
+	{ 0.0f,   0.0f,   0.0f,   1.0f }	// MIDNIGHT
 };
 
 constexpr XMFLOAT4 ce_moonColors[4] =
 {
 	{ 0.169f, 0.189f, 0.387f, 1.0f },	// SUNRISE
-	{ 0.0f, 0.0f, 0.0f, 1.0f },			// MIDDAY
+	{ 0.0f,   0.0f,   0.0f,   1.0f },	// MIDDAY
 	{ 0.202f, 0.277f, 0.420f, 1.0f },	// SUNSET
 	{ 0.082f, 0.157f, 0.322f, 1.0f }	// MIDNIGHT
 };
 
 constexpr XMFLOAT4 ce_skyColors[4] =
 {
-	{ 1.0f, 0.549f, 0.0f, 1.0f },		// SUNRISE
-	{ 0.529f, 0.807f, 0.922, 1.0f },	// MIDDAY
+	{ 1.0f,   0.549f, 0.0f,   1.0f },	// SUNRISE
+	{ 0.529f, 0.807f, 0.922f, 1.0f },	// MIDDAY
 	{ 0.992f, 0.369f, 0.325f, 1.0f },	// SUNSET
 	{ 0.063f, 0.063f, 0.275f, 1.0f }	// MIDNIGHT
 };
@@ -175,11 +175,11 @@ void DayNightCycle::Update(const float& dt)
 
 	XMFLOAT3 startPos = { -4.0f, 16.0f, 0.0f };
 	float lineLength = 5.0f;
-	DebugLine::AddLine(startPos, {startPos.x + (sunDir.x * lineLength), 
+	DebugRenderer::DrawLine(startPos, {startPos.x + (sunDir.x * lineLength),
 		startPos.y + (sunDir.y * lineLength), startPos.z + (sunDir.z * lineLength) },
 		{1.0f, 0.0f, 0.0f, 1.0f});
 
-	DebugLine::AddLine(startPos, {startPos.x + (moonDir.x * lineLength), 
+	DebugRenderer::DrawLine(startPos, {startPos.x + (moonDir.x * lineLength),
 	startPos.y + (moonDir.y * lineLength), startPos.z + (moonDir.z * lineLength) },
 	{0.0f, 0.0f, 1.0f, 1.0f});
 

@@ -154,14 +154,6 @@ bool Graphics::Frame(const float dt)
 		SCREEN_NEAR, SCREEN_FAR, m_player->GetCamera()->GetWorldMatrix(), m_player->GetPosition());
 
 
-	//
-	// !	DEBUG ONLY
-	//
-	// FrustumCulling::Debug_DrawFrustum();
-	// auto chunkVec = ChunkManager::GetChunkVector();
-	// for (auto chunk : chunkVec) FrustumCulling::Debug_DrawAABB(FrustumCulling::ConvertChunkPosToAABB(ChunkManager::ChunkToWorldSpace(chunk->GetPosition())));
-
-
 	// Update the position for the updater thread
 	ChunkManager::SetPlayerPos(m_player->GetPosition());
 
@@ -173,6 +165,9 @@ bool Graphics::Frame(const float dt)
 
 	// Update the day/night cycle
 	DayNightCycle::Update(dt);
+
+	// Decrement the clear timer for debug objects
+	if(DebugRenderer::GetVertexCount() > 0) DebugRenderer::DecreaseCurrentClearTimer(dt);
 
 	// Begin the D3D scene
 	D3D::BeginScene(DayNightCycle::GetSkyColor());

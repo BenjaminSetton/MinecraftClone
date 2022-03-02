@@ -17,7 +17,7 @@ bool FrustumCulling::CalculateChunkPosAgainstFrustum(const XMFLOAT3 chunkPosWS)
 	AABB aabb = ConvertChunkPosToAABB(chunkPosWS);
 
 	// Test the AABB against the frustum and return the result
-#ifdef PASS_STRADDLING_CHUNKS 1
+#if defined(PASS_STRADDLING_CHUNKS)
 	if (TestAABBAgainstPlane(aabb, m_frustum.planes[Frustum_Planes::BACK])		< 0) return false;
 	if (TestAABBAgainstPlane(aabb, m_frustum.planes[Frustum_Planes::BOTTOM])	< 0) return false;
 	if (TestAABBAgainstPlane(aabb, m_frustum.planes[Frustum_Planes::FRONT])		< 0) return false;
@@ -135,20 +135,20 @@ void FrustumCulling::Debug_DrawFrustum()
 	XMStoreFloat3(&blf, m_frustum.vertices[Frustum_Vertices::BLF]);
 	XMStoreFloat3(&brf, m_frustum.vertices[Frustum_Vertices::BRF]);
 
-	DebugLine::AddLine(tln, tlf, lineColor);
-	DebugLine::AddLine(trn, trf, lineColor);
-	DebugLine::AddLine(bln, blf, lineColor);
-	DebugLine::AddLine(brn, brf, lineColor);
+	DebugRenderer::DrawLine(tln, tlf, lineColor);
+	DebugRenderer::DrawLine(trn, trf, lineColor);
+	DebugRenderer::DrawLine(bln, blf, lineColor);
+	DebugRenderer::DrawLine(brn, brf, lineColor);
 
-	DebugLine::AddLine(tln, trn, lineColor);
-	DebugLine::AddLine(trn, brn, lineColor);
-	DebugLine::AddLine(brn, bln, lineColor);
-	DebugLine::AddLine(bln, tln, lineColor);
+	DebugRenderer::DrawLine(tln, trn, lineColor);
+	DebugRenderer::DrawLine(trn, brn, lineColor);
+	DebugRenderer::DrawLine(brn, bln, lineColor);
+	DebugRenderer::DrawLine(bln, tln, lineColor);
 
-	DebugLine::AddLine(tlf, trf, lineColor);
-	DebugLine::AddLine(trf, brf, lineColor);
-	DebugLine::AddLine(brf, blf, lineColor);
-	DebugLine::AddLine(blf, tlf, lineColor);
+	DebugRenderer::DrawLine(tlf, trf, lineColor);
+	DebugRenderer::DrawLine(trf, brf, lineColor);
+	DebugRenderer::DrawLine(brf, blf, lineColor);
+	DebugRenderer::DrawLine(blf, tlf, lineColor);
 
 	// Frustum normals
 	XMFLOAT4 nrmStartCol = { 1.0f, 0.0f, 0.0f, 1.0f };
@@ -164,7 +164,7 @@ void FrustumCulling::Debug_DrawFrustum()
 		((m_frustum.vertices[Frustum_Vertices::TRF] - m_frustum.vertices[Frustum_Vertices::TRN]) / 100.0f + m_frustum.vertices[Frustum_Vertices::TRN]))
 					 / 4.0f });
 	XMStoreFloat3(&endPoint, XMLoadFloat3(&planeMidpoint) + XMLoadFloat3(&currPlane.normal));
-	DebugLine::AddLine(planeMidpoint, endPoint, nrmStartCol, nrmEndCol);
+	DebugRenderer::DrawLine(planeMidpoint, endPoint, nrmStartCol, nrmEndCol);
 
 	currPlane = m_frustum.planes[Frustum_Planes::BOTTOM];
 	XMStoreFloat3(&planeMidpoint, {
@@ -174,7 +174,7 @@ void FrustumCulling::Debug_DrawFrustum()
 		((m_frustum.vertices[Frustum_Vertices::BRF] - m_frustum.vertices[Frustum_Vertices::BRN]) / 100.0f + m_frustum.vertices[Frustum_Vertices::BRN]))
 					 / 4.0f });
 	XMStoreFloat3(&endPoint, XMLoadFloat3(&planeMidpoint) + XMLoadFloat3(&currPlane.normal));
-	DebugLine::AddLine(planeMidpoint, endPoint, nrmStartCol, nrmEndCol);
+	DebugRenderer::DrawLine(planeMidpoint, endPoint, nrmStartCol, nrmEndCol);
 
 	currPlane = m_frustum.planes[Frustum_Planes::LEFT];
 	XMStoreFloat3(&planeMidpoint, {
@@ -184,7 +184,7 @@ void FrustumCulling::Debug_DrawFrustum()
 		((m_frustum.vertices[Frustum_Vertices::TLF] - m_frustum.vertices[Frustum_Vertices::TLN]) / 100.0f + m_frustum.vertices[Frustum_Vertices::TLN]))
 					 / 4.0f });
 	XMStoreFloat3(&endPoint, XMLoadFloat3(&planeMidpoint) + XMLoadFloat3(&currPlane.normal));
-	DebugLine::AddLine(planeMidpoint, endPoint, nrmStartCol, nrmEndCol);
+	DebugRenderer::DrawLine(planeMidpoint, endPoint, nrmStartCol, nrmEndCol);
 
 	currPlane = m_frustum.planes[Frustum_Planes::RIGHT];
 	XMStoreFloat3(&planeMidpoint, {
@@ -194,7 +194,7 @@ void FrustumCulling::Debug_DrawFrustum()
 		((m_frustum.vertices[Frustum_Vertices::TRF] - m_frustum.vertices[Frustum_Vertices::TRN]) / 100.0f + m_frustum.vertices[Frustum_Vertices::TRN]))
 					 / 4.0f });
 	XMStoreFloat3(&endPoint, XMLoadFloat3(&planeMidpoint) + XMLoadFloat3(&currPlane.normal));
-	DebugLine::AddLine(planeMidpoint, endPoint, nrmStartCol, nrmEndCol);
+	DebugRenderer::DrawLine(planeMidpoint, endPoint, nrmStartCol, nrmEndCol);
 
 	currPlane = m_frustum.planes[Frustum_Planes::FRONT];
 	XMStoreFloat3(&planeMidpoint, {
@@ -204,7 +204,7 @@ void FrustumCulling::Debug_DrawFrustum()
 		m_frustum.vertices[Frustum_Vertices::BLN])
 					 / 4.0f });
 	XMStoreFloat3(&endPoint, XMLoadFloat3(&planeMidpoint) + XMLoadFloat3(&currPlane.normal));
-	DebugLine::AddLine(planeMidpoint, endPoint, nrmStartCol, nrmEndCol);
+	DebugRenderer::DrawLine(planeMidpoint, endPoint, nrmStartCol, nrmEndCol);
 
 	currPlane = m_frustum.planes[Frustum_Planes::BACK];
 	XMStoreFloat3(&planeMidpoint, {
@@ -214,7 +214,7 @@ void FrustumCulling::Debug_DrawFrustum()
 		m_frustum.vertices[Frustum_Vertices::BLF])
 					 / 4.0f });
 	XMStoreFloat3(&endPoint, XMLoadFloat3(&planeMidpoint) + XMLoadFloat3(&currPlane.normal));
-	DebugLine::AddLine(planeMidpoint, endPoint, nrmStartCol, nrmEndCol);
+	DebugRenderer::DrawLine(planeMidpoint, endPoint, nrmStartCol, nrmEndCol);
 }
 
 void FrustumCulling::Debug_DrawAABB(const AABB& aabb)
@@ -232,26 +232,26 @@ void FrustumCulling::Debug_DrawAABB(const AABB& aabb)
 	XMFLOAT3 brf = { center.x + extent.x, center.y - extent.y, center.z + extent.z };
 
 	// FRONT FACE
-	DebugLine::AddLine(tln, trn, lineCol);
-	DebugLine::AddLine(trn, brn, lineCol);
-	DebugLine::AddLine(brn, bln, lineCol);
-	DebugLine::AddLine(bln, tln, lineCol);
+	DebugRenderer::DrawLine(tln, trn, lineCol);
+	DebugRenderer::DrawLine(trn, brn, lineCol);
+	DebugRenderer::DrawLine(brn, bln, lineCol);
+	DebugRenderer::DrawLine(bln, tln, lineCol);
 
 	// BACK FACE
-	DebugLine::AddLine(tlf, trf, lineCol);
-	DebugLine::AddLine(trf, brf, lineCol);
-	DebugLine::AddLine(brf, blf, lineCol);
-	DebugLine::AddLine(blf, tlf, lineCol);
+	DebugRenderer::DrawLine(tlf, trf, lineCol);
+	DebugRenderer::DrawLine(trf, brf, lineCol);
+	DebugRenderer::DrawLine(brf, blf, lineCol);
+	DebugRenderer::DrawLine(blf, tlf, lineCol);
 
 	// TOP FACE
-	DebugLine::AddLine(tln, trn, lineCol);
-	DebugLine::AddLine(trn, trf, lineCol);
-	DebugLine::AddLine(trf, tlf, lineCol);
-	DebugLine::AddLine(tlf, tln, lineCol);
+	DebugRenderer::DrawLine(tln, trn, lineCol);
+	DebugRenderer::DrawLine(trn, trf, lineCol);
+	DebugRenderer::DrawLine(trf, tlf, lineCol);
+	DebugRenderer::DrawLine(tlf, tln, lineCol);
 
 	// BOTTOM FACE
-	DebugLine::AddLine(bln, brn, lineCol);
-	DebugLine::AddLine(brn, brf, lineCol);
-	DebugLine::AddLine(brf, blf, lineCol);
-	DebugLine::AddLine(blf, bln, lineCol);
+	DebugRenderer::DrawLine(bln, brn, lineCol);
+	DebugRenderer::DrawLine(brn, brf, lineCol);
+	DebugRenderer::DrawLine(brf, blf, lineCol);
+	DebugRenderer::DrawLine(blf, bln, lineCol);
 }
