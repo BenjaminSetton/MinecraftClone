@@ -4,7 +4,7 @@
 #include "BlockUVs.h"
 
 #include "ChunkManager.h"
-#include "ChunkBufferManager.h"
+#include "../Core/ShaderBufferManagers/ChunkBufferManager.h"
 
 #include "FrustumCulling.h"
 

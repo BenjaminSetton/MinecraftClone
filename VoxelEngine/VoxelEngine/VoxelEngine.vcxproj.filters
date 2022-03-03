@@ -40,6 +40,9 @@
     <Filter Include="Core\Chunk">
       <UniqueIdentifier>{d55354a6-4a73-48b9-8a57-da08d4963584}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\ShaderBufferManagers">
+      <UniqueIdentifier>{459d3e33-8830-4bbc-8b77-44b93ffbaf78}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Utility\Clock.cpp">
@@ -150,14 +153,26 @@
     <ClCompile Include="Core\ChunkManager.cpp">
       <Filter>Core\Chunk</Filter>
     </ClCompile>
-    <ClCompile Include="Core\ChunkBufferManager.cpp">
-      <Filter>Core\Chunk</Filter>
-    </ClCompile>
     <ClCompile Include="Utility\SortedPool.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="Utility\SimplexNoise.cpp">
       <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\ShaderBufferManagers\ChunkBufferManager.cpp">
+      <Filter>Core\ShaderBufferManagers</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\ShaderBufferManagers\QuadBufferManager.cpp">
+      <Filter>Core\ShaderBufferManagers</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\QuadShader.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\BlockSelectionIndicator.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Game.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -293,9 +308,6 @@
     <ClInclude Include="Core\ChunkManager.h">
       <Filter>Core\Chunk</Filter>
     </ClInclude>
-    <ClInclude Include="Core\ChunkBufferManager.h">
-      <Filter>Core\Chunk</Filter>
-    </ClInclude>
     <ClInclude Include="Utility\SortedPool.h">
       <Filter>Utility</Filter>
     </ClInclude>
@@ -304,6 +316,21 @@
     </ClInclude>
     <ClInclude Include="Utility\SimplexNoise.h">
       <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\ShaderBufferManagers\ChunkBufferManager.h">
+      <Filter>Core\ShaderBufferManagers</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\ShaderBufferManagers\QuadBufferManager.h">
+      <Filter>Core\ShaderBufferManagers</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\QuadShader.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\BlockSelectionIndicator.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Game.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -332,6 +359,12 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\DefaultBlock_GS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Quad_VS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Quad_PS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

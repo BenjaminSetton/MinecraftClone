@@ -5,10 +5,6 @@
 #include "D3D.h"
 #include "FrustumCamera.h"
 
-#include "DefaultBlockShader.h"
-#include "ShadowShader.h"
-#include "DebugRendererShader.h"
-
 #include "../Core/TextureManager.h"
 #include "../Utility/ImGuiLayer.h"
 #include "TextureViewer.h"
@@ -28,6 +24,11 @@ const bool VSYNC_ENABLED = false;
 const float SCREEN_FAR = 1000.0f;
 const float SCREEN_NEAR = 0.1f;
 
+class DefaultBlockShader;
+class ShadowShader;
+class DebugRendererShader;
+class QuadShader;
+
 class Graphics
 {
 public:
@@ -36,7 +37,7 @@ public:
 	Graphics(const Graphics&) = default;
 	~Graphics() = default;
 
-	bool Initialize(const int& screenWidth, const int& screenHeight, HWND windowHandle, Player* player);
+	bool Initialize(const int& screenWidth, const int& screenHeight, HWND windowHandle);
 
 	void Shutdown();
 
@@ -51,14 +52,13 @@ private:
 	DefaultBlockShader* m_chunkShader = nullptr;
 	ShadowShader* m_shadowShader = nullptr;
 	DebugRendererShader* m_debugShader = nullptr;
+	QuadShader* m_quadShader = nullptr;
 
 	TextureManager* m_textureManager = nullptr;
 
 	ImGuiLayer* m_imGuiLayer = nullptr;
 
 	TextureViewer* m_texViewer = nullptr;
-
-	Player* m_player = nullptr;
 
 	// Temporary
 	int m_screenWidth, m_screenHeight;

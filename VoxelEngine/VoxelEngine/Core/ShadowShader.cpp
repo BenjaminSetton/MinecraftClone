@@ -4,7 +4,7 @@
 
 #include "D3D.h"
 #include "DayNightCycle.h"
-#include "ChunkBufferManager.h"
+#include "../Core/ShaderBufferManagers/ChunkBufferManager.h"
 
 using namespace DirectX;
 

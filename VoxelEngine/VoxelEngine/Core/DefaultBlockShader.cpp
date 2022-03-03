@@ -10,7 +10,7 @@
 
 #include "Block.h"
 #include "BlockUVs.h"
-#include "ChunkBufferManager.h"
+#include "../Core/ShaderBufferManagers/ChunkBufferManager.h"
 
 using namespace DirectX;
 

@@ -1,11 +1,11 @@
-#include "../Misc/pch.h"
+#include "../../Misc/pch.h"
 
 #include "ChunkBufferManager.h"
-#include "D3D.h"
-#include "../Utility/Utility.h"
+#include "../D3D.h"
+#include "../../Utility/Utility.h"
 
-#include "Chunk.h"					// for CHUNK_SIZE
-#include "ChunkManager.h"			// for RENDER_DIST
+#include "../Chunk.h"					// for CHUNK_SIZE
+#include "../ChunkManager.h"			// for RENDER_DIST
 
 using namespace DirectX;
 

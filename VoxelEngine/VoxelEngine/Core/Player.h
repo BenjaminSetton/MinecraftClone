@@ -28,6 +28,9 @@ public:
 	DirectX::XMFLOAT3 GetPosition() const;
 	void SetPosition(const DirectX::XMFLOAT3 pos);
 
+	float GetInteractionRange();
+	void SetInteractionRange(float interactionRange);
+
 	void Update(const float& dt);
 
 private:
@@ -42,7 +45,7 @@ private:
 
 	float m_movementSpeed;
 
-
+	float m_interactionRange;
 };
 
 #endif // _PLAYER_H

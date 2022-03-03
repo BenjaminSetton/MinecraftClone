@@ -1,12 +1,19 @@
 #include "../Misc/pch.h"
 
+#include "Game.h"
 #include "Graphics.h"
 #include "../Utility/Utility.h"
 
 #include "../Utility/Input.h"
 
+#include "DefaultBlockShader.h"
+#include "ShadowShader.h"
+#include "DebugRendererShader.h"
+#include "QuadShader.h"
+
 #include "ChunkManager.h"
-#include "ChunkBufferManager.h"
+#include "../Core/ShaderBufferManagers/ChunkBufferManager.h"
+#include "../Core/ShaderBufferManagers/QuadBufferManager.h"
 #include "FrustumCulling.h"
 
 #include "../Utility/ImGuiLayer.h"
@@ -16,7 +23,7 @@
 using namespace DirectX;
 
 
-bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd, Player* player)
+bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd)
 {
 	bool initResult;
 
@@ -24,11 +31,10 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	initResult = D3D::Initialize(&rtWidth, &rtHeight, hwnd, VSYNC_ENABLED, FULL_SCREEN, SCREEN_FAR, SCREEN_NEAR);
 	if (!initResult) return false;
 
-	// Set internal player pointer to player parameter
-	m_player = player;
-
 	m_screenWidth = screenWidth;
 	m_screenHeight = screenHeight;
+
+	Player* player = Game::GetPrimaryPlayer();
 
 	m_frustumCam = new FrustumCamera();
 	m_frustumCam->ConstructMatrix({ -15.0f, 20.0f, 15.0f });
@@ -40,25 +46,30 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	m_textureManager->Init(D3D::GetDevice());
 	
 	// Initialize ChunkManager class (DefaultBlockShader will use it's data so initialization has to take place before it)
-	ChunkManager::Initialize(m_player->GetPosition());
+	ChunkManager::Initialize(player->GetPosition());
 	// Initialize ChunkBufferManager class
 	ChunkBufferManager::Initialize();
+	QuadBufferManager::Initialize();
 
 	// Create the shadow shader class
 	m_shadowShader = new ShadowShader();
 	m_shadowShader->CreateObjects(L"./Shaders/ShadowMap_VS.hlsl", L"./Shaders/ShadowMap_PS.hlsl");
 	m_shadowShader->Initialize(rtWidth, rtHeight);
 
-
 	// Create the chunk shader class object
 	m_chunkShader = new DefaultBlockShader();
 	m_chunkShader->CreateObjects(L"./Shaders/DefaultBlock_VS.hlsl", L"./Shaders/DefaultBlock_GS.hlsl", L"./Shaders/DefaultBlock_PS.hlsl");
-	m_chunkShader->Initialize(m_player->GetCamera()->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
+	m_chunkShader->Initialize(player->GetCamera()->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
 
 	// Create the debug renderer class object
 	m_debugShader = new DebugRendererShader();
 	m_debugShader->CreateObjects(L"./Shaders/DebugRenderer_VS.hlsl", L"./Shaders/DebugRenderer_PS.hlsl");
-	m_debugShader->Initialize(m_player->GetCamera()->GetViewMatrix());
+	m_debugShader->Initialize(player->GetCamera()->GetViewMatrix());
+
+	// Create the quad shader class object
+	m_quadShader = new QuadShader();
+	m_quadShader->CreateObjects(L"./Shaders/Quad_VS.hlsl", L"./Shaders/Quad_PS.hlsl");
+	m_quadShader->Initialize();
 	
 
 	// Create and initialize the ImGuiLayer
@@ -74,11 +85,13 @@ void Graphics::Shutdown()
 {
 	ChunkManager::Shutdown();
 	ChunkBufferManager::Shutdown();
+	QuadBufferManager::Shutdown();
 
-	if(m_player)
+	if (m_quadShader)
 	{
-		delete m_player;
-		m_player = nullptr;
+		m_quadShader->Shutdown();
+		delete m_quadShader;
+		m_quadShader = nullptr;
 	}
 
 	if(m_frustumCam)
@@ -135,6 +148,7 @@ bool Graphics::Frame(const float dt)
 {
 	VX_PROFILE_OUT(&GraphicsTimer_Data::frameTimer);
 
+	Player* player = Game::GetPrimaryPlayer();
 
 	// Begin the ImGui frame
 	m_imGuiLayer->BeginFrame();
@@ -151,17 +165,20 @@ bool Graphics::Frame(const float dt)
 	m_frustumCam->Update(dt);
 
 	FrustumCulling::CalculateFrustum(XM_PIDIV4, (float)m_screenWidth / m_screenHeight, 
-		SCREEN_NEAR, SCREEN_FAR, m_player->GetCamera()->GetWorldMatrix(), m_player->GetPosition());
+		SCREEN_NEAR, SCREEN_FAR, player->GetCamera()->GetWorldMatrix(), player->GetPosition());
 
 
 	// Update the position for the updater thread
-	ChunkManager::SetPlayerPos(m_player->GetPosition());
+	ChunkManager::SetPlayerPos(player->GetPosition());
 
 	{
 		VX_PROFILE_SCOPE("[UPDATE] Chunk Buffer Update");
 		// Update the vertices
 		ChunkBufferManager::UpdateBuffers();
 	}
+
+	// Update the quad buffer manager buffers
+	QuadBufferManager::UpdateBuffers();
 
 	// Update the day/night cycle
 	DayNightCycle::Update(dt);
@@ -199,18 +216,23 @@ bool Graphics::Frame(const float dt)
 				
 		}
 
+		{
+			VX_PROFILE_SCOPE("[RENDER] Quads");
+			m_quadShader->UpdateViewMatrix(player->GetCamera()->GetViewMatrix());
+			m_quadShader->Render();
+		}
 
 		{
 			VX_PROFILE_SCOPE("[RENDER] Chunk");
 			// Send the chunks to the shader and render
-			m_chunkShader->UpdateViewMatrices(m_player->GetCamera()->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
+			m_chunkShader->UpdateViewMatrices(player->GetCamera()->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
 			m_chunkShader->Render(srvs);
 		}
 
 		{
 			VX_PROFILE_SCOPE("[RENDER] Debug Lines");
 			// Render all debug lines and spheres
-			m_debugShader->UpdateViewMatrix(m_player->GetCamera()->GetViewMatrix());
+			m_debugShader->UpdateViewMatrix(player->GetCamera()->GetViewMatrix());
 			m_debugShader->Render();
 		}
 
@@ -221,8 +243,8 @@ bool Graphics::Frame(const float dt)
 		}
 	}
 
-	Renderer_Data::playerPos = m_player->GetPosition();
-	Renderer_Data::playerPosChunkSpace = VX_MATH::WorldToChunkSpace(m_player->GetPosition());
+	Renderer_Data::playerPos = player->GetPosition();
+	Renderer_Data::playerPosChunkSpace = VX_MATH::WorldToChunkSpace(player->GetPosition());
 	Renderer_Data::numActiveChunks = ChunkManager::GetNumActiveChunks();
 
 	// End the ImGui frame

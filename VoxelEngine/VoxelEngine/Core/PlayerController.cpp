@@ -160,7 +160,6 @@ void PlayerController::Update(const float& dt, Player* player)
 			if (VX_MATH::Raycast(rayPos, rayDir, 10, ChunkManager::CheckBlockRaycast, &rayHit))
 			{
 				VX_LOG("Target Hit - [%2.2f, %2.2f, %2.2f]", rayHit.x, rayHit.y, rayHit.z);
-				//XMFLOAT3 rayEnd = { rayPos.x + rayDir.x * scale, rayPos.y + rayDir.y * scale, rayPos.z + rayDir.z * scale };
 				DebugRenderer::DrawLine(rayPos, rayHit, { 1.0f, 0, 0, 1.0f });
 				DebugRenderer::DrawSphere(1, rayHit, 0.01f, {1.0f, 0, 0, 1.0f});
 			}

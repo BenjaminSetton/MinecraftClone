@@ -55,7 +55,6 @@ private:
 	Graphics* m_Graphics;
 	Clock* m_Clock;
 
-	Player* m_player = nullptr;
 };
 
 // Static application handle pointer

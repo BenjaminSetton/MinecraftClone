@@ -2,6 +2,7 @@
 
 #include "Application.h"
 #include "./Events/KeyCodes.h"
+#include "Game.h"
 
 HWND Application::m_hwnd = HWND();
 
@@ -12,7 +13,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 
 Application::Application() : EventSubject(),
-	m_applicationName(L""), m_hinstance(nullptr), m_Input(nullptr), m_Graphics(nullptr), m_Clock(nullptr), m_player(nullptr)
+	m_applicationName(L""), m_hinstance(nullptr), m_Input(nullptr), m_Graphics(nullptr), m_Clock(nullptr)
 {
 }
 
@@ -40,10 +41,6 @@ Application::~Application()
 		m_Input = nullptr;
 	}
 
-	if(m_player)
-	{
-		delete m_player;
-	}
 }
 
 bool Application::Initialize() 
@@ -68,11 +65,11 @@ bool Application::Initialize()
 	m_Graphics = new Graphics;
 	if (!m_Graphics) { return false; }
 
-	// Initialize the player object
-	m_player = new Player();
+	// Initialize the game object
+	Game::Initialize();
 
 	// Initialize the graphics object.
-	result = m_Graphics->Initialize(screenWidth, screenHeight, m_hwnd, m_player);
+	result = m_Graphics->Initialize(screenWidth, screenHeight, m_hwnd);
 	if (!result) return false;
 
 	// Create the clock object
@@ -106,7 +103,6 @@ void Application::Run()
 
 void Application::Shutdown() 
 {
-	// Shutdown the application and all of it's dependencies 
 	if (m_Input) 
 	{
 		delete m_Input;
@@ -118,6 +114,9 @@ void Application::Shutdown()
 		delete m_Graphics;
 		m_Graphics = nullptr;
 	}
+
+	Game::Shutdown();
+
 	if (m_Clock)
 	{
 		delete m_Clock;
@@ -141,13 +140,11 @@ bool Application::Frame()
 	float dt = m_Clock->GetDeltaTime(Clock::TimePrecision::SECONDS);
 	// Prevent delta time from giving wack results after moving game window
 	dt = dt > 0.5f ? 0.016666f : dt;
-
-
 	
 	// Update physics
 
 	// Update the player
-	m_player->Update(dt);
+	Game::GetPrimaryPlayer()->Update(dt);
 
 	// Process each frame in the graphics class
 	m_Graphics->Frame(dt);
@@ -210,8 +207,8 @@ void Application::InitializeWindows(UINT& screenWidth, UINT& screenHeight)
 	else
 	{
 		// If windowed then set it to 1600x900 (16:9) resolution.
-		screenWidth = 2400;
-		screenHeight = 1350;
+		screenWidth = 1920;
+		screenHeight = 1080;
 
 		// Place the window in the middle of the screen.
 		posX = (GetSystemMetrics(SM_CXSCREEN) - screenWidth) / 2;

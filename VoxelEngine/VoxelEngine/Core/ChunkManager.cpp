@@ -7,10 +7,6 @@
 #include "../Utility/ImGuiLayer.h"
 #include "../Utility/Math.h"
 
-
-// TEMP FOR DEBUG
-#include "ChunkBufferManager.h"
-
 using namespace DirectX;
 
 // Static variable definitions
@@ -273,8 +269,6 @@ void ChunkManager::Update()
 	{
 		sumOfBlocks += m_activeChunks[i]->GetBlockCount();
 	}
-
-	VX_ASSERT(sumOfBlocks == ChunkBufferManager::GetVertexArray().size());
 
 }
 

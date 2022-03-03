@@ -6,10 +6,13 @@ std::map<std::string, ID3D11ShaderResourceView*> TextureManager::m_textures = st
 
 void TextureManager::Init(ID3D11Device* device)
 {
-	HRESULT hr;
 	// TODO: Initialize all textures and add them to the map
 	ID3D11ShaderResourceView* seafloorTex = nullptr;
 	CreateTextureAndAddToMap(device, L"./Assets/Textures/VETextureAtlas.dds", seafloorTex, std::string("TEXTUREATLAS_TEX"));
+	
+	//
+	//ID3D11ShaderResourceView* blockSelectorTex = nullptr;
+	//CreateTextureAndAddToMap(device, L"./Assets/Textures/BlockSelectorUI.dds", blockSelectorTex, std::string("BLOCKSELECTOR_TEX"));
 	
 }
 
