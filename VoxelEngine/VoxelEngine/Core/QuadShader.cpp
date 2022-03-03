@@ -57,7 +57,7 @@ void QuadShader::Render()
 
 	uint32_t size = static_cast<uint32_t>(QuadBufferManager::GetInstanceData().size());
 
-	context->DrawInstanced(ARRAYSIZE(verts), size, 0, 0);
+	context->DrawInstanced(6, size, 0, 0);
 }
 
 void QuadShader::Shutdown()

@@ -1,6 +1,7 @@
 #include "../Misc/pch.h"
 
 #include "TextureManager.h"
+#include "../Utility/Utility.h"
 
 std::map<std::string, ID3D11ShaderResourceView*> TextureManager::m_textures = std::map<std::string, ID3D11ShaderResourceView*>();
 
@@ -11,8 +12,8 @@ void TextureManager::Init(ID3D11Device* device)
 	CreateTextureAndAddToMap(device, L"./Assets/Textures/VETextureAtlas.dds", seafloorTex, std::string("TEXTUREATLAS_TEX"));
 	
 	//
-	//ID3D11ShaderResourceView* blockSelectorTex = nullptr;
-	//CreateTextureAndAddToMap(device, L"./Assets/Textures/BlockSelectorUI.dds", blockSelectorTex, std::string("BLOCKSELECTOR_TEX"));
+	ID3D11ShaderResourceView* blockSelectorTex = nullptr;
+	CreateTextureAndAddToMap(device, L"./Assets/Textures/BlockSelectorUI.dds", blockSelectorTex, std::string("BLOCKSELECTOR_TEX"));
 	
 }
 
@@ -38,7 +39,11 @@ void TextureManager::CreateTextureAndAddToMap(ID3D11Device* device, const WCHAR*
 	HRESULT hr;
 	// Create the texture from DDS file and store in SRV
 	hr = DirectX::CreateDDSTextureFromFile(device, filepath, nullptr, &out_srv);
-	if (FAILED(hr)) return;
+	if (FAILED(hr))
+	{
+		VX_ASSERT_MSG(false, "Unable to create texture from DDS file!");
+		return;
+	}
 	
 	// Add the SRV into the map using the provided filename
 	/// NOTE!
