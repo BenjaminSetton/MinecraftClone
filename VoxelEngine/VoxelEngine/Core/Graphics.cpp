@@ -70,6 +70,7 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	m_quadShader = new QuadShader();
 	m_quadShader->CreateObjects(L"./Shaders/Quad_VS.hlsl", L"./Shaders/Quad_PS.hlsl");
 	m_quadShader->Initialize();
+	m_quadShader->SetQuadTexture(m_textureManager->GetTexture(std::string("BLOCKSELECTOR_TEX")));
 	
 
 	// Create and initialize the ImGuiLayer
