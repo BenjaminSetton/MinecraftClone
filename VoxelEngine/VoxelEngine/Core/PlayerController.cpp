@@ -8,6 +8,7 @@
 #include "Physics.h"
 #include "../Utility/Math.h"
 #include "ChunkManager.h"
+#include "BlockSelectionIndicator.h"
 
 // DEBUG
 #include "../Utility/ImGuiLayer.h"
@@ -146,6 +147,8 @@ void PlayerController::Update(const float& dt, Player* player)
 	// Re-assign the view matrix with all the changes
 	player->m_camera->SetWorldMatrix(worldMatrix);
 
+	// Update the block selection indicator
+	BlockSelectionIndicator::Update(dt);
 
 
 	// TEST RAYCASTING, PLEASE REMOVE

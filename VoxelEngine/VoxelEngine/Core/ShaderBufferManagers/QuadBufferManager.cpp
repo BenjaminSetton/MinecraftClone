@@ -14,12 +14,12 @@ ID3D11Buffer* QuadBufferManager::m_instanceBuffer = nullptr;
 
 static const QuadVertexData quadData[6] =
 {
-	{ XMFLOAT3(-0.5f, 0.5f, 0.0f), XMFLOAT3(0, 0, -1.0f), XMFLOAT2(0.0f, 0.0f) }, // TL
-	{ XMFLOAT3(0.5f, 0.5f, 0.0f), XMFLOAT3(0, 0, -1.0f), XMFLOAT2(1.0f, 0.0f) }, // TR
+	{ XMFLOAT3(-0.5f, 0.5f, 0.0f),	XMFLOAT3(0, 0, -1.0f), XMFLOAT2(0.0f, 0.0f) }, // TL
+	{ XMFLOAT3(0.5f, 0.5f, 0.0f),	XMFLOAT3(0, 0, -1.0f), XMFLOAT2(1.0f, 0.0f) }, // TR
 	{ XMFLOAT3(-0.5f, -0.5f, 0.0f), XMFLOAT3(0, 0, -1.0f), XMFLOAT2(0.0f, 1.0f) }, // BL
 
-	{ XMFLOAT3(0.5f, 0.5f, 0.0f), XMFLOAT3(0, 0, -1.0f), XMFLOAT2(1.0f, 0.0f) }, // TR
-	{ XMFLOAT3(0.5f, -0.5f, 0.0f), XMFLOAT3(0, 0, -1.0f), XMFLOAT2(1.0f, 1.0f) }, // BR
+	{ XMFLOAT3(0.5f, 0.5f, 0.0f),	XMFLOAT3(0, 0, -1.0f), XMFLOAT2(1.0f, 0.0f) }, // TR
+	{ XMFLOAT3(0.5f, -0.5f, 0.0f),	XMFLOAT3(0, 0, -1.0f), XMFLOAT2(1.0f, 1.0f) }, // BR
 	{ XMFLOAT3(-0.5f, -0.5f, 0.0f), XMFLOAT3(0, 0, -1.0f), XMFLOAT2(0.0f, 1.0f) }, // BL
 };
 
@@ -104,16 +104,26 @@ void QuadBufferManager::UpdateBuffers()
 
 }
 
+void QuadBufferManager::Clear() { m_instanceData.clear(); }
+
 ID3D11Buffer* QuadBufferManager::GetVertexBuffer() { return m_vertexBuffer; }
 
 ID3D11Buffer* QuadBufferManager::GetInstanceBuffer() { return m_instanceBuffer; }
 
 std::vector<QuadInstanceData>& QuadBufferManager::GetInstanceData() { return m_instanceData; }
 
-void QuadBufferManager::PushQuad(const QuadInstanceData& quadData) { m_instanceData.push_back(quadData); }
+void QuadBufferManager::PushQuad(const QuadInstanceData& quadData) 
+{
+	QuadInstanceData transposeTransform = quadData;
+	transposeTransform.transform = XMMatrixTranspose(transposeTransform.transform);
+	m_instanceData.push_back(transposeTransform);
+}
 
 void QuadBufferManager::PopQuad(const QuadInstanceData& quadData)
 {
-	auto iter = std::find(m_instanceData.begin(), m_instanceData.end(), quadData);
+	QuadInstanceData transposeTransform = quadData;
+	transposeTransform.transform = XMMatrixTranspose(transposeTransform.transform);
+
+	auto iter = std::find(m_instanceData.begin(), m_instanceData.end(), transposeTransform);
 	m_instanceData.erase(iter);
 }

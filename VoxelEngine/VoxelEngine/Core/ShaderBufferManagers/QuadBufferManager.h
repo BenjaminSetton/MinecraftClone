@@ -36,6 +36,8 @@ public:
 
 	static void UpdateBuffers();
 
+	static void Clear();
+
 	static ID3D11Buffer* GetVertexBuffer();
 	static ID3D11Buffer* GetInstanceBuffer();
 
@@ -47,6 +49,7 @@ public:
 
 private:
 
+	// Stores the transposed transforms
 	static std::vector<QuadInstanceData> m_instanceData;
 
 	static ID3D11Buffer* m_vertexBuffer;

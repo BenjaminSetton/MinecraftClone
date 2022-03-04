@@ -8,7 +8,7 @@
 
 using namespace DirectX;
 
-float BlockSelectionIndicator::m_transitionDamping = 0.5f;
+float BlockSelectionIndicator::m_transitionDamping = 10.0f;
 
 DirectX::XMFLOAT3 BlockSelectionIndicator::m_currentIndicatorPos = { 0.0f, 0.0f, 0.0f };
 DirectX::XMFLOAT3 BlockSelectionIndicator::m_targetIndicatorPos = { 0.0f, 0.0f, 0.0f };
@@ -16,6 +16,24 @@ DirectX::XMFLOAT3 BlockSelectionIndicator::m_selectedBlockPos = { 0.0f, 0.0f, 0.
 
 void BlockSelectionIndicator::Update(const float dt)
 {
+	//////////////////////////
+	//// TEMP DEBUG
+	//XMFLOAT3 debugPos = { -4.0f, 113.0f, -8.0f };
+	//QuadInstanceData quadData[6];
+	//GenerateQuadsInPos(debugPos, quadData);
+
+	//// Send quads to QuadBufferManager
+	//QuadBufferManager::PushQuad(quadData[0]);
+	//QuadBufferManager::PushQuad(quadData[1]);
+	//QuadBufferManager::PushQuad(quadData[2]);
+	//QuadBufferManager::PushQuad(quadData[3]);
+	//QuadBufferManager::PushQuad(quadData[4]);
+	//QuadBufferManager::PushQuad(quadData[5]);
+
+	//return;
+	////////////////
+
+
 	Player* player = Game::GetPrimaryPlayer();
 
 	// Check if we're selecting a new block
@@ -30,8 +48,47 @@ void BlockSelectionIndicator::Update(const float dt)
 		XMFLOAT3 newBlock = { static_cast<float>(static_cast<int>(rayHit.x)), static_cast<float>(static_cast<int>(rayHit.y)), static_cast<float>(static_cast<int>(rayHit.z)) };
 		if (!XMFLOAT3_IS_EQUAL(newBlock, m_selectedBlockPos))
 		{
+			m_targetIndicatorPos = { newBlock.x + 0.5f, newBlock.y + 0.5f, newBlock.z - 0.5f };
 			m_selectedBlockPos = newBlock;
-			m_targetIndicatorPos = { newBlock.x + 0.5f, newBlock.y + 0.5f, newBlock.z + 0.5f };
+
+			// New target position when hitting block face
+			for (uint32_t i = 0; i < 3; i++)
+			{
+				if (XMFLOAT3_BRACKET_OP_32(rayHit, i) == XMFLOAT3_BRACKET_OP_32(newBlock, i))
+				{
+					XMFLOAT3 guessedPos = { m_targetIndicatorPos.x - newBlock.x, m_targetIndicatorPos.y - newBlock.y, m_targetIndicatorPos.z - newBlock.z };
+					XMVECTOR rayDirVec = XMLoadFloat3(&rayDir);
+					rayDirVec = XMVector3Normalize(rayDirVec);
+					XMVECTOR guessedPosVec = XMLoadFloat3(&guessedPos);
+					guessedPosVec = XMVector3Normalize(guessedPosVec);
+
+					XMVECTOR dotResult = XMVector3Dot(rayDirVec, guessedPosVec);
+
+					if (i == 2)
+					{
+						if (dotResult.m128_f32[0] < 0)
+						{
+							XMFLOAT3_BRACKET_OP_32(m_targetIndicatorPos, i) -= 1.0f;
+							XMFLOAT3_BRACKET_OP_32(m_selectedBlockPos, i) -= 1.0f;
+						}
+					}
+					else
+					{
+						if (dotResult.m128_f32[0] > 0)
+						{
+							XMFLOAT3_BRACKET_OP_32(m_targetIndicatorPos, i) -= 1.0f;
+							XMFLOAT3_BRACKET_OP_32(m_selectedBlockPos, i) -= 1.0f;
+						}
+					}
+					
+
+				}
+			}
+
+			// Loop through all dimensions
+			// When we encounter "0" dimension, do a dot prod between rayDir and (targetIndicatorPos - newBlock)
+			// If negative, subtract 1 from "0" axis
+
 		}
 
 		// Create quads
@@ -49,12 +106,20 @@ void BlockSelectionIndicator::Update(const float dt)
 		// Update indicator towards target if we haven't reached it, whether target is new or not
 		if (!XMFLOAT3_IS_EQUAL(m_targetIndicatorPos, m_currentIndicatorPos))
 		{
-			m_currentIndicatorPos =
+			float sqDist = pow2(m_targetIndicatorPos.x - m_currentIndicatorPos.x) + pow2(m_targetIndicatorPos.y - m_currentIndicatorPos.y) + pow2(m_targetIndicatorPos.z - m_currentIndicatorPos.z);
+			if (sqDist > 5)
 			{
-				m_currentIndicatorPos.x + ((m_targetIndicatorPos.x - m_currentIndicatorPos.x) * m_transitionDamping * dt),
-				m_currentIndicatorPos.y + ((m_targetIndicatorPos.y - m_currentIndicatorPos.y) * m_transitionDamping * dt),
-				m_currentIndicatorPos.z + ((m_targetIndicatorPos.z - m_currentIndicatorPos.z) * m_transitionDamping * dt)
-			};
+				m_currentIndicatorPos = m_targetIndicatorPos;
+			}
+			else // lerp between prev blcok
+			{
+				m_currentIndicatorPos =
+				{
+					m_currentIndicatorPos.x + ((m_targetIndicatorPos.x - m_currentIndicatorPos.x) * m_transitionDamping * dt),
+					m_currentIndicatorPos.y + ((m_targetIndicatorPos.y - m_currentIndicatorPos.y) * m_transitionDamping * dt),
+					m_currentIndicatorPos.z + ((m_targetIndicatorPos.z - m_currentIndicatorPos.z) * m_transitionDamping * dt)
+				};
+			}
 		}
 	}
 
@@ -64,20 +129,20 @@ void BlockSelectionIndicator::GenerateQuadsInPos(const XMFLOAT3& pos, QuadInstan
 {
 
 	// FRONT
-	out_quadData[0].transform = DirectX::XMMatrixMultiply(DirectX::XMMatrixIdentity(), DirectX::XMMatrixTranslation(0.0f, 0.0f, -0.5f));
+	out_quadData[0].transform = DirectX::XMMatrixMultiply(DirectX::XMMatrixIdentity(), DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z - 0.5f));
 
 	// LEFT
-	out_quadData[1].transform = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(-90.0f)), DirectX::XMMatrixTranslation(-0.5f, 0.0f, 0.0f));
+	out_quadData[1].transform = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationY(XMConvertToRadians(90.0f)), DirectX::XMMatrixTranslation(pos.x - 0.5f, pos.y, pos.z));
 
 	// BACK
-	out_quadData[2].transform = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(-180.0f)), DirectX::XMMatrixTranslation(0.0f, 0.0f, 0.5f));
+	out_quadData[2].transform = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationY(XMConvertToRadians(-180.0f)), DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z + 0.5f));
 	
 	// RIGHT
-	out_quadData[3].transform = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(90.0f)), DirectX::XMMatrixTranslation(0.5f, 0.0f, 0.0f));
+	out_quadData[3].transform = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationY(XMConvertToRadians(-90.0f)), DirectX::XMMatrixTranslation(pos.x + 0.5f, pos.y, pos.z));
 
 	// TOP
-	out_quadData[4].transform = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(-90.0f)), DirectX::XMMatrixTranslation(0.0f, 0.5f, 0.0f));
+	out_quadData[4].transform = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationX(XMConvertToRadians(90.0f)), DirectX::XMMatrixTranslation(pos.x, pos.y + 0.5f, pos.z));
 
 	// BOTTOM
-	out_quadData[5].transform = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationX(DirectX::XMConvertToRadians(90.0f)), DirectX::XMMatrixTranslation(0.0f, -0.5f, 0.0f));
+	out_quadData[5].transform = DirectX::XMMatrixMultiply(DirectX::XMMatrixRotationX(XMConvertToRadians(-90.0f)), DirectX::XMMatrixTranslation(pos.x, pos.y - 0.5f, pos.z));
 }

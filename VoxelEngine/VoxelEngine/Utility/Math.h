@@ -11,14 +11,16 @@
 namespace VX_MATH
 {
 
+#define pow2(x) (x) * (x)
+
 	// Some utility macros for DirectX::XMFLOAT structs
 	// THESE DO NOT HAVE ANY SAFETY CHECKS, USE AT YOUR OWN RISK
 #define XMFLOAT3_BRACKET_OP_32(varPtr, index) *((float*)(&varPtr) + index)
 
 #define XMFLOAT3_IS_EQUAL(vecOne, vecTwo) \
-	XMFLOAT3_BRACKET_OP_32(vecOne, 0) == XMFLOAT3_BRACKET_OP_32(vecTwo, 0) && \
-	XMFLOAT3_BRACKET_OP_32(vecOne, 1) == XMFLOAT3_BRACKET_OP_32(vecTwo, 1) && \
-	XMFLOAT3_BRACKET_OP_32(vecOne, 2) == XMFLOAT3_BRACKET_OP_32(vecTwo, 2)
+	((XMFLOAT3_BRACKET_OP_32(vecOne, 0) == XMFLOAT3_BRACKET_OP_32(vecTwo, 0)) && \
+	(XMFLOAT3_BRACKET_OP_32(vecOne, 1) == XMFLOAT3_BRACKET_OP_32(vecTwo, 1)) && \
+	(XMFLOAT3_BRACKET_OP_32(vecOne, 2) == XMFLOAT3_BRACKET_OP_32(vecTwo, 2)))
 
 
 	// This function returns a unique identifier for all chunks within a range of

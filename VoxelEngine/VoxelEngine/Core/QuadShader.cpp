@@ -24,25 +24,30 @@ void QuadShader::CreateObjects(const WCHAR* vsFilename, const WCHAR* psFilename)
 
 void QuadShader::Initialize()
 {
-	ID3D11DeviceContext* context = D3D::GetDeviceContext();
+	//////////////////////
+	//	THIS IS PROBABLY NOT NECESSARY
+	//////////////////////
 
-	HRESULT hr;
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	MatrixBuffer* matrixBufferPtr;
-	BlockInstanceData* vertexBufferPtr = nullptr;
 
-#pragma region WVP_MATRICES
-	// Lock the matrix constant buffer so it can be written to.
-	hr = context->Map(m_matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	VX_ASSERT(!FAILED(hr));
-	// Get a pointer to the data in the constant buffer.
-	matrixBufferPtr = (MatrixBuffer*)mappedResource.pData;
-	// Copy the matrices into the constant buffer.
-	matrixBufferPtr->viewMatrix = XMMatrixIdentity();
-	matrixBufferPtr->projectionMatrix = XMMatrixIdentity();
-	// Unlock the matrix constant buffer.
-	context->Unmap(m_matrixBuffer, 0);
-#pragma endregion
+//	ID3D11DeviceContext* context = D3D::GetDeviceContext();
+//
+//	HRESULT hr;
+//	D3D11_MAPPED_SUBRESOURCE mappedResource;
+//	MatrixBuffer* matrixBufferPtr;
+//	BlockInstanceData* vertexBufferPtr = nullptr;
+//
+//#pragma region WVP_MATRICES
+//	// Lock the matrix constant buffer so it can be written to.
+//	hr = context->Map(m_matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+//	VX_ASSERT(!FAILED(hr));
+//	// Get a pointer to the data in the constant buffer.
+//	matrixBufferPtr = (MatrixBuffer*)mappedResource.pData;
+//	// Copy the matrices into the constant buffer.
+//	matrixBufferPtr->viewMatrix = XMMatrixIdentity();
+//	matrixBufferPtr->projectionMatrix = XMMatrixIdentity();
+//	// Unlock the matrix constant buffer.
+//	context->Unmap(m_matrixBuffer, 0);
+//#pragma endregion
 
 }
 
@@ -51,6 +56,8 @@ void QuadShader::Render()
 
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
+	QuadBufferManager::UpdateBuffers();
+
 	BindObjects();
 
 	BindVertexBuffers();
@@ -58,6 +65,9 @@ void QuadShader::Render()
 	uint32_t size = static_cast<uint32_t>(QuadBufferManager::GetInstanceData().size());
 
 	context->DrawInstanced(6, size, 0, 0);
+
+	// Clear the quad buffers
+	QuadBufferManager::Clear();
 }
 
 void QuadShader::Shutdown()
@@ -135,7 +145,7 @@ void QuadShader::CreateD3DObjects()
 
 	// Create a clamp texture sampler state description.
 	ZeroMemory(&samplerDesc, sizeof(samplerDesc));
-	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
 	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -185,9 +195,9 @@ void QuadShader::CreateShaders(const WCHAR* vsFilename, const WCHAR* psFilename)
 	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] =
 	{
 		// Per-vertex data
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,   0, 0,								D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL",		0, DXGI_FORMAT_R32G32B32_FLOAT,   0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,	  0, D3D11_APPEND_ALIGNED_ELEMENT,	D3D11_INPUT_PER_VERTEX_DATA, 0 },
 
 		// Per-instance data
 		{ "TRANSFORM", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_INSTANCE_DATA, 1 },
@@ -230,7 +240,7 @@ void QuadShader::BindObjects()
 
 	// Now set the matrix constant buffer in the vertex shader with the updated values.
 	ID3D11Buffer* buffer[] = { m_matrixBuffer };
-	context->VSSetConstantBuffers(0, ARRAYSIZE(buffer), buffer);
+	context->VSSetConstantBuffers(0, 1, buffer);
 
 	// Bind the quad texture
 	context->PSSetShaderResources(0, 1, &m_quadTexture);
@@ -264,7 +274,7 @@ void QuadShader::UpdateViewMatrix(DirectX::XMMATRIX viewMatrix)
 
 	matrixBufferPtr = (MatrixBuffer*)mappedResource.pData;
 	matrixBufferPtr->viewMatrix = XMMatrixTranspose(viewMatrix);
-	matrixBufferPtr->projectionMatrix = XMMatrixTranspose(D3D::GetOrthoMatrix());
+	matrixBufferPtr->projectionMatrix = XMMatrixTranspose(D3D::GetProjectionMatrix());
 
 	context->Unmap(m_matrixBuffer, 0);
 }

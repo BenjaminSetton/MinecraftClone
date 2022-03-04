@@ -178,9 +178,6 @@ bool Graphics::Frame(const float dt)
 		ChunkBufferManager::UpdateBuffers();
 	}
 
-	// Update the quad buffer manager buffers
-	QuadBufferManager::UpdateBuffers();
-
 	// Update the day/night cycle
 	DayNightCycle::Update(dt);
 
@@ -218,12 +215,6 @@ bool Graphics::Frame(const float dt)
 		}
 
 		{
-			VX_PROFILE_SCOPE("[RENDER] Quads");
-			m_quadShader->UpdateViewMatrix(player->GetCamera()->GetViewMatrix());
-			m_quadShader->Render();
-		}
-
-		{
 			VX_PROFILE_SCOPE("[RENDER] Chunk");
 			// Send the chunks to the shader and render
 			m_chunkShader->UpdateViewMatrices(player->GetCamera()->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
@@ -235,6 +226,13 @@ bool Graphics::Frame(const float dt)
 			// Render all debug lines and spheres
 			m_debugShader->UpdateViewMatrix(player->GetCamera()->GetViewMatrix());
 			m_debugShader->Render();
+		}
+
+		{
+			D3D::ClearDepthBuffer(1.0f);
+			VX_PROFILE_SCOPE("[RENDER] Quads");
+			m_quadShader->UpdateViewMatrix(player->GetCamera()->GetViewMatrix());
+			m_quadShader->Render();
 		}
 
 		{

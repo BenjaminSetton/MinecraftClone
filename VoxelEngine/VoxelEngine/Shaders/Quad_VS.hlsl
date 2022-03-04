@@ -1,5 +1,5 @@
 
-cbuffer ViewProjection : register(b1)
+cbuffer ViewProjection
 {
 	float4x4 viewMatrix;
 	float4x4 projectionMatrix;
