@@ -174,6 +174,12 @@
     <ClCompile Include="Core\Game.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="Core\ShaderBufferManagers\QuadNDCBufferManager.cpp">
+      <Filter>Core\ShaderBufferManagers</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Crosshair.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utility\Clock.h">
@@ -332,6 +338,12 @@
     <ClInclude Include="Core\Game.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="Core\ShaderBufferManagers\QuadNDCBufferManager.h">
+      <Filter>Core\ShaderBufferManagers</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Crosshair.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\DefaultBlock_VS.hlsl">
@@ -365,6 +377,9 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\Quad_PS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\NDCQuad_VS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

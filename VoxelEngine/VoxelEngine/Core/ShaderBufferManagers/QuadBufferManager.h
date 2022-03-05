@@ -45,8 +45,6 @@ public:
 
 	static void PushQuad(const QuadInstanceData& quadData);
 
-	static void PopQuad(const QuadInstanceData& quadData);
-
 private:
 
 	// Stores the transposed transforms

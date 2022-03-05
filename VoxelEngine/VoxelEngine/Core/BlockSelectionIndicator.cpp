@@ -67,8 +67,8 @@ void BlockSelectionIndicator::Update(const float dt)
 		// Update indicator towards target if we haven't reached it, whether target is new or not
 		if (!XMFLOAT3_IS_EQUAL(m_targetIndicatorPos, m_currentIndicatorPos))
 		{
-			float sqDist = pow2(m_targetIndicatorPos.x - m_currentIndicatorPos.x) + pow2(m_targetIndicatorPos.y - m_currentIndicatorPos.y) + pow2(m_targetIndicatorPos.z - m_currentIndicatorPos.z);
-			if (sqDist > 5)
+			float dist = sqrt(pow2(m_targetIndicatorPos.x - m_currentIndicatorPos.x) + pow2(m_targetIndicatorPos.y - m_currentIndicatorPos.y) + pow2(m_targetIndicatorPos.z - m_currentIndicatorPos.z));
+			if (dist > 2 * player->GetInteractionRange())
 			{
 				m_currentIndicatorPos = m_targetIndicatorPos;
 			}

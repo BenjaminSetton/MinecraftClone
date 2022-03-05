@@ -117,12 +117,3 @@ void QuadBufferManager::PushQuad(const QuadInstanceData& quadData)
 	transposeTransform.transform = XMMatrixTranspose(transposeTransform.transform);
 	m_instanceData.push_back(transposeTransform);
 }
-
-void QuadBufferManager::PopQuad(const QuadInstanceData& quadData)
-{
-	QuadInstanceData transposeTransform = quadData;
-	transposeTransform.transform = XMMatrixTranspose(transposeTransform.transform);
-
-	auto iter = std::find(m_instanceData.begin(), m_instanceData.end(), transposeTransform);
-	m_instanceData.erase(iter);
-}

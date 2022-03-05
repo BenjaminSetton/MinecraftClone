@@ -315,6 +315,8 @@ const uint32_t Application::GetWindowHeight()
 	return wi.rcClient.bottom - wi.rcClient.top;
 }
 
+const float Application::GetAspectRatio() { return static_cast<float>(GetWindowWidth()) / GetWindowHeight(); }
+
 void Application::ShutdownWindows()
 {
 

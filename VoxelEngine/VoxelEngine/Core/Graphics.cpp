@@ -14,7 +14,9 @@
 #include "ChunkManager.h"
 #include "../Core/ShaderBufferManagers/ChunkBufferManager.h"
 #include "../Core/ShaderBufferManagers/QuadBufferManager.h"
+#include "../Core/ShaderBufferManagers/QuadNDCBufferManager.h"
 #include "FrustumCulling.h"
+#include "Crosshair.h"
 
 #include "../Utility/ImGuiLayer.h"
 
@@ -50,6 +52,7 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	// Initialize ChunkBufferManager class
 	ChunkBufferManager::Initialize();
 	QuadBufferManager::Initialize();
+	QuadNDCBufferManager::Initialize();
 
 	// Create the shadow shader class
 	m_shadowShader = new ShadowShader();
@@ -68,9 +71,8 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 
 	// Create the quad shader class object
 	m_quadShader = new QuadShader();
-	m_quadShader->CreateObjects(L"./Shaders/Quad_VS.hlsl", L"./Shaders/Quad_PS.hlsl");
+	m_quadShader->CreateObjects(L"./Shaders/Quad_VS.hlsl", L"./Shaders/NDCQuad_VS.hlsl", L"./Shaders/Quad_PS.hlsl");
 	m_quadShader->Initialize();
-	m_quadShader->SetQuadTexture(m_textureManager->GetTexture(std::string("BLOCKSELECTOR_TEX")));
 	
 
 	// Create and initialize the ImGuiLayer
@@ -165,6 +167,8 @@ bool Graphics::Frame(const float dt)
 	// Update the debug camera's position
 	m_frustumCam->Update(dt);
 
+	Crosshair::Update(dt);
+
 	FrustumCulling::CalculateFrustum(XM_PIDIV4, (float)m_screenWidth / m_screenHeight, 
 		SCREEN_NEAR, SCREEN_FAR, player->GetCamera()->GetWorldMatrix(), player->GetPosition());
 
@@ -232,6 +236,12 @@ bool Graphics::Frame(const float dt)
 			D3D::ClearDepthBuffer(1.0f);
 			VX_PROFILE_SCOPE("[RENDER] Quads");
 			m_quadShader->UpdateViewMatrix(player->GetCamera()->GetViewMatrix());
+			m_quadShader->SetQuadTexture(m_textureManager->GetTexture(std::string("BLOCKSELECTOR_TEX")));
+			m_quadShader->SetRenderInNDC(false);
+			m_quadShader->Render();
+
+			m_quadShader->SetQuadTexture(m_textureManager->GetTexture(std::string("CROSSHAIR_TEX")));
+			m_quadShader->SetRenderInNDC(true);
 			m_quadShader->Render();
 		}
 

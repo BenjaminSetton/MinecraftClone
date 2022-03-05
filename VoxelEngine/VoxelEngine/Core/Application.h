@@ -38,6 +38,8 @@ public:
 
 	static const uint32_t GetWindowHeight();
 
+	static const float GetAspectRatio();
+
 private:
 
 	bool Frame();
