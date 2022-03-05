@@ -211,6 +211,9 @@ void DebugRendererShader::BindObjects()
 	context->GSSetShader(nullptr, nullptr, 0);
 	context->PSSetShader(m_pixelShader, nullptr, 0);
 
+	// Set the blend state
+	context->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+
 	// Set the type of primitive that should be rendered from this vertex buffer, in this case lines.
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 }

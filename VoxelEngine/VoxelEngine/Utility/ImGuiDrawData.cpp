@@ -29,6 +29,7 @@ DirectX::XMFLOAT3 Renderer_Data::playerPos = { 0.0f, 0.0f, 0.0f };
 DirectX::XMFLOAT3 Renderer_Data::playerPosChunkSpace = { 0.0f, 0.0f, 0.0f };
 int Renderer_Data::numActiveChunks = 0;
 uint32_t Renderer_Data::renderDist = 0;
+bool Renderer_Data::enableBlockSelector = true;
 
 //
 // PLAYERPHYSICS_DATA

@@ -6,7 +6,7 @@
 using namespace DirectX;
 
 Player::Player() : m_acceleration({0.0f, 0.0f, 0.0f}), m_velocity({0.0f, 0.0f, 0.0f}), m_camera(nullptr),
-					m_movementSpeed(7.0f), m_position({ -4.0f, 150.0f, -10.0f }), m_allowJump(false), m_interactionRange(5.0f)
+					m_movementSpeed(7.0f), m_position({ -4.0f, 150.0f, -10.0f }), m_allowJump(false), m_interactionRange(7.0f)
 {
 	m_camera = new DebugCamera;
 	m_camera->ConstructMatrix(m_position);

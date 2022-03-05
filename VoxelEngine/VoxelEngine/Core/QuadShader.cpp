@@ -72,11 +72,6 @@ void QuadShader::Render()
 
 void QuadShader::Shutdown()
 {
-	if (m_samplerWrap)
-	{
-		m_samplerWrap->Release();
-		m_samplerWrap = nullptr;
-	}
 
 	if (m_samplerClamp)
 	{
@@ -129,21 +124,22 @@ void QuadShader::CreateD3DObjects()
 	hr = device->CreateBuffer(&matrixBufferDesc, NULL, &m_matrixBuffer);
 	VX_ASSERT(!FAILED(hr));
 
-	// Create a wrap texture sampler state description.
-	D3D11_SAMPLER_DESC samplerDesc = {};
-	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-	samplerDesc.MinLOD = 0;
-	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	//// Create a wrap texture sampler state description.
+	//D3D11_SAMPLER_DESC samplerDesc = {};
+	//samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+	//samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	//samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	//samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	//samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	//samplerDesc.MinLOD = 0;
+	//samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
-	// Create the texture sampler state.
-	hr = device->CreateSamplerState(&samplerDesc, &m_samplerWrap);
-	VX_ASSERT(!FAILED(hr));
+	//// Create the texture sampler state.
+	//hr = device->CreateSamplerState(&samplerDesc, &m_samplerWrap);
+	//VX_ASSERT(!FAILED(hr));
 
 	// Create a clamp texture sampler state description.
+	D3D11_SAMPLER_DESC samplerDesc = {};
 	ZeroMemory(&samplerDesc, sizeof(samplerDesc));
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -155,6 +151,30 @@ void QuadShader::CreateD3DObjects()
 
 	// Create the texture sampler state.
 	hr = device->CreateSamplerState(&samplerDesc, &m_samplerClamp);
+	VX_ASSERT(!FAILED(hr));
+
+	// Create the blend state
+	D3D11_BLEND_DESC blendDesc;
+	ZeroMemory(&blendDesc, sizeof(blendDesc));
+
+	D3D11_RENDER_TARGET_BLEND_DESC rtbd;
+	ZeroMemory(&rtbd, sizeof(rtbd));
+
+	rtbd.BlendEnable = true;
+
+	rtbd.SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	rtbd.DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	blendDesc.AlphaToCoverageEnable = true;
+
+	rtbd.BlendOp = D3D11_BLEND_OP_ADD;
+	rtbd.SrcBlendAlpha = D3D11_BLEND_ONE;
+	rtbd.DestBlendAlpha = D3D11_BLEND_ZERO;
+	rtbd.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	rtbd.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+	blendDesc.RenderTarget[0] = rtbd;
+
+	hr = device->CreateBlendState(&blendDesc, &m_blendState);
 	VX_ASSERT(!FAILED(hr));
 
 }
@@ -255,6 +275,9 @@ void QuadShader::BindObjects()
 	// Set the sampler state in the pixel shader.
 	ID3D11SamplerState* samplers[] = { m_samplerClamp };
 	context->PSSetSamplers(0, ARRAYSIZE(samplers), samplers);
+
+	// Set the blend state
+	context->OMSetBlendState(m_blendState, nullptr, 0xFFFFFFFF);
 
 	// Set the type of primitive that should be rendered from this vertex buffer, in this case triangles.
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

@@ -343,6 +343,9 @@ void DefaultBlockShader::BindObjects(ID3D11ShaderResourceView* const* srvs)
 	ID3D11SamplerState* samplers[] = { m_samplerWrap, m_samplerClamp };
 	context->PSSetSamplers(0, ARRAYSIZE(samplers), samplers);
 
+	// Set the blend state
+	context->OMSetBlendState(nullptr, nullptr, 0xFFFFFFFF);
+
 	// Set the type of primitive that should be rendered from this vertex buffer, in this case triangles.
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }

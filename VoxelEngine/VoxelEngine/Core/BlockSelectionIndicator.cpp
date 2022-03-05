@@ -5,6 +5,7 @@
 #include "../Utility/Math.h"
 #include "Player.h"
 #include "ShaderBufferManagers/QuadBufferManager.h"
+#include "../Utility/ImGuiDrawData.h"
 
 using namespace DirectX;
 
@@ -16,23 +17,6 @@ DirectX::XMFLOAT3 BlockSelectionIndicator::m_selectedBlockPos = { 0.0f, 0.0f, 0.
 
 void BlockSelectionIndicator::Update(const float dt)
 {
-	//////////////////////////
-	//// TEMP DEBUG
-	//XMFLOAT3 debugPos = { -4.0f, 113.0f, -8.0f };
-	//QuadInstanceData quadData[6];
-	//GenerateQuadsInPos(debugPos, quadData);
-
-	//// Send quads to QuadBufferManager
-	//QuadBufferManager::PushQuad(quadData[0]);
-	//QuadBufferManager::PushQuad(quadData[1]);
-	//QuadBufferManager::PushQuad(quadData[2]);
-	//QuadBufferManager::PushQuad(quadData[3]);
-	//QuadBufferManager::PushQuad(quadData[4]);
-	//QuadBufferManager::PushQuad(quadData[5]);
-
-	//return;
-	////////////////
-
 
 	Player* player = Game::GetPrimaryPlayer();
 
@@ -56,32 +40,21 @@ void BlockSelectionIndicator::Update(const float dt)
 			{
 				if (XMFLOAT3_BRACKET_OP_32(rayHit, i) == XMFLOAT3_BRACKET_OP_32(newBlock, i))
 				{
-					XMFLOAT3 guessedPos = { m_targetIndicatorPos.x - newBlock.x, m_targetIndicatorPos.y - newBlock.y, m_targetIndicatorPos.z - newBlock.z };
-					XMVECTOR rayDirVec = XMLoadFloat3(&rayDir);
-					rayDirVec = XMVector3Normalize(rayDirVec);
-					XMVECTOR guessedPosVec = XMLoadFloat3(&guessedPos);
-					guessedPosVec = XMVector3Normalize(guessedPosVec);
-
-					XMVECTOR dotResult = XMVector3Dot(rayDirVec, guessedPosVec);
-
-					if (i == 2)
+					if (XMFLOAT3_BRACKET_OP_32(rayDir, i) < 0)
 					{
-						if (dotResult.m128_f32[0] < 0)
+						if (i == 2)
+						{
+							XMFLOAT3_BRACKET_OP_32(m_targetIndicatorPos, i) += 1.0f;
+							XMFLOAT3_BRACKET_OP_32(m_selectedBlockPos, i) += 1.0f;
+						}
+						else
 						{
 							XMFLOAT3_BRACKET_OP_32(m_targetIndicatorPos, i) -= 1.0f;
 							XMFLOAT3_BRACKET_OP_32(m_selectedBlockPos, i) -= 1.0f;
 						}
 					}
-					else
-					{
-						if (dotResult.m128_f32[0] > 0)
-						{
-							XMFLOAT3_BRACKET_OP_32(m_targetIndicatorPos, i) -= 1.0f;
-							XMFLOAT3_BRACKET_OP_32(m_selectedBlockPos, i) -= 1.0f;
-						}
-					}
-					
 
+					break;
 				}
 			}
 
@@ -90,18 +63,6 @@ void BlockSelectionIndicator::Update(const float dt)
 			// If negative, subtract 1 from "0" axis
 
 		}
-
-		// Create quads
-		QuadInstanceData quadData[6];
-		GenerateQuadsInPos(m_currentIndicatorPos, quadData);
-
-		// Send quads to QuadBufferManager
-		QuadBufferManager::PushQuad(quadData[0]);
-		QuadBufferManager::PushQuad(quadData[1]);
-		QuadBufferManager::PushQuad(quadData[2]);
-		QuadBufferManager::PushQuad(quadData[3]);
-		QuadBufferManager::PushQuad(quadData[4]);
-		QuadBufferManager::PushQuad(quadData[5]);
 
 		// Update indicator towards target if we haven't reached it, whether target is new or not
 		if (!XMFLOAT3_IS_EQUAL(m_targetIndicatorPos, m_currentIndicatorPos))
@@ -120,6 +81,22 @@ void BlockSelectionIndicator::Update(const float dt)
 					m_currentIndicatorPos.z + ((m_targetIndicatorPos.z - m_currentIndicatorPos.z) * m_transitionDamping * dt)
 				};
 			}
+		}
+
+		if (Renderer_Data::enableBlockSelector)
+		{
+
+			// Create quads
+			QuadInstanceData quadData[6];
+			GenerateQuadsInPos(m_currentIndicatorPos, quadData);
+
+			// Send quads to QuadBufferManager
+			QuadBufferManager::PushQuad(quadData[0]);
+			QuadBufferManager::PushQuad(quadData[1]);
+			QuadBufferManager::PushQuad(quadData[2]);
+			QuadBufferManager::PushQuad(quadData[3]);
+			QuadBufferManager::PushQuad(quadData[4]);
+			QuadBufferManager::PushQuad(quadData[5]);
 		}
 	}
 

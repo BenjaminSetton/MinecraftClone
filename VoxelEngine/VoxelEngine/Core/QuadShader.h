@@ -49,8 +49,9 @@ private:
 
 	ID3D11InputLayout* m_inputLayout;
 
-	ID3D11SamplerState* m_samplerWrap;
+	//ID3D11SamplerState* m_samplerWrap;
 	ID3D11SamplerState* m_samplerClamp;
+	ID3D11BlendState* m_blendState;
 
 	ID3D11ShaderResourceView* m_quadTexture;
 

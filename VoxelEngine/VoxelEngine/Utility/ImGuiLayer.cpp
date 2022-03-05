@@ -89,6 +89,7 @@ void ImGuiLayer::Draw()
 		(int)Renderer_Data::playerPosChunkSpace.x, (int)Renderer_Data::playerPosChunkSpace.y, (int)Renderer_Data::playerPosChunkSpace.z);
 	ImGui::Text("Active Chunks: %i", Renderer_Data::numActiveChunks);
 	ImGui::Text("Render Distance: %i", Renderer_Data::renderDist);
+	ImGui::Checkbox("Enable Block Selector", &Renderer_Data::enableBlockSelector);
 	ImGui::End();
 
 #pragma endregion
