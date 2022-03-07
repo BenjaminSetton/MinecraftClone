@@ -148,6 +148,12 @@ namespace VX_MATH
 		}
 		else
 		{
+			// NOTE FOR FUTURE SELF
+			// I had to put this check in here because this algorithm wasn't accounting for negative numbers.
+			// This meant that when setting the rayLength1D for any particular axis, adding 1 to the mapCheck axis
+			// would cause it to be longer than it had to be, and it would sometimes cut corners or do some weird
+			// shit like that. The fix is to consider the negative axis separately, but I must do so for the other X and Y
+			// axes for this to work 100%!!
 			step.z = 1;
 			if (rayPos.z >= 0)
 			{
