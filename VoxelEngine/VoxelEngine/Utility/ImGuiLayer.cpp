@@ -59,6 +59,8 @@ void ImGuiLayer::Draw()
 		Cycle_Data::moonColor.y,
 		Cycle_Data::moonColor.z,
 		1.0f }, ImGuiColorEditFlags_NoAlpha);
+	ImGui::Checkbox("Pause Cycle", &Cycle_Data::pauseCycle);
+	ImGui::SliderFloat("Time Of Day", &Cycle_Data::timeOfDay, 0, 2);
 
 	ImGui::Text("Time Elapsed: %2.3f seconds (%1.2f)", Cycle_Data::elapsedTime, Cycle_Data::timePct * 100.0f);
 	ImGui::Text(Cycle_Data::cycle);

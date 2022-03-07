@@ -19,86 +19,81 @@ void BlockSelectionIndicator::Update(const float dt)
 {
 
 	Player* player = Game::GetPrimaryPlayer();
+	float epsilon = 0.001f;
 
 	// Check if we're selecting a new block
 	XMFLOAT3 rayPos = { 0.0f, 0.0f, 0.0f };
 	XMFLOAT3 rayDir = { 0.0f, 0.0f, 0.0f };
 	XMFLOAT3 rayHit = { 0.0f, 0.0f, 0.0f };
 	XMStoreFloat3(&rayPos, player->GetCamera()->GetWorldMatrix().r[3]);
+	for (uint32_t i = 0; i < 3; i++) { XMFLOAT3_BRACKET_OP_32(rayPos, i) += epsilon; }
 	XMStoreFloat3(&rayDir, DirectX::XMVector3Normalize(player->GetCamera()->GetWorldMatrix().r[2]));
-	if (VX_MATH::Raycast(rayPos, rayDir, player->GetInteractionRange(), ChunkManager::CheckBlockRaycast, &rayHit))
-	{
-		// We're selecting a new block, move indicator towards it
-		XMFLOAT3 newBlock = { static_cast<float>(static_cast<int>(rayHit.x)), static_cast<float>(static_cast<int>(rayHit.y)), static_cast<float>(static_cast<int>(rayHit.z)) };
-		if (!XMFLOAT3_IS_EQUAL(newBlock, m_selectedBlockPos))
-		{
-			m_targetIndicatorPos = { newBlock.x + 0.5f, newBlock.y + 0.5f, newBlock.z - 0.5f };
-			m_selectedBlockPos = newBlock;
+	//if (VX_MATH::Raycast(rayPos, rayDir, player->GetInteractionRange(), ChunkManager::CheckBlockRaycast, &rayHit))
+	//{
+	//	// We're selecting a new block, move indicator towards it
+	//	XMFLOAT3 newBlock = 
+	//	{ 
+	//		static_cast<float>(static_cast<int>((static_cast<int>(rayHit.x) != rayHit.x) && rayHit.x < 0.0f ? rayHit.x - 1.0f : rayHit.x)),
+	//		static_cast<float>(static_cast<int>((static_cast<int>(rayHit.y) != rayHit.y) && rayHit.y < 0.0f ? rayHit.y - 1.0f : rayHit.y)),
+	//		static_cast<float>(static_cast<int>((static_cast<int>(rayHit.z) != rayHit.z) && rayHit.z < 0.0f ? rayHit.z - 1.0f : rayHit.z))
+	//	};
+	//	if (!XMFLOAT3_IS_EQUAL(newBlock, m_selectedBlockPos))
+	//	{
+	//		m_targetIndicatorPos = { newBlock.x + 0.5f, newBlock.y + 0.5f, newBlock.z + 0.5f };
+	//		m_selectedBlockPos = newBlock;
 
-			// New target position when hitting block face
-			for (uint32_t i = 0; i < 3; i++)
-			{
-				if (XMFLOAT3_BRACKET_OP_32(rayHit, i) == XMFLOAT3_BRACKET_OP_32(newBlock, i))
-				{
-					if (XMFLOAT3_BRACKET_OP_32(rayDir, i) < 0)
-					{
-						if (i == 2)
-						{
-							XMFLOAT3_BRACKET_OP_32(m_targetIndicatorPos, i) += 1.0f;
-							XMFLOAT3_BRACKET_OP_32(m_selectedBlockPos, i) += 1.0f;
-						}
-						else
-						{
-							XMFLOAT3_BRACKET_OP_32(m_targetIndicatorPos, i) -= 1.0f;
-							XMFLOAT3_BRACKET_OP_32(m_selectedBlockPos, i) -= 1.0f;
-						}
-					}
+	//		// New target position when hitting block face
+	//		for (uint32_t i = 0; i < 3; i++)
+	//		{
+	//			if (XMFLOAT3_BRACKET_OP_32(rayHit, i) == XMFLOAT3_BRACKET_OP_32(newBlock, i))
+	//			{
+	//				if (XMFLOAT3_BRACKET_OP_32(rayDir, i) < 0)
+	//				{
+	//					XMFLOAT3_BRACKET_OP_32(m_targetIndicatorPos, i) -= 1.0f;
+	//					XMFLOAT3_BRACKET_OP_32(m_selectedBlockPos, i) -= 1.0f;
+	//				}
 
-					break;
-				}
-			}
+	//				break;
+	//			}
+	//		}
 
-			// Loop through all dimensions
-			// When we encounter "0" dimension, do a dot prod between rayDir and (targetIndicatorPos - newBlock)
-			// If negative, subtract 1 from "0" axis
+	//	}
 
-		}
+	//	// Update indicator towards target if we haven't reached it, whether target is new or not
+	//	if (!XMFLOAT3_IS_EQUAL(m_targetIndicatorPos, m_currentIndicatorPos))
+	//	{
+	//		float dist = sqrt(pow2(m_targetIndicatorPos.x - m_currentIndicatorPos.x) + pow2(m_targetIndicatorPos.y - m_currentIndicatorPos.y) + pow2(m_targetIndicatorPos.z - m_currentIndicatorPos.z));
+	//		if (dist > 2 * player->GetInteractionRange())
+	//		{
+	//			m_currentIndicatorPos = m_targetIndicatorPos;
+	//		}
+	//		else // lerp between prev blcok
+	//		{
+	//			m_currentIndicatorPos =
+	//			{
+	//				m_currentIndicatorPos.x + ((m_targetIndicatorPos.x - m_currentIndicatorPos.x) * m_transitionDamping * dt),
+	//				m_currentIndicatorPos.y + ((m_targetIndicatorPos.y - m_currentIndicatorPos.y) * m_transitionDamping * dt),
+	//				m_currentIndicatorPos.z + ((m_targetIndicatorPos.z - m_currentIndicatorPos.z) * m_transitionDamping * dt)
+	//			};
+	//		}
+	//	}
 
-		// Update indicator towards target if we haven't reached it, whether target is new or not
-		if (!XMFLOAT3_IS_EQUAL(m_targetIndicatorPos, m_currentIndicatorPos))
-		{
-			float dist = sqrt(pow2(m_targetIndicatorPos.x - m_currentIndicatorPos.x) + pow2(m_targetIndicatorPos.y - m_currentIndicatorPos.y) + pow2(m_targetIndicatorPos.z - m_currentIndicatorPos.z));
-			if (dist > 2 * player->GetInteractionRange())
-			{
-				m_currentIndicatorPos = m_targetIndicatorPos;
-			}
-			else // lerp between prev blcok
-			{
-				m_currentIndicatorPos =
-				{
-					m_currentIndicatorPos.x + ((m_targetIndicatorPos.x - m_currentIndicatorPos.x) * m_transitionDamping * dt),
-					m_currentIndicatorPos.y + ((m_targetIndicatorPos.y - m_currentIndicatorPos.y) * m_transitionDamping * dt),
-					m_currentIndicatorPos.z + ((m_targetIndicatorPos.z - m_currentIndicatorPos.z) * m_transitionDamping * dt)
-				};
-			}
-		}
+	//	if (Renderer_Data::enableBlockSelector)
+	//	{
 
-		if (Renderer_Data::enableBlockSelector)
-		{
+	//		// Create quads
+	//		QuadInstanceData quadData[6];
+	//		GenerateQuadsInPos(m_currentIndicatorPos, quadData);
 
-			// Create quads
-			QuadInstanceData quadData[6];
-			GenerateQuadsInPos(m_currentIndicatorPos, quadData);
-
-			// Send quads to QuadBufferManager
-			QuadBufferManager::PushQuad(quadData[0]);
-			QuadBufferManager::PushQuad(quadData[1]);
-			QuadBufferManager::PushQuad(quadData[2]);
-			QuadBufferManager::PushQuad(quadData[3]);
-			QuadBufferManager::PushQuad(quadData[4]);
-			QuadBufferManager::PushQuad(quadData[5]);
-		}
-	}
+	//		// Send quads to QuadBufferManager
+	//		QuadBufferManager::PushQuad(quadData[0]);
+	//		QuadBufferManager::PushQuad(quadData[1]);
+	//		QuadBufferManager::PushQuad(quadData[2]);
+	//		QuadBufferManager::PushQuad(quadData[3]);
+	//		QuadBufferManager::PushQuad(quadData[4]);
+	//		QuadBufferManager::PushQuad(quadData[5]);
+	//	}
+	//}
 
 }
 

@@ -39,7 +39,7 @@ bool D3D::Initialize(int32_t* out_screenWidth, int32_t* out_screenHeight, HWND h
 	IDXGIAdapter* adapter;
 	IDXGIOutput* adapterOutput;
 	unsigned int numModes = 0;
-	unsigned int i, numerator, denominator, stringLength;
+	unsigned int numerator, denominator, stringLength;
 	DXGI_MODE_DESC* displayModeList;
 	DXGI_ADAPTER_DESC adapterDesc;
 	int error;
@@ -81,21 +81,9 @@ bool D3D::Initialize(int32_t* out_screenWidth, int32_t* out_screenHeight, HWND h
 	result = adapterOutput->GetDisplayModeList(DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_ENUM_MODES_INTERLACED, &numModes, displayModeList);
 	if (FAILED(result)){ return false; }
 
-	// Now go through all the display modes and find the one that matches the screen width and height.
-	// When a match is found store the numerator and denominator of the refresh rate for that monitor.
-	//for (i = 0; i < numModes; i++)
-	//{
-	//	if (displayModeList[i].Width == (UINT)screenWidth)
-	//	{
-	//		if (displayModeList[i].Height == (UINT)screenHeight)
-	//		{
-	//		}
-	//	}
-	//}
-
 	// Default refresh rate of 60FPS
-	numerator = 60; //displayModeList[i].RefreshRate.Numerator;
-	denominator = 1; //displayModeList[i].RefreshRate.Denominator;
+	numerator = 60;
+	denominator = 1;
 
 	// Get the adapter (video card) description.
 	result = adapter->GetDesc(&adapterDesc);
@@ -404,7 +392,7 @@ void D3D::TurnZBufferOff()
 
 void D3D::ClearDepthBuffer(float value)
 {
-	m_deviceContext->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, value, 0.0f);
+	m_deviceContext->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, value, static_cast<UINT8>(0));
 }
 
 bool D3D::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)

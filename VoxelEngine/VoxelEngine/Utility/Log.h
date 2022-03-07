@@ -89,9 +89,9 @@ public:
 
 	void PrintTimestamp();
 
-	void PrintToFile(const char* _msg);
+	void PrintToFile(const char* _msg, ...);
 
-	void PrintNLToFile(const char* _msg);
+	void PrintNLToFile(const char* _msg, ...);
 
 	void PrintIf(const char* _msg, bool _condition);
 

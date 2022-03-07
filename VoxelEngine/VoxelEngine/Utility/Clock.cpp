@@ -1,4 +1,4 @@
-#include "../Misc/pch.h""
+#include "../Misc/pch.h"
 
 #include "Clock.h"
 
@@ -29,7 +29,7 @@ void Clock::Signal()
 	}
 
 	// Calculate delta time
-	m_deltaTime = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - m_lastSignal).count();
+	m_deltaTime = static_cast<float>(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - m_lastSignal).count());
 
 	//Change the last signal to now()
 	m_lastSignal = std::chrono::steady_clock::now();
@@ -43,7 +43,7 @@ float Clock::GetDeltaTime(const TimePrecision& precision)
 
 float Clock::GetTimeSinceStart(const TimePrecision& precision)
 {
-	float res = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - m_start).count();
+	float res = static_cast<float>(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - m_start).count());
 	// Since we start with microsecond precision, we subtract 6 to obtain 0 is seconds is input as precision
 	return res * powf(10.0f, static_cast<float>(precision) - 9.0f);
 }

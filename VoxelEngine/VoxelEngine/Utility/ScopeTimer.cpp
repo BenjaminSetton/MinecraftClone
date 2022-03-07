@@ -13,7 +13,7 @@ ScopeTimer::~ScopeTimer()
 {
 	auto m_end = std::chrono::steady_clock::now();
 
-	float duration = std::chrono::duration_cast<std::chrono::microseconds>(m_end - m_start).count();
+	float duration = static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(m_end - m_start).count());
 
 	if (m_timerVariable)
 	{

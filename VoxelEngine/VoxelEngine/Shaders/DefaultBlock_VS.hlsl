@@ -53,7 +53,7 @@ VertexOut main(VertexIn input)
     output.vertexID = input.vertexID;
     
     // Use the appropriate UVs
-    output.uv = blockUVs[input.blockType][input.vertexID];
+    output.uv = blockUVs[input.blockType][input.vertexID].xy;
     
     output.blockFaces = input.blockFaces;
     

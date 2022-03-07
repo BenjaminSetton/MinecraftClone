@@ -1,5 +1,7 @@
 #include "../Misc/pch.h"
 #include "Log.h"
+#include "../Utility/Utility.h"
+#include <cstdarg>
 
 
 Log::Log() : mLastWritePos(0), mOutputFile(nullptr), mNewMessage(true), mTimestamps(true), 
@@ -14,7 +16,7 @@ Log::~Log()
 	if (mOutputFile) delete mOutputFile;
 }
 
-void Log::SetOutputFile(const char* fileName)
+void Log::SetOutputFile(const char* path)
 {
 	if (mOutputFile)
 	{
@@ -22,15 +24,14 @@ void Log::SetOutputFile(const char* fileName)
 		mOutputFile = nullptr;
 	}
 
-	const char* filePath = "../../../Debug Log/";
-	uint32_t filePathSize = strlen(filePath);
-	uint32_t fileNameSize = strlen(fileName);
-	uint32_t outputFileSize = filePathSize + fileNameSize;
+	uint32_t filePathSize = static_cast<uint32_t>(strlen(path));
 
-	mOutputFile = new char[outputFileSize + 1];
+	mOutputFile = new char[filePathSize + 1];
+	memcpy(mOutputFile, path, filePathSize);
+	mOutputFile[filePathSize] = 0;
 
-	strncpy_s(mOutputFile, strlen(filePath) + 1, filePath, strlen(filePath));
-	strncpy_s(&mOutputFile[0] + filePathSize, strlen(fileName) + 1, fileName, strlen(fileName));
+	//strncpy_s(mOutputFile, strlen(filePath) + 1, filePath, strlen(filePath));
+	//strncpy_s(&mOutputFile[0], strlen(filePathSize) + 1, path, strlen(path));
 }
 
 const char* Log::GetOutputFile()
@@ -38,16 +39,26 @@ const char* Log::GetOutputFile()
 	return mOutputFile;
 }
 
-void Log::PrintNLToFile(const char* _msg)
+void Log::PrintNLToFile(const char* _msg, ...)
 {
+	va_list varptr;
+	va_start(varptr, _msg);
+
+	int numArgs = _vscprintf(_msg, varptr);
+	std::vector<char> buf(numArgs + 1);
+
+	vsprintf(&buf[0], _msg, varptr);
+
+	va_end(varptr);
+
 	// Open a stream for decimal output
 	std::ofstream stream(mOutputFile, std::ios::binary | std::ios::out | std::ios::app);
 
-	assert(stream.is_open());
+	VX_ASSERT(stream.is_open());
 
 	stream.seekp(mLastWritePos);
 
-	stream.write(_msg, strlen(_msg));
+	std::copy(buf.begin(), buf.end() - 1, std::ostream_iterator<char>(stream));
 
 	char newLine = 0xA;
 	stream.write(&newLine, sizeof(newLine));
@@ -76,19 +87,28 @@ void Log::PrintTimestamp()
 	std::cout << "] ";
 }
 
-void Log::PrintToFile(const char* _msg)
+void Log::PrintToFile(const char* _msg, ...)
 {
+	va_list varptr;
+	va_start(varptr, _msg);
+
+	int numArgs = _vscprintf(_msg, varptr);
+	std::vector<char> buf(numArgs + 1);
+
+	vsprintf(&buf[0], _msg, varptr);
+
+	va_end(varptr);
+
 	// Open a stream for decimal output
 	std::ofstream stream(mOutputFile, std::ios::binary | std::ios::out | std::ios::app);
 
-	assert(stream.is_open());
+	VX_ASSERT(stream.is_open());
 
 	stream.seekp(mLastWritePos);
 
-	stream.write(_msg, strlen(_msg));
+	std::copy(buf.begin(), buf.end() - 1, std::ostream_iterator<char>(stream));
 
-	mLastWritePos = (long)stream.tellp();
-	mLastWritePos++;
+	mLastWritePos = static_cast<long>(stream.tellp());
 
 	stream.close();
 }

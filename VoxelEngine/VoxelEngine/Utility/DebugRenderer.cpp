@@ -1,6 +1,9 @@
 #include "../Misc/pch.h"
 #include "DebugRenderer.h"
 
+// DEBUG PURPOSES ONLY
+#include "Input.h"
+
 // Anonymous namespace
 namespace
 {
@@ -76,8 +79,10 @@ void DebugRenderer::DecreaseCurrentClearTimer(const float& dt)
 	if (mClearCurrentTimer <= 0)
 	{
 		mClearCurrentTimer += mClearMaxTimer;
-		Clear();
+		//Clear();
 	}
+
+	if(Input::IsKeyDown(KeyCode::X)) Clear();
 }
 
 void DebugRenderer::DebugLine::AddLine(DirectX::XMFLOAT3 ptA, DirectX::XMFLOAT3 ptB, DirectX::XMFLOAT4 clA, DirectX::XMFLOAT4 clB)

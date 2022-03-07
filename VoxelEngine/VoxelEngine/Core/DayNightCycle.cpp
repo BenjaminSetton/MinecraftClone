@@ -64,6 +64,8 @@ float DayNightCycle::m_elapsedTime = 0.0f;
 
 void DayNightCycle::Update(const float& dt)
 {
+	if (Cycle_Data::pauseCycle) return;
+
 	m_elapsedTime += dt;
 
 	if(m_elapsedTime >= ce_cycleDuration * 2.0f)
@@ -168,20 +170,6 @@ void DayNightCycle::Update(const float& dt)
 		Cycle_Data::time = "SUNSET";
 		break;
 	}
-
-#pragma endregion
-
-#pragma region _DEBUG_RENDERER
-
-	XMFLOAT3 startPos = { -4.0f, 16.0f, 0.0f };
-	float lineLength = 5.0f;
-	DebugRenderer::DrawLine(startPos, {startPos.x + (sunDir.x * lineLength),
-		startPos.y + (sunDir.y * lineLength), startPos.z + (sunDir.z * lineLength) },
-		{1.0f, 0.0f, 0.0f, 1.0f});
-
-	DebugRenderer::DrawLine(startPos, {startPos.x + (moonDir.x * lineLength),
-	startPos.y + (moonDir.y * lineLength), startPos.z + (moonDir.z * lineLength) },
-	{0.0f, 0.0f, 1.0f, 1.0f});
 
 #pragma endregion
 

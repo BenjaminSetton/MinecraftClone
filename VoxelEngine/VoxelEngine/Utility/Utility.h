@@ -26,6 +26,12 @@
 #define VX_PROFILE_SCOPE_MODE(msg, mode) auto VARNAME(var) = ScopeTimer(std::string(msg), mode)
 #define VX_PROFILE_OUT(outVar) auto VARNAME(var) = ScopeTimer(std::string(__FUNCTION__), 0, outVar)
 
+#define VX_COOLDOWN(numberOfSeconds, dt)\
+static auto VARNAME(var) = numberOfSeconds;\
+if(VARNAME(var) <= 0) VARNAME(var) += numberOfSeconds;\
+VARNAME(var) -= dt;\
+if(VARNAME(var) <= 0)
+
 // Logging
 
 #define VX_LOG_ERROR(...) \
@@ -77,6 +83,8 @@ VARNAME(log).End();
 #define VX_PROFILE_SCOPE()
 #define VX_PROFILE_SCOPE_MODE(msg, mode)
 #define VX_PROFILE_OUT(outVar)
+
+#define VX_COOLDOWN(numberOfSeconds, dt)
 
 #define VX_LOG_ERROR(...)
 #define VX_LOG_WARN(...)

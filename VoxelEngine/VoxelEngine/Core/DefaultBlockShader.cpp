@@ -33,7 +33,6 @@ void DefaultBlockShader::Initialize(XMMATRIX camViewMatrix, XMMATRIX lightViewMa
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	MatrixBuffer* matrixBufferPtr;
 	LightBuffer* lightBufferPtr;
-	BlockInstanceData* vertexBufferPtr;
 
 	m_camPM = D3D::GetProjectionMatrix();
 	m_lightPM = D3D::GetOrthoMatrix();
@@ -54,7 +53,7 @@ void DefaultBlockShader::Initialize(XMMATRIX camViewMatrix, XMMATRIX lightViewMa
 	context->Unmap(m_matrixBuffer, 0);
 #pragma endregion
 
-#pragma LIGHT_MATRIX
+#pragma region LIGHT_MATRIX
 	// Lock the matrix constant buffer so it can be written to.
 	hr = context->Map(m_lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	VX_ASSERT(!FAILED(hr));
@@ -86,7 +85,7 @@ void DefaultBlockShader::Render(ID3D11ShaderResourceView* const* srvs)
 
 	BindVertexBuffers();
 
-	uint32_t size = ChunkBufferManager::GetVertexArray().size();
+	uint32_t size = static_cast<uint32_t>(ChunkBufferManager::GetVertexArray().size());
 	BlockShader_Data::debugVerts = size;
 	BlockShader_Data::numDrawCalls = 1;
 

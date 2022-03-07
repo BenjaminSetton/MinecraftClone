@@ -152,6 +152,7 @@ void PlayerController::Update(const float& dt, Player* player)
 
 
 	// TEST RAYCASTING, PLEASE REMOVE
+	VX_COOLDOWN(0.1f, dt)
 	{
 		XMFLOAT3 rayHit = { 0, 0, 0 };
 		if (Input::IsMouseDown(MouseCode::RBUTTON))
@@ -159,8 +160,7 @@ void PlayerController::Update(const float& dt, Player* player)
 			XMFLOAT3 rayPos, rayDir;
 			XMStoreFloat3(&rayPos, player->m_camera->GetWorldMatrix().r[3]);
 			XMStoreFloat3(&rayDir, DirectX::XMVector3Normalize(player->m_camera->GetWorldMatrix().r[2]));
-			float scale = 10.0f;
-			if (VX_MATH::Raycast(rayPos, rayDir, 10, ChunkManager::CheckBlockRaycast, &rayHit))
+			if (VX_MATH::Raycast(rayPos, rayDir, player->GetInteractionRange(), ChunkManager::CheckBlockRaycast, &rayHit))
 			{
 				VX_LOG("Target Hit - [%2.2f, %2.2f, %2.2f]", rayHit.x, rayHit.y, rayHit.z);
 				DebugRenderer::DrawLine(rayPos, rayHit, { 1.0f, 0, 0, 1.0f });

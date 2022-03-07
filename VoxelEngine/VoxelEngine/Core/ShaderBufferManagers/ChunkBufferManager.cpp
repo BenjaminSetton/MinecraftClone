@@ -9,7 +9,7 @@
 
 using namespace DirectX;
 
-constexpr int32_t NUM_BLOCK_VERTS = (CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * (RENDER_DIST + 1) * (RENDER_DIST + 1) * (RENDER_DIST + 1)) * 0.75f;
+constexpr int32_t NUM_BLOCK_VERTS = static_cast<int32_t>((CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE * (RENDER_DIST + 1) * (RENDER_DIST + 1) * (RENDER_DIST + 1)) * 0.75f);
 
 std::vector<BlockInstanceData> ChunkBufferManager::m_vertices = std::vector<BlockInstanceData>();
 

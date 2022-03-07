@@ -26,7 +26,6 @@ void DebugRendererShader::Initialize(XMMATRIX camViewMatrix)
 	HRESULT hr;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	MatrixBuffer* matrixBufferPtr;
-	DebugRenderer::ColoredVertex* vertexBufferPtr;
 
 #pragma region WVP_MATRICES
 	// Lock the matrix constant buffer so it can be written to.
@@ -54,7 +53,7 @@ void DebugRendererShader::Render()
 	UpdateVertexBuffer();
 
 	// Render the lines
-	int numVerts = DebugRenderer::GetVertexCount();
+	int numVerts = static_cast<int>(DebugRenderer::GetVertexCount());
 	context->Draw(numVerts, 0);
 
 	// Clear the previous lines
@@ -119,7 +118,7 @@ void DebugRendererShader::CreateD3DObjects()
 	// Setup the description of the matrix dynamic vertex buffer
 	D3D11_BUFFER_DESC vertexBufferDesc;
 	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.ByteWidth = sizeof(DebugRenderer::ColoredVertex) * DebugRenderer::GetVertexCapacity();
+	vertexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(DebugRenderer::ColoredVertex) * DebugRenderer::GetVertexCapacity());
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDesc.CPUAccessFlags = 0;
 	vertexBufferDesc.MiscFlags = 0;
@@ -177,8 +176,6 @@ void DebugRendererShader::CreateShaders(const WCHAR* vsFilename, const WCHAR* ps
 void DebugRendererShader::UpdateVertexBuffer()
 {
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	DebugRenderer::ColoredVertex** vertexBufferPtr;
 
 	// Update the vertex buffer
 	const DebugRenderer::ColoredVertex* data = DebugRenderer::GetLineVertices();

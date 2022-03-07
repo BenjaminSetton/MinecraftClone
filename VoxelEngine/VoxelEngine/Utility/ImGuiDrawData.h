@@ -15,6 +15,8 @@ struct Cycle_Data
 	static DirectX::XMFLOAT3 moonDir;
 	static DirectX::XMFLOAT3 sunPos;
 	static DirectX::XMFLOAT3 moonPos;
+	static bool pauseCycle;
+	static float timeOfDay;
 
 	static float elapsedTime;
 	static float timePct;

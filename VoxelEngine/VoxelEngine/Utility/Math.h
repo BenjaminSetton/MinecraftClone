@@ -7,6 +7,9 @@
 
 #include "../Core/ChunkManager.h"
 
+// DEBUG INCLUDE
+#include "Input.h"
+
 
 namespace VX_MATH
 {
@@ -93,63 +96,18 @@ namespace VX_MATH
 	{
 		using namespace DirectX;
 
-#pragma region _COMMENT
-		//XMFLOAT3 p = rayPos;
-		//XMFLOAT3 step = {0, 0, 0};
-		//XMFLOAT3 counter = { 0, 0, 0 };
-		//XMFLOAT3 delta = {};
-
-		// Start
-		//int i, ix;
-		//for (ix = 0, i = 0; i < 3; i++)
-		//{
-
-		//	if (XMFLOAT3_BRACKET_OP_32(rayDir, i) > 0)
-		//	{
-		//		XMFLOAT3_BRACKET_OP_32(step, i) = 1;
-		//	}
-
-		//	if (XMFLOAT3_BRACKET_OP_32(rayDir, i) < 0) 
-		//	{ 
-		//		XMFLOAT3_BRACKET_OP_32(step, i) = -1; 
-		//		XMFLOAT3_BRACKET_OP_32(rayDir, i) = -XMFLOAT3_BRACKET_OP_32(rayDir, i); 
-		//	}
-
-		//	if (XMFLOAT3_BRACKET_OP_32(rayDir, ix) < XMFLOAT3_BRACKET_OP_32(rayDir, i))
-		//	{
-		//		ix = i;
-		//	}
-		//}
-		//for (i = 0; i < 3; i++)
-		//{
-		//	XMFLOAT3_BRACKET_OP_32(counter, i) = XMFLOAT3_BRACKET_OP_32(rayDir, ix);
-		//}
-
-		//// Update
-		//while (!XMFLOAT3_IS_EQUAL(XMFLOAT3_BRACKET_OP_32(p, ix), ))
-		//{
-		//	for (int i = 0; i < 3; i++) 
-		//	{ 
-		//		XMFLOAT3_BRACKET_OP_32(counter, i) -= delta[i];
-		//		if (XMFLOAT3_BRACKET_OP_32(counter, i) <= 0)
-		//		{ 
-		//			XMFLOAT3_BRACKET_OP_32(counter, i) += delta[ix]; XMFLOAT3_BRACKET_OP_32(p, i) += XMFLOAT3_BRACKET_OP_32(step, i);
-		//		} 
-		//	}
-		//	if (checkHit(p))
-		//	{
-		//		*outHit = p;
-		//		return true;
-		//	}
-		//	return (p[ix] != p1[ix] + step[ix]);
-		//}
-#pragma endregion
+		// DEBUG LOGGING
+		Log log;
+		log.SetOutputFile("C:/Users/benja/OneDrive/Desktop/raycast_debug.txt");
+		log.PrintNLToFile("Testing raycast with pos [%2.2f, %2.2f, %2.2f] and dir [%2.2f, %2.2f, %2.2f]", rayPos.x, rayPos.y, rayPos.z, rayDir.x, rayDir.y, rayDir.z);
+		log.PrintNLToFile("[");
+		//
 		
 		XMFLOAT3 rayUnitStepSize =
 		{
-			sqrt(1 + ((rayDir.y / rayDir.x) * (rayDir.y / rayDir.x)) + ((rayDir.z / rayDir.x) * (rayDir.z / rayDir.x))),
-			sqrt(((rayDir.x / rayDir.y) * (rayDir.x / rayDir.y)) + 1 + ((rayDir.z / rayDir.y) * (rayDir.z / rayDir.y))),
-			sqrt(((rayDir.x / rayDir.z) * (rayDir.x / rayDir.z)) + ((rayDir.y / rayDir.z) * (rayDir.y / rayDir.z)) + 1)
+			rayDir.x == 0.0f ? maxDist : sqrt(1 + ((rayDir.y / rayDir.x) * (rayDir.y / rayDir.x)) + ((rayDir.z / rayDir.x) * (rayDir.z / rayDir.x))),
+			rayDir.y == 0.0f ? maxDist : sqrt(((rayDir.x / rayDir.y) * (rayDir.x / rayDir.y)) + 1 + ((rayDir.z / rayDir.y) * (rayDir.z / rayDir.y))),
+			rayDir.z == 0.0f ? maxDist : sqrt(((rayDir.x / rayDir.z) * (rayDir.x / rayDir.z)) + ((rayDir.y / rayDir.z) * (rayDir.y / rayDir.z)) + 1)
 		};
 
 		XMFLOAT3 mapCheck = 
@@ -191,11 +149,22 @@ namespace VX_MATH
 		else
 		{
 			step.z = 1;
-			rayLength1D.z = (static_cast<float>(mapCheck.z + 1) - rayPos.z) * rayUnitStepSize.z;
+			if (rayPos.z >= 0)
+			{
+				rayLength1D.z = (static_cast<float>(mapCheck.z + 1) - rayPos.z) * rayUnitStepSize.z;
+			}
+			else
+			{
+				rayLength1D.z = (static_cast<float>(mapCheck.z - 1) - rayPos.z) * rayUnitStepSize.z;
+			}
 		}
 		
 		bool targetFound = false;
 		float accDistance = 0.0f;
+
+		log.PrintNLToFile("\tStep [ %2.2f, %2.2f, %2.2f ]", step.x, step.y, step.z);
+
+		uint32_t counter_debug = 0;
 		while (accDistance < maxDist)
 		{
 			// sort the ray length 1D axes
@@ -210,20 +179,60 @@ namespace VX_MATH
 			accDistance = shortestAxisDistance;
 			XMFLOAT3_BRACKET_OP_32(rayLength1D, shortestAxisIndex) += XMFLOAT3_BRACKET_OP_32(rayUnitStepSize, shortestAxisIndex);
 
-			if (checkHit(mapCheck))
+			XMFLOAT3 intermediateRayHit = 
 			{
-				*outHit = 
-				{ 
-					rayPos.x + (rayDir.x * accDistance),
-					rayPos.y + (rayDir.y * accDistance),
-					rayPos.z + (rayDir.z * accDistance),
-				};
+				rayPos.x + (rayDir.x * accDistance),
+				rayPos.y + (rayDir.y * accDistance),
+				rayPos.z + (rayDir.z * accDistance),
+			};
+
+			// Calculate voxel pos
+			// NOTE: If we truncate a negative number with decimal larger than 0, the result will be a larger number, 
+			// or a number further right on the number line. On the other hand, truncating a positive number results in
+			// a smaller number, further left on the number line. Since we always want the truncated number to be smaller,
+			// we will check if it's negative and subtract 1.0f if it is. We also consider exact
+			XMFLOAT3 voxelPos = 
+			{	static_cast<float>(static_cast<int>((static_cast<int>(intermediateRayHit.x) != intermediateRayHit.x) && intermediateRayHit.x < 0.0f ? intermediateRayHit.x - 1.0f : intermediateRayHit.x)),
+				static_cast<float>(static_cast<int>((static_cast<int>(intermediateRayHit.y) != intermediateRayHit.y) && intermediateRayHit.y < 0.0f ? intermediateRayHit.y - 1.0f : intermediateRayHit.y)),
+				static_cast<float>(static_cast<int>((static_cast<int>(intermediateRayHit.z) != intermediateRayHit.z) && intermediateRayHit.z < 0.0f ? intermediateRayHit.z - 1.0f : intermediateRayHit.z))
+			};
+
+			// New target position when hitting block face
+			for (uint32_t i = 0; i < 3; i++)
+			{
+				if (XMFLOAT3_BRACKET_OP_32(intermediateRayHit, i) == XMFLOAT3_BRACKET_OP_32(voxelPos, i))
+				{
+					if (XMFLOAT3_BRACKET_OP_32(rayDir, i) < 0)
+					{
+						XMFLOAT3_BRACKET_OP_32(voxelPos, i) -= 1.0f;
+					}
+
+					break;
+				}
+			}
+			if (checkHit(voxelPos))
+			{
+				*outHit = intermediateRayHit;
+				DebugRenderer::DrawSphere(1, intermediateRayHit, 0.01f, { 0, 1.0f, 0, 1.0f });
+				DebugRenderer::DrawLine(intermediateRayHit, voxelPos, { 0.0f, 0.0f, 0.0f, 1.0f });
+				DebugRenderer::DrawSphere(1, voxelPos, 0.01f, { 0, 0, 1.0f, 1.0f });
+				VX_LOG("Ray hit at voxel pos [ %2.2f, %2.2f, %2.2f ]", voxelPos.x, voxelPos.y, voxelPos.z);
+				log.PrintToFile("\n]");
 				return true;
 			}
+			DebugRenderer::DrawSphere(1, intermediateRayHit, 0.01f, { 0, 0, 0, 1.0f });
+			DebugRenderer::DrawLine(intermediateRayHit, voxelPos, { 0.0f, 0.0f, 0.0f, 1.0f });
+			DebugRenderer::DrawSphere(1, voxelPos, 0.01f, { 0, 0, 1.0f, 1.0f });
 
-			// intersection = rayStart + rayDir * accDistance;
+			log.PrintNLToFile("\t[%i]\n\t{", counter_debug);
+			log.PrintNLToFile("\t\tIntermediate Ray Hit [ %2.2f, %2.2f, %2.2f ]", intermediateRayHit.x, intermediateRayHit.y, intermediateRayHit.z);
+			log.PrintNLToFile("\t\tVoxel Pos [ %2.2f, %2.2f, %2.2f ]", voxelPos.x, voxelPos.y, voxelPos.z);
+			log.PrintNLToFile("\t\tRayLength1D [ %2.5f, %2.5f, %2.5f ]", rayLength1D.x, rayLength1D.y, rayLength1D.z);
+			log.PrintNLToFile("\t}");
+
+			counter_debug++;
 		}
-		
+		log.PrintToFile("\n]");
 
 		return false;
 

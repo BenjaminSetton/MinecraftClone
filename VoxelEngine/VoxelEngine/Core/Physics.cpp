@@ -69,9 +69,9 @@ const bool Physics::DetectCollision(const DirectX::XMVECTOR& pos)
 	if (!chunk) return false;
 	
 	uint32_t x, y, z;
-	x = static_cast<float>(pos.m128_f32[0]) - chunkPosWS.x;
-	y = static_cast<float>(pos.m128_f32[1]) - chunkPosWS.y;
-	z = static_cast<float>(pos.m128_f32[2]) - chunkPosWS.z;
+	x = static_cast<uint32_t>(static_cast<float>(pos.m128_f32[0]) - chunkPosWS.x);
+	y = static_cast<uint32_t>(static_cast<float>(pos.m128_f32[1]) - chunkPosWS.y);
+	z = static_cast<uint32_t>(static_cast<float>(pos.m128_f32[2]) - chunkPosWS.z);
 	BlockType blockType = chunk->GetBlock(x, y, z)->GetType();
 	
 	if (blockType != BlockType::Air) return true;
