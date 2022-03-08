@@ -213,13 +213,13 @@ void Application::InitializeWindows(UINT& screenWidth, UINT& screenHeight)
 		// Place middle of second monitor is two monitors are attached to PC
 		if (GetSystemMetrics(SM_CMONITORS) == 2)
 		{
-			posX = (GetSystemMetrics(SM_CXVIRTUALSCREEN) * 0.75f) - screenWidth * 0.5f;
-			posY = (GetSystemMetrics(SM_CYSCREEN) - screenHeight) * 0.5f;
+			posX = static_cast<int>((GetSystemMetrics(SM_CXVIRTUALSCREEN) * 0.75f) - screenWidth * 0.5f);
+			posY = static_cast<int>((GetSystemMetrics(SM_CYSCREEN) - screenHeight) * 0.5f);
 		}
 		else // place in middle of primary monitor
 		{
-			posX = (GetSystemMetrics(SM_CXSCREEN) - screenWidth) * 0.5f;
-			posY = (GetSystemMetrics(SM_CYSCREEN) - screenHeight) * 0.5f;
+			posX = static_cast<int>((GetSystemMetrics(SM_CXSCREEN) - screenWidth) * 0.5f);
+			posY = static_cast<int>((GetSystemMetrics(SM_CYSCREEN) - screenHeight) * 0.5f);
 		}
 	}
 
