@@ -162,13 +162,13 @@ void PlayerController::Update(const float& dt, Player* player)
 			XMStoreFloat3(&rayDir, DirectX::XMVector3Normalize(player->m_camera->GetWorldMatrix().r[2]));
 			if (VX_MATH::Raycast(rayPos, rayDir, player->GetInteractionRange(), ChunkManager::CheckBlockRaycast, &rayHit))
 			{
-				VX_LOG("Target Hit - [%2.2f, %2.2f, %2.2f]", rayHit.x, rayHit.y, rayHit.z);
+				//VX_LOG("Target Hit - [%2.2f, %2.2f, %2.2f]", rayHit.x, rayHit.y, rayHit.z);
 				DebugRenderer::DrawLine(rayPos, rayHit, { 1.0f, 0, 0, 1.0f });
 				DebugRenderer::DrawSphere(1, rayHit, 0.01f, {1.0f, 0, 0, 1.0f});
 			}
 			else
 			{
-				VX_LOG("Target Missed");
+				//VX_LOG("Target Missed");
 			}
 		}
 	}
@@ -183,7 +183,7 @@ void PlayerController::CheckForCollision(Player* player, DirectX::XMMATRIX& worl
 	PlayerPhysics_Data::isCollidingWall = isCollidingWithWall;
 	if (isCollidingWithWall)
 	{
-		XMFLOAT3 velocityToAdd = { newPos.x - prevPos.x, newPos.y - prevPos.y, newPos.z - prevPos.z };
+ 		XMFLOAT3 velocityToAdd = { newPos.x - prevPos.x, newPos.y - prevPos.y, newPos.z - prevPos.z };
 
 		// Test every component of velocity to check which component to nullify
 		// TEST X COMPONENT
@@ -193,11 +193,11 @@ void PlayerController::CheckForCollision(Player* player, DirectX::XMMATRIX& worl
 			if (Physics::DetectCollision(testXComp)) velocityToAdd.x = 0;
 		}
 		// TEST Y COMPONENT (IF 0, SKIP?)
-		{
-			XMVECTOR testYComp = prevFootPos;
-			testYComp.m128_f32[1] += velocityToAdd.y;
-			if (Physics::DetectCollision(testYComp)) velocityToAdd.y = 0;
-		}
+		//{
+		//	XMVECTOR testYComp = prevFootPos;
+		//	testYComp.m128_f32[1] += velocityToAdd.y;
+		//	if (Physics::DetectCollision(testYComp)) velocityToAdd.y = 0;
+		//}
 		// TEST Z COMPONENT
 		{
 			XMVECTOR testZComp = prevFootPos;

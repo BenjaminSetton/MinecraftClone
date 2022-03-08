@@ -104,7 +104,7 @@ void Chunk::Init()
 		for (int64_t z = 0; z < CHUNK_SIZE; z++)
 		{
 			// Returns a values between MAXIMUM_TERRAIN_HEIGHT and MINIMUM_TERRAIN_HEIGHT
-			SimplexNoise noiseGenerator( 0.012f, 1.0f, 2.0f, 0.5f );
+			SimplexNoise noiseGenerator( 0.010f, 1.0f, 2.0f, 0.3f );
 			float sampledNoise = noiseGenerator.fractal(4, static_cast<float>(x + posWS.x), static_cast<float>(z + posWS.z));
 			float height = ((sampledNoise * 0.5f + 0.5f) * TERRAIN_HEIGHT_RANGE) + TERRAIN_STARTING_HEIGHT;
 			for(int64_t y = 0; y < CHUNK_SIZE; y++)

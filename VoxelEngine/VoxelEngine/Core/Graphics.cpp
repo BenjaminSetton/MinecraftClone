@@ -246,9 +246,9 @@ bool Graphics::Frame(const float dt)
 		}
 
 		{
-			VX_PROFILE_SCOPE("[RENDER] Texture Viewer");
-			// Render the texture viewer quad
-			m_texViewer->Render();
+			//VX_PROFILE_SCOPE("[RENDER] Texture Viewer");
+			//// Render the texture viewer quad
+			//m_texViewer->Render();
 		}
 	}
 

@@ -95,13 +95,6 @@ namespace VX_MATH
 	inline bool Raycast(const DirectX::XMFLOAT3& rayPos, const DirectX::XMFLOAT3& rayDir, const float maxDist, std::function<bool(const DirectX::XMFLOAT3&)> checkHit, DirectX::XMFLOAT3* outHit)
 	{
 		using namespace DirectX;
-
-		// DEBUG LOGGING
-		Log log;
-		log.SetOutputFile("C:/Users/benja/OneDrive/Desktop/raycast_debug.txt");
-		log.PrintNLToFile("Testing raycast with pos [%2.2f, %2.2f, %2.2f] and dir [%2.2f, %2.2f, %2.2f]", rayPos.x, rayPos.y, rayPos.z, rayDir.x, rayDir.y, rayDir.z);
-		log.PrintNLToFile("[");
-		//
 		
 		XMFLOAT3 rayUnitStepSize =
 		{
@@ -119,58 +112,48 @@ namespace VX_MATH
 		// Step is an integer vector
 		XMFLOAT3 rayLength1D, step = {0, 0, 0};
 
-		if (rayDir.x < 0)
+		if (rayDir.x < 0.0f)
 		{
-			step.x = -1;
-			rayLength1D.x = (rayPos.x - static_cast<float>(mapCheck.x)) * rayUnitStepSize.x;
+			step.x = -1.0f;
+			if (rayPos.x >= 0.0f)	rayLength1D.x = (rayPos.x - static_cast<float>(mapCheck.x)) * rayUnitStepSize.x;
+			else					rayLength1D.x = (rayPos.x - static_cast<float>(mapCheck.x - 1.0f)) * rayUnitStepSize.x;
 		}
 		else
 		{
-			step.x = 1;
-			rayLength1D.x = (static_cast<float>(mapCheck.x + 1) - rayPos.x) * rayUnitStepSize.x;
+			step.x = 1.0f;
+			if (rayPos.x >= 0.0f)	rayLength1D.x = (static_cast<float>(mapCheck.x + 1.0f) - rayPos.x) * rayUnitStepSize.x;
+			else					rayLength1D.x = (static_cast<float>(mapCheck.x) - rayPos.x) * rayUnitStepSize.x;
 		}
 
-		if (rayDir.y < 0)
+		if (rayDir.y < 0.0f)
 		{
-			step.y = -1;
-			rayLength1D.y = (rayPos.y - static_cast<float>(mapCheck.y)) * rayUnitStepSize.y;
+			step.y = -1.0f;
+			if (rayPos.y >= 0.0f)	rayLength1D.y = (rayPos.y - static_cast<float>(mapCheck.y)) * rayUnitStepSize.y;
+			else					rayLength1D.y = (rayPos.y - static_cast<float>(mapCheck.y - 1.0f)) * rayUnitStepSize.y;
 		}
 		else
 		{
-			step.y = 1;
-			rayLength1D.y = (static_cast<float>(mapCheck.y + 1) - rayPos.y) * rayUnitStepSize.y;
+			step.y = 1.0f;
+			if (rayPos.y >= 0.0f)	rayLength1D.y = (static_cast<float>(mapCheck.y + 1.0f) - rayPos.y) * rayUnitStepSize.y;
+			else					rayLength1D.y = (static_cast<float>(mapCheck.y) - rayPos.y) * rayUnitStepSize.y;
 		}
 
-		if (rayDir.z < 0)
+		if (rayDir.z < 0.0f)
 		{
-			step.z = -1;
-			rayLength1D.z = (rayPos.z - static_cast<float>(mapCheck.z)) * rayUnitStepSize.z;
+			step.z = -1.0f;
+			if (rayPos.z >= 0.0f)	rayLength1D.z = (rayPos.z - static_cast<float>(mapCheck.z)) * rayUnitStepSize.z;
+			else					rayLength1D.z = (rayPos.z - static_cast<float>(mapCheck.z - 1.0f)) * rayUnitStepSize.z;
 		}
 		else
 		{
-			// NOTE FOR FUTURE SELF
-			// I had to put this check in here because this algorithm wasn't accounting for negative numbers.
-			// This meant that when setting the rayLength1D for any particular axis, adding 1 to the mapCheck axis
-			// would cause it to be longer than it had to be, and it would sometimes cut corners or do some weird
-			// shit like that. The fix is to consider the negative axis separately, but I must do so for the other X and Y
-			// axes for this to work 100%!!
-			step.z = 1;
-			if (rayPos.z >= 0)
-			{
-				rayLength1D.z = (static_cast<float>(mapCheck.z + 1) - rayPos.z) * rayUnitStepSize.z;
-			}
-			else
-			{
-				rayLength1D.z = (static_cast<float>(mapCheck.z - 1) - rayPos.z) * rayUnitStepSize.z;
-			}
+			step.z = 1.0f;
+			if (rayPos.z >= 0.0f)	rayLength1D.z = (static_cast<float>(mapCheck.z + 1.0f) - rayPos.z) * rayUnitStepSize.z;
+			else					rayLength1D.z = (static_cast<float>(mapCheck.z) - rayPos.z) * rayUnitStepSize.z;
 		}
 		
 		bool targetFound = false;
 		float accDistance = 0.0f;
 
-		log.PrintNLToFile("\tStep [ %2.2f, %2.2f, %2.2f ]", step.x, step.y, step.z);
-
-		uint32_t counter_debug = 0;
 		while (accDistance < maxDist)
 		{
 			// sort the ray length 1D axes
@@ -219,26 +202,16 @@ namespace VX_MATH
 			if (checkHit(voxelPos))
 			{
 				*outHit = intermediateRayHit;
-				DebugRenderer::DrawSphere(1, intermediateRayHit, 0.01f, { 0, 1.0f, 0, 1.0f });
-				DebugRenderer::DrawLine(intermediateRayHit, voxelPos, { 0.0f, 0.0f, 0.0f, 1.0f });
-				DebugRenderer::DrawSphere(1, voxelPos, 0.01f, { 0, 0, 1.0f, 1.0f });
-				VX_LOG("Ray hit at voxel pos [ %2.2f, %2.2f, %2.2f ]", voxelPos.x, voxelPos.y, voxelPos.z);
-				log.PrintToFile("\n]");
+				//DebugRenderer::DrawSphere(1, intermediateRayHit, 0.01f, { 0, 1.0f, 0, 1.0f });
+				//DebugRenderer::DrawLine(intermediateRayHit, voxelPos, { 0.0f, 0.0f, 0.0f, 1.0f });
+				//DebugRenderer::DrawSphere(1, voxelPos, 0.01f, { 0, 0, 1.0f, 1.0f });
 				return true;
 			}
-			DebugRenderer::DrawSphere(1, intermediateRayHit, 0.01f, { 0, 0, 0, 1.0f });
-			DebugRenderer::DrawLine(intermediateRayHit, voxelPos, { 0.0f, 0.0f, 0.0f, 1.0f });
-			DebugRenderer::DrawSphere(1, voxelPos, 0.01f, { 0, 0, 1.0f, 1.0f });
+			//DebugRenderer::DrawSphere(1, intermediateRayHit, 0.01f, { 0, 0, 0, 1.0f });
+			//DebugRenderer::DrawLine(intermediateRayHit, voxelPos, { 0.0f, 0.0f, 0.0f, 1.0f });
+			//DebugRenderer::DrawSphere(1, voxelPos, 0.01f, { 0, 0, 1.0f, 1.0f });
 
-			log.PrintNLToFile("\t[%i]\n\t{", counter_debug);
-			log.PrintNLToFile("\t\tIntermediate Ray Hit [ %2.2f, %2.2f, %2.2f ]", intermediateRayHit.x, intermediateRayHit.y, intermediateRayHit.z);
-			log.PrintNLToFile("\t\tVoxel Pos [ %2.2f, %2.2f, %2.2f ]", voxelPos.x, voxelPos.y, voxelPos.z);
-			log.PrintNLToFile("\t\tRayLength1D [ %2.5f, %2.5f, %2.5f ]", rayLength1D.x, rayLength1D.y, rayLength1D.z);
-			log.PrintNLToFile("\t}");
-
-			counter_debug++;
 		}
-		log.PrintToFile("\n]");
 
 		return false;
 

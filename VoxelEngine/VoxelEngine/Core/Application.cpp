@@ -210,9 +210,17 @@ void Application::InitializeWindows(UINT& screenWidth, UINT& screenHeight)
 		screenWidth = 1920;
 		screenHeight = 1080;
 
-		// Place the window in the middle of the screen.
-		posX = (GetSystemMetrics(SM_CXSCREEN) - screenWidth) / 2;
-		posY = (GetSystemMetrics(SM_CYSCREEN) - screenHeight) / 2;
+		// Place middle of second monitor is two monitors are attached to PC
+		if (GetSystemMetrics(SM_CMONITORS) == 2)
+		{
+			posX = (GetSystemMetrics(SM_CXVIRTUALSCREEN) * 0.75f) - screenWidth * 0.5f;
+			posY = (GetSystemMetrics(SM_CYSCREEN) - screenHeight) * 0.5f;
+		}
+		else // place in middle of primary monitor
+		{
+			posX = (GetSystemMetrics(SM_CXSCREEN) - screenWidth) * 0.5f;
+			posY = (GetSystemMetrics(SM_CYSCREEN) - screenHeight) * 0.5f;
+		}
 	}
 
 	// Create the window with the screen settings and get the handle to it.
