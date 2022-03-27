@@ -144,7 +144,7 @@ bool Application::Frame()
 	// Update physics
 
 	// Update the player
-	Game::GetPrimaryPlayer()->Update(dt);
+	Game::Update(dt);
 
 	// Process each frame in the graphics class
 	m_Graphics->Frame(dt);
@@ -211,7 +211,7 @@ void Application::InitializeWindows(UINT& screenWidth, UINT& screenHeight)
 		screenHeight = 1080;
 
 		// Place middle of second monitor is two monitors are attached to PC
-		if (GetSystemMetrics(SM_CMONITORS) == 2)
+		if (false/*GetSystemMetrics(SM_CMONITORS) == 2*/)
 		{
 			posX = static_cast<int>((GetSystemMetrics(SM_CXVIRTUALSCREEN) * 0.75f) - screenWidth * 0.5f);
 			posY = static_cast<int>((GetSystemMetrics(SM_CYSCREEN) - screenHeight) * 0.5f);

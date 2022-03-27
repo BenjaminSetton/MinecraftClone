@@ -4,7 +4,7 @@
 #include <DirectXMath.h>
 
 class Player;
-
+struct AABB;
 
 class PlayerController
 {
@@ -18,7 +18,8 @@ public:
 
 private:
 
-	static void CheckForCollision( Player* player, DirectX::XMMATRIX& worldMatrix, DirectX::XMFLOAT3& prevPos, DirectX::XMVECTOR& prevFootPos, const float& dt);
+	static bool CheckForHorizontalCollision(AABB& newPos, const AABB& prevPos, const float& dt);
+	static bool CheckForVerticalCollision(AABB& newPos, const AABB& prevPos, const float& dt);
 
 };
 

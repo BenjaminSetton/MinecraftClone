@@ -11,7 +11,7 @@ public:
 	FrustumCamera(const FrustumCamera& other) = default;
 	~FrustumCamera() = default;
 
-	virtual void Update(float deltaTime) override;
+	void Update(float deltaTime);
 
 private:
 

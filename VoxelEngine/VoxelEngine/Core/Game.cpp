@@ -22,3 +22,9 @@ void Game::Shutdown()
 Player* Game::GetPrimaryPlayer() { return m_primaryPlayer; }
 
 void Game::SetPrimaryPlayer(Player* player) { m_primaryPlayer = player; }
+
+void Game::Update(const float dt)
+{
+	// Update the primary player
+	m_primaryPlayer->Update(dt);
+}

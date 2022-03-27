@@ -25,9 +25,9 @@ void BlockSelectionIndicator::Update(const float dt)
 	XMFLOAT3 rayPos = { 0.0f, 0.0f, 0.0f };
 	XMFLOAT3 rayDir = { 0.0f, 0.0f, 0.0f };
 	XMFLOAT3 rayHit = { 0.0f, 0.0f, 0.0f };
-	XMStoreFloat3(&rayPos, player->GetCamera()->GetWorldMatrix().r[3]);
+	XMStoreFloat3(&rayPos, player->GetCamera(CameraType::FirstPerson)->GetWorldMatrix().r[3]);
 	for (uint32_t i = 0; i < 3; i++) { XMFLOAT3_BRACKET_OP_32(rayPos, i) += epsilon; }
-	XMStoreFloat3(&rayDir, DirectX::XMVector3Normalize(player->GetCamera()->GetWorldMatrix().r[2]));
+	XMStoreFloat3(&rayDir, DirectX::XMVector3Normalize(player->GetCamera(CameraType::FirstPerson)->GetWorldMatrix().r[2]));
 	if (VX_MATH::Raycast(rayPos, rayDir, player->GetInteractionRange(), ChunkManager::CheckBlockRaycast, &rayHit))
 	{
 		// We're selecting a new block, move indicator towards it

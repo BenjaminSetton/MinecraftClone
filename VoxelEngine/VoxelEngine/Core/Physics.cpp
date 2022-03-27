@@ -63,36 +63,60 @@ const bool Physics::DetectCollision(const DirectX::XMVECTOR& pos)
 	XMFLOAT3 chunkPosWS = VX_MATH::ChunkToWorldSpace(posCS);
 
 	Chunk* chunk = ChunkManager::GetChunkAtPos(posCS);
-	// No chunk exists, so collision can't happen
-	// This should never be the case when testing collision with player's position
-	// but since vertical chunks aren't a thing yet we need this workaround
-	if (!chunk) return false;
+	VX_ASSERT(chunk != nullptr);
 	
 	uint32_t x, y, z;
-	x = static_cast<uint32_t>(static_cast<float>(pos.m128_f32[0]) - chunkPosWS.x);
-	y = static_cast<uint32_t>(static_cast<float>(pos.m128_f32[1]) - chunkPosWS.y);
-	z = static_cast<uint32_t>(static_cast<float>(pos.m128_f32[2]) - chunkPosWS.z);
+	x = static_cast<uint32_t>(pos.m128_f32[0] - chunkPosWS.x);
+	y = static_cast<uint32_t>(pos.m128_f32[1] - chunkPosWS.y);
+	z = static_cast<uint32_t>(pos.m128_f32[2] - chunkPosWS.z);
 	BlockType blockType = chunk->GetBlock(x, y, z)->GetType();
 	
 	if (blockType != BlockType::Air) return true;
 	else return false;
 }
 
-const bool DetectCollision(const AABB& aabb)
+const bool Physics::DetectCollision(const AABB& aabb)
 {
-	//
-	//	!NOTE! 
-	//	Unimplemented
-	//
-	//
+	XMFLOAT3 aabbMin = { aabb.center.x - aabb.extent.x, aabb.center.y - aabb.extent.y, aabb.center.z - aabb.extent.z };
+	XMFLOAT3 aabbMax = { aabb.center.x + aabb.extent.x, aabb.center.y + aabb.extent.y, aabb.center.z + aabb.extent.z };
+
+	// for each axis, find the range
+	// after finding the range for each axis, find the position of included blocks
+	XMFLOAT3 range = 
+	{ 
+		static_cast<float>(abs(static_cast<int32_t>(aabbMax.x) - static_cast<int32_t>(aabbMin.x)) + 1),
+		static_cast<float>(abs(static_cast<int32_t>(aabbMax.y) - static_cast<int32_t>(aabbMin.y)) + 1),
+		static_cast<float>(abs(static_cast<int32_t>(aabbMax.z) - static_cast<int32_t>(aabbMin.z)) + 1)
+	};
+
+	for (uint32_t x = 0; x < range.x; x++)
+	{
+		for (uint32_t y = 0; y < range.y; y++)
+		{
+			for (uint32_t z = 0; z < range.z; z++)
+			{
+				// intersected block pos in world space
+				XMFLOAT3 intersectedBlockPos = { aabbMin.x + x, aabbMin.y + y, aabbMin.z + z };
+
+				XMFLOAT3 posCS = VX_MATH::WorldToChunkSpace(intersectedBlockPos);
+				XMFLOAT3 chunkPosWS = VX_MATH::ChunkToWorldSpace(posCS);
+
+				Chunk* chunk = ChunkManager::GetChunkAtPos(posCS);
+				VX_ASSERT(chunk != nullptr);
+
+				uint32_t localX, localY, localZ;
+				localX = static_cast<uint32_t>(intersectedBlockPos.x - chunkPosWS.x);
+				localY = static_cast<uint32_t>(intersectedBlockPos.y - chunkPosWS.y);
+				localZ = static_cast<uint32_t>(intersectedBlockPos.z - chunkPosWS.z);
+				BlockType blockType = chunk->GetBlock(localX, localY, localZ)->GetType();
+
+				DebugRenderer::DrawAABB({ intersectedBlockPos.x + 0.5f, intersectedBlockPos.y + 0.5f, intersectedBlockPos.z + 0.5f }, { 0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f, 1.0f, 1.0f });
+
+				if (blockType != BlockType::Air) return true;
+			}
+		}
+	}
+
 	return false;
 
-	/*XMFLOAT3 posCS = ChunkManager::WorldToChunkSpace(aabb.center);
-	XMFLOAT3 chunkPosWS = ChunkManager::ChunkToWorldSpace(posCS);
-
-	std::shared_ptr<Chunk> chunk = ChunkManager::GetChunkAtPos(posCS);
-	if (!chunk) return false;
-
-
-	BlockType blockType = chunk->GetBlock(pos.m128_f32[0] - chunkPosWS.x, pos.m128_f32[1] - chunkPosWS.y, pos.m128_f32[2] - chunkPosWS.z)->GetType();*/
 }

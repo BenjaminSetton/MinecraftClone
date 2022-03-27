@@ -259,7 +259,6 @@
     <ClCompile Include="Core\Crosshair.cpp" />
     <ClCompile Include="Core\D3D.cpp" />
     <ClCompile Include="Core\DayNightCycle.cpp" />
-    <ClCompile Include="Core\DebugCamera.cpp" />
     <ClCompile Include="Core\DebugRendererShader.cpp" />
     <ClCompile Include="Core\DefaultBlockShader.cpp" />
     <ClCompile Include="Core\DirectionalLight.cpp" />
@@ -343,7 +342,6 @@
     <ClInclude Include="Core\Crosshair.h" />
     <ClInclude Include="Core\D3D.h" />
     <ClInclude Include="Core\DayNightCycle.h" />
-    <ClInclude Include="Core\DebugCamera.h" />
     <ClInclude Include="Core\DebugRendererShader.h" />
     <ClInclude Include="Core\DefaultBlockShader.h" />
     <ClInclude Include="Core\DirectionalLight.h" />

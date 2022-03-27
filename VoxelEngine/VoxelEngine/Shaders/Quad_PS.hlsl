@@ -11,5 +11,5 @@ struct PixelIn
 float4 main(PixelIn input) : SV_TARGET
 {
 	float4 sampleCol = quadTex.Sample(sampleClamp, input.uv);
-	return sampleCol;
+	return float4(sampleCol.xyz * 0.5f, sampleCol.w);
 }

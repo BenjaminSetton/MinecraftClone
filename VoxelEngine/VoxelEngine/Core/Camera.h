@@ -9,13 +9,13 @@ class Camera
 public:
 
 	Camera();
+	Camera(const float rotationSpeed, const float smoothingFactor);
 	~Camera() = default;
 	Camera(const Camera& camera) = default;
 
-	void ConstructMatrix(const DirectX::XMFLOAT3 pos);
+	void Update(float dt);
 
-	DirectX::XMFLOAT3 GetRotation();
-	void SetRotation(const DirectX::XMFLOAT3 rot);
+	void ConstructMatrix(const DirectX::XMFLOAT3& pos, const DirectX::XMFLOAT3& rot);
 
 	DirectX::XMMATRIX GetViewMatrix();
 	DirectX::XMMATRIX GetWorldMatrix();
@@ -23,13 +23,22 @@ public:
 	void SetViewMatrix(const DirectX::XMMATRIX viewMatrix);
 	void SetWorldMatrix(const DirectX::XMMATRIX worldMatrix);
 
-	virtual void Update(float deltaTime) = 0;
+	const float GetRotationSpeed();
+	void SetRotationSpeed(const float speed);
 
-protected:
+	void SetCameraParameters(const DirectX::XMFLOAT3& position, const DirectX::XMFLOAT3& rotation);
 
-	DirectX::XMFLOAT3 m_rotation; // Stores pitch, yaw and roll
+private:
 
 	DirectX::XMMATRIX m_viewMatrix;
+
+	float m_smoothingFactor;
+	float m_rotationSpeed;
+	DirectX::XMFLOAT3 m_currentRotation;
+
+	// These are temporary values that should be set by the player controller
+	DirectX::XMFLOAT3 m_position;
+	DirectX::XMFLOAT3 m_targetRotation;
 };
 
 

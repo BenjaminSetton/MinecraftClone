@@ -39,9 +39,9 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	Player* player = Game::GetPrimaryPlayer();
 
 	m_frustumCam = new FrustumCamera();
-	m_frustumCam->ConstructMatrix({ -15.0f, 20.0f, 15.0f });
+	m_frustumCam->ConstructMatrix({ -15.0f, 20.0f, 15.0f }, { 0.0f, 0.0f, 0.0f });
 	FrustumCulling::CalculateFrustum(XM_PIDIV4, (float)screenWidth / screenHeight,
-		SCREEN_NEAR, SCREEN_FAR, player->GetCamera()->GetWorldMatrix(), player->GetPosition());
+		SCREEN_NEAR, SCREEN_FAR, player->GetCamera(CameraType::FirstPerson)->GetWorldMatrix(), player->GetPosition());
 
 	// Create and initialize the texture manager
 	m_textureManager = new TextureManager();
@@ -62,12 +62,12 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	// Create the chunk shader class object
 	m_chunkShader = new DefaultBlockShader();
 	m_chunkShader->CreateObjects(L"./Shaders/DefaultBlock_VS.hlsl", L"./Shaders/DefaultBlock_GS.hlsl", L"./Shaders/DefaultBlock_PS.hlsl");
-	m_chunkShader->Initialize(player->GetCamera()->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
+	m_chunkShader->Initialize(player->GetCamera(CameraType::FirstPerson)->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
 
 	// Create the debug renderer class object
 	m_debugShader = new DebugRendererShader();
 	m_debugShader->CreateObjects(L"./Shaders/DebugRenderer_VS.hlsl", L"./Shaders/DebugRenderer_PS.hlsl");
-	m_debugShader->Initialize(player->GetCamera()->GetViewMatrix());
+	m_debugShader->Initialize(player->GetCamera(CameraType::FirstPerson)->GetViewMatrix());
 
 	// Create the quad shader class object
 	m_quadShader = new QuadShader();
@@ -170,7 +170,7 @@ bool Graphics::Frame(const float dt)
 	Crosshair::Update(dt);
 
 	FrustumCulling::CalculateFrustum(XM_PIDIV4, (float)m_screenWidth / m_screenHeight, 
-		SCREEN_NEAR, SCREEN_FAR, player->GetCamera()->GetWorldMatrix(), player->GetPosition());
+		SCREEN_NEAR, SCREEN_FAR, player->GetCamera(CameraType::FirstPerson)->GetWorldMatrix(), player->GetPosition());
 
 
 	// Update the position for the updater thread
@@ -221,21 +221,21 @@ bool Graphics::Frame(const float dt)
 		{
 			VX_PROFILE_SCOPE("[RENDER] Chunk");
 			// Send the chunks to the shader and render
-			m_chunkShader->UpdateViewMatrices(player->GetCamera()->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
+			m_chunkShader->UpdateViewMatrices(player->GetCamera(player->GetSelectedCameraType())->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
 			m_chunkShader->Render(srvs);
 		}
 
 		{
 			VX_PROFILE_SCOPE("[RENDER] Debug Lines");
 			// Render all debug lines and spheres
-			m_debugShader->UpdateViewMatrix(player->GetCamera()->GetViewMatrix());
+			m_debugShader->UpdateViewMatrix(player->GetCamera(player->GetSelectedCameraType())->GetViewMatrix());
 			m_debugShader->Render();
 		}
 
 		{
 			D3D::ClearDepthBuffer(1.0f);
 			VX_PROFILE_SCOPE("[RENDER] Quads");
-			m_quadShader->UpdateViewMatrix(player->GetCamera()->GetViewMatrix());
+			m_quadShader->UpdateViewMatrix(player->GetCamera(player->GetSelectedCameraType())->GetViewMatrix());
 			m_quadShader->SetQuadTexture(m_textureManager->GetTexture(std::string("BLOCKSELECTOR_TEX")));
 			m_quadShader->SetRenderInNDC(false);
 			m_quadShader->Render();

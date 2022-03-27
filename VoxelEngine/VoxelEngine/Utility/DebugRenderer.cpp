@@ -45,6 +45,38 @@ void DebugRenderer::DrawCircle(const int32_t levelOfDetail, const DirectX::XMFLO
 	DebugSphere::DrawCircle(levelOfDetail, position, radius, color);
 }
 
+void DebugRenderer::DrawAABB(const DirectX::XMFLOAT3& center, const DirectX::XMFLOAT3& extents, const DirectX::XMFLOAT4& color)
+{
+	DirectX::XMFLOAT3 trb = { center.x + extents.x, center.y + extents.y, center.z + extents.z };
+	DirectX::XMFLOAT3 tlb = { center.x - extents.x, center.y + extents.y, center.z + extents.z };
+	DirectX::XMFLOAT3 trf = { center.x + extents.x, center.y + extents.y, center.z - extents.z };
+	DirectX::XMFLOAT3 tlf = { center.x - extents.x, center.y + extents.y, center.z - extents.z };
+	DirectX::XMFLOAT3 brb = { center.x + extents.x, center.y - extents.y, center.z + extents.z };
+	DirectX::XMFLOAT3 blb = { center.x - extents.x, center.y - extents.y, center.z + extents.z };
+	DirectX::XMFLOAT3 brf = { center.x + extents.x, center.y - extents.y, center.z - extents.z };
+	DirectX::XMFLOAT3 blf = { center.x - extents.x, center.y - extents.y, center.z - extents.z };
+
+	// top square
+	DrawLine(trb, tlb, color);
+	DrawLine(tlb, tlf, color);
+	DrawLine(tlf, trf, color);
+	DrawLine(trf, trb, color);
+
+	// left
+	DrawLine(tlf, blf, color);
+	DrawLine(blf, blb, color);
+	DrawLine(blb, tlb, color);
+
+	// right
+	DrawLine(trf, brf, color);
+	DrawLine(brf, brb, color);
+	DrawLine(brb, trb, color);
+
+	DrawLine(blf, brf, color);
+	DrawLine(blb, brb, color);
+
+}
+
 void DebugRenderer::Clear()
 {
 	// Resets debug_vert_count
@@ -75,14 +107,14 @@ void DebugRenderer::SetMaxClearTimer(const float& clearTimer)
 
 void DebugRenderer::DecreaseCurrentClearTimer(const float& dt) 
 {
-	mClearCurrentTimer -= dt;
-	if (mClearCurrentTimer <= 0)
-	{
-		mClearCurrentTimer += mClearMaxTimer;
-		//Clear();
-	}
+	//mClearCurrentTimer -= dt;
+	//if (mClearCurrentTimer <= 0)
+	//{
+	//	mClearCurrentTimer += mClearMaxTimer;
+	//	//Clear();
+	//}
 
-	if(Input::IsKeyDown(KeyCode::X)) Clear();
+	//if(Input::IsKeyDown(KeyCode::X)) Clear();
 }
 
 void DebugRenderer::DebugLine::AddLine(DirectX::XMFLOAT3 ptA, DirectX::XMFLOAT3 ptB, DirectX::XMFLOAT4 clA, DirectX::XMFLOAT4 clB)

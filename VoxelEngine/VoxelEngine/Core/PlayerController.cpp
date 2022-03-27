@@ -30,230 +30,277 @@ constexpr float TERMINAL_VELOCITY = 4.0f * -GRAVITY;
 
 void PlayerController::Update(const float& dt, Player* player)
 {
-
 	// DEBUG
 	static bool isColliding = false;
 
-	XMFLOAT3 prevPos = player->m_position;
-	XMVECTOR prevPlayerFeetPos = { prevPos.x, prevPos.y - 2.0f, prevPos.z };
-	XMVECTOR deltaTranslation = { 0, 0, 0, 1 };
-	XMVECTOR deltaRotation = { 0.0f, 0.0f, 0.0f };
-	player->m_acceleration = { 0.0f, GRAVITY, 0.0f };
-
-	XMMATRIX worldMatrix = player->m_camera->GetWorldMatrix();
-
-	XMVECTOR prevX, prevY, prevZ;
-	prevX = worldMatrix.r[0];
-	prevY = worldMatrix.r[1];
-	prevZ = worldMatrix.r[2];
-
-	///
-	//
-	// Update position
-	//
-	///
-
-	player->m_allowJump = false;
-
-	if (Input::IsKeyDown(KeyCode::O) || Input::IsKeyDown(KeyCode::W)) // FORWARD
-		deltaTranslation.m128_f32[2] += player->m_movementSpeed * dt;
-	if (Input::IsKeyDown(KeyCode::L) || Input::IsKeyDown(KeyCode::S)) // BACKWARD
-		deltaTranslation.m128_f32[2] -= player->m_movementSpeed * dt;
-	if (Input::IsKeyDown(KeyCode::K) || Input::IsKeyDown(KeyCode::A)) // LEFT
-		deltaTranslation.m128_f32[0] -= player->m_movementSpeed * dt;
-	if (Input::IsKeyDown(KeyCode::SEMICOLON) || Input::IsKeyDown(KeyCode::D)) // RIGHT
-		deltaTranslation.m128_f32[0] += player->m_movementSpeed * dt;
-	if (Input::IsKeyDown(KeyCode::W)) // TEMP
-		deltaTranslation.m128_f32[1] -= player->m_movementSpeed * dt * 5.0f;
-
-
-	// Update rotation only if LMB is held down
-	if (Input::IsMouseDown(MouseCode::LBUTTON))
+	switch (player->GetSelectedCameraType())
 	{
-		// Rotation around the X axis (look up/down)
-		deltaRotation.m128_f32[0] = Input::GetMouseDeltaY() * player->m_camera->GetRotationSpeed() * 0.001f;
-		// Rotation around the Y axis (look left/right)
-		deltaRotation.m128_f32[1] = Input::GetMouseDeltaX() * player->m_camera->GetRotationSpeed() * 0.001f;
-	}
-
-	// Build the rotation and translation matrices
-	XMMATRIX rotXMatrix = XMMatrixRotationX(deltaRotation.m128_f32[0]);
-	XMMATRIX rotYMatrix = XMMatrixRotationY(deltaRotation.m128_f32[1]);
-	XMMATRIX translationMatrixXZ = XMMatrixTranslation
-	(
-		deltaTranslation.m128_f32[0], deltaTranslation.m128_f32[1], deltaTranslation.m128_f32[2]
-	);
-
-	worldMatrix.r[3] = { 0, 0, 0, 1.0f };
-	worldMatrix = worldMatrix * rotYMatrix;
-	worldMatrix = rotXMatrix * worldMatrix;
-	worldMatrix.r[3] = { prevPos.x, prevPos.y, prevPos.z, 1.0f };
-
-	// Apply translation
-	XMVECTOR realZ = worldMatrix.r[2];
-
-	XMVECTOR modifiedZ = worldMatrix.r[2];
-	modifiedZ.m128_f32[1] = 0.0f;
-	modifiedZ = XMVector3Normalize(modifiedZ);
-	worldMatrix.r[2] = modifiedZ;
-	worldMatrix = translationMatrixXZ * worldMatrix; // Local XZ translation
-	worldMatrix.r[2] = realZ;
-
-	// NOTE!
-	// Y offset due to matrix multiplication is reverted, and deltaTranslation is added on top of it
-	worldMatrix.r[3].m128_f32[1] = prevPos.y + deltaTranslation.m128_f32[1]; // Global Y translation
-
-
-	// Get the Z axis
-	float epsilon = 0.0025f;
-	XMVECTOR zAxis = worldMatrix.r[2];
-
-	XMVECTOR upVec = { 0.0f, 1.0f, 0.0f, 0.0f };
-
-	// Don't let camera go upside down
-	if (abs(zAxis.m128_f32[1]) + epsilon < 1.0f)
+	case CameraType::FirstPerson:
 	{
-		// Calculate the X (right) axis
-		worldMatrix.r[0] = XMVector3Normalize(XMVector3Cross(upVec, zAxis));
-		// Calculate the Y (up) axis
-		worldMatrix.r[1] = XMVector3Normalize(XMVector3Cross(zAxis, worldMatrix.r[0]));
-	}
-	else
-	{
-		worldMatrix.r[0] = prevX;
-		worldMatrix.r[1] = prevY;
-		worldMatrix.r[2] = prevZ;
-	}
+		XMFLOAT3 currPos = player->m_position;
+		XMFLOAT3 currRot = player->m_rotation;
+		XMVECTOR vel = XMLoadFloat3(&player->m_velocity);
+		XMVECTOR prevPlayerFeetPos = { currPos.x, currPos.y - 2.0f, currPos.z };
+		XMVECTOR deltaTranslation = { 0.0f, 0.0f, 0.0f, 1.0f };
+		XMVECTOR deltaRotation = { 0.0f, 0.0f, 0.0f };
+		player->m_acceleration = { 0.0f, GRAVITY, 0.0f };
 
+		// Update position
+		if (Input::IsKeyDown(KeyCode::O) || Input::IsKeyDown(KeyCode::W)) // FORWARD
+			deltaTranslation.m128_f32[2] += player->m_movementSpeed * dt;
+		if (Input::IsKeyDown(KeyCode::L) || Input::IsKeyDown(KeyCode::S)) // BACKWARD
+			deltaTranslation.m128_f32[2] -= player->m_movementSpeed * dt;
+		if (Input::IsKeyDown(KeyCode::K) || Input::IsKeyDown(KeyCode::A)) // LEFT
+			deltaTranslation.m128_f32[0] -= player->m_movementSpeed * dt;
+		if (Input::IsKeyDown(KeyCode::SEMICOLON) || Input::IsKeyDown(KeyCode::D)) // RIGHT
+			deltaTranslation.m128_f32[0] += player->m_movementSpeed * dt;
 
-	CheckForCollision(player, worldMatrix, prevPos, prevPlayerFeetPos, dt);
-
-
-	// Update the position and rotation camera values
-	XMStoreFloat3(&player->m_position, worldMatrix.r[3]);
-
-	XMFLOAT3 cameraRot = player->m_camera->GetRotation();
-	player->m_camera->SetRotation(
+		// Update rotation only if LMB is held down
+		if (Input::IsMouseDown(MouseCode::LBUTTON))
 		{
-			cameraRot.x + deltaRotation.m128_f32[0],
-			cameraRot.x + deltaRotation.m128_f32[1],
-			cameraRot.x + deltaRotation.m128_f32[2]
-		});
-
-	// DEBUG SETTINGS
-	PlayerPhysics_Data::accel = player->m_acceleration;
-	PlayerPhysics_Data::vel = player->m_velocity;
-
-	// Re-assign the view matrix with all the changes
-	player->m_camera->SetWorldMatrix(worldMatrix);
-
-	// Update the block selection indicator
-	BlockSelectionIndicator::Update(dt);
-
-
-	// TEST RAYCASTING, PLEASE REMOVE
-	VX_COOLDOWN(0.1f, dt)
-	{
-		XMFLOAT3 rayHit = { 0, 0, 0 };
-		if (Input::IsMouseDown(MouseCode::RBUTTON))
-		{
-			XMFLOAT3 rayPos, rayDir;
-			XMStoreFloat3(&rayPos, player->m_camera->GetWorldMatrix().r[3]);
-			XMStoreFloat3(&rayDir, DirectX::XMVector3Normalize(player->m_camera->GetWorldMatrix().r[2]));
-			if (VX_MATH::Raycast(rayPos, rayDir, player->GetInteractionRange(), ChunkManager::CheckBlockRaycast, &rayHit))
-			{
-				//VX_LOG("Target Hit - [%2.2f, %2.2f, %2.2f]", rayHit.x, rayHit.y, rayHit.z);
-				DebugRenderer::DrawLine(rayPos, rayHit, { 1.0f, 0, 0, 1.0f });
-				DebugRenderer::DrawSphere(1, rayHit, 0.01f, {1.0f, 0, 0, 1.0f});
-			}
-			else
-			{
-				//VX_LOG("Target Missed");
-			}
-		}
-	}
-}
-
-void PlayerController::CheckForCollision(Player* player, DirectX::XMMATRIX& worldMatrix, DirectX::XMFLOAT3& prevPos, DirectX::XMVECTOR& prevFootPos, const float& dt)
-{
-	// We have "moved into collision", so don't apply translation
-	XMVECTOR newPlayerFeetPos = { worldMatrix.r[3].m128_f32[0], worldMatrix.r[3].m128_f32[1] - 2.0f, worldMatrix.r[3].m128_f32[2] };
-	XMFLOAT3 newPos = { worldMatrix.r[3].m128_f32[0], worldMatrix.r[3].m128_f32[1], worldMatrix.r[3].m128_f32[2] };
-	bool isCollidingWithWall = Physics::DetectCollision(newPlayerFeetPos);
-	PlayerPhysics_Data::isCollidingWall = isCollidingWithWall;
-	if (isCollidingWithWall)
-	{
- 		XMFLOAT3 velocityToAdd = { newPos.x - prevPos.x, newPos.y - prevPos.y, newPos.z - prevPos.z };
-
-		// Test every component of velocity to check which component to nullify
-		// TEST X COMPONENT
-		{
-			XMVECTOR testXComp = prevFootPos;
-			testXComp.m128_f32[0] += velocityToAdd.x;
-			if (Physics::DetectCollision(testXComp)) velocityToAdd.x = 0;
-		}
-		// TEST Y COMPONENT (IF 0, SKIP?)
-		//{
-		//	XMVECTOR testYComp = prevFootPos;
-		//	testYComp.m128_f32[1] += velocityToAdd.y;
-		//	if (Physics::DetectCollision(testYComp)) velocityToAdd.y = 0;
-		//}
-		// TEST Z COMPONENT
-		{
-			XMVECTOR testZComp = prevFootPos;
-			testZComp.m128_f32[2] += velocityToAdd.z;
-			if (Physics::DetectCollision(testZComp)) velocityToAdd.z = 0;
+			// Rotation around the X axis (look up/down)
+			deltaRotation.m128_f32[0] = Input::GetMouseDeltaY() * player->m_FPSCamera->GetRotationSpeed();
+			// Rotation around the Y axis (look left/right)
+			deltaRotation.m128_f32[1] = Input::GetMouseDeltaX() * player->m_FPSCamera->GetRotationSpeed();
 		}
 
-		worldMatrix.r[3] = { prevPos.x + velocityToAdd.x, prevPos.y + velocityToAdd.y, prevPos.z + velocityToAdd.z };
+		// X Rotation
+		player->m_rotation.y += deltaRotation.m128_f32[1];
+		VX_MATH::Wrap(player->m_rotation.y, 0.0f, 360.0f);
 
-		// Set the W component of the position to 1
-		worldMatrix.r[3].m128_f32[3] = 1.0f;
+		// Y Rotation
+		player->m_rotation.x += deltaRotation.m128_f32[0];
+		VX_MATH::Clamp(player->m_rotation.x, -89.9f, 89.9f);
 
-		// Reset acceleration, velocity and position
-		XMStoreFloat3(&player->m_position, worldMatrix.r[3]);
-	}
+		// we have rotations for x and y
+		// create two rotation matrices, and translate along those axis for "newPos"
+		XMFLOAT3 currentPlayerPos = player->GetPosition();
+		XMMATRIX localTransform = XMMatrixIdentity();
+		XMMATRIX rotXMatrix = XMMatrixRotationX(VX_MATH::DegreesToRadians(player->m_rotation.x));
+		XMMATRIX rotYMatrix = XMMatrixRotationY(VX_MATH::DegreesToRadians(player->m_rotation.y));
+		localTransform = localTransform * rotYMatrix;
+		localTransform = rotXMatrix * localTransform;
+		XMMATRIX translationMatrixXZ = XMMatrixTranslation(deltaTranslation.m128_f32[0], deltaTranslation.m128_f32[1], deltaTranslation.m128_f32[2]);
 
-	// Store the position after allowing player movement
-	XMVECTOR playerPosAfterMovement = { worldMatrix.r[3].m128_f32[0], worldMatrix.r[3].m128_f32[1], worldMatrix.r[3].m128_f32[2] };
+		XMVECTOR realZ = localTransform.r[2];
 
-	XMVECTOR vel = XMLoadFloat3(&player->m_velocity);
+		// Cancel the Y offset so the player can't move up and down by looking up and down (this is only done for the sake of local translation calculation)
+		XMVECTOR modifiedZ = localTransform.r[2];
+		modifiedZ.m128_f32[1] = 0.0f;
+		modifiedZ = XMVector3Normalize(modifiedZ);
 
-	// Apply gravity
-	Physics::ApplyAcceleration(vel, { 0.0f, GRAVITY, 0.0f }, dt);
+		localTransform.r[2] = modifiedZ;
+		localTransform = translationMatrixXZ * localTransform; // Local XZ translation
+		localTransform.r[2] = realZ;
 
-	// Cap velocity at a reasonable terminal velocity value
-	if (abs(vel.m128_f32[1]) > TERMINAL_VELOCITY) vel.m128_f32[1] = vel.m128_f32[1] > 0 ? TERMINAL_VELOCITY : -TERMINAL_VELOCITY;
+		XMFLOAT3 finalTranslatedPosition = { currentPlayerPos.x + localTransform.r[3].m128_f32[0], currentPlayerPos.y, currentPlayerPos.z + localTransform.r[3].m128_f32[2] };
 
-	Physics::ApplyVelocity(worldMatrix.r[3], vel, dt);
-
-	XMVECTOR playerFeetPosAfterGravity = { worldMatrix.r[3].m128_f32[0], worldMatrix.r[3].m128_f32[1] - 2.0f, worldMatrix.r[3].m128_f32[2] };
-	bool isCollidingWithFloor = Physics::DetectCollision(playerFeetPosAfterGravity);
-	PlayerPhysics_Data::isCollidingFloor = isCollidingWithFloor;
-	// If collision is detected after applying gravity, revert
-	if (isCollidingWithFloor)
-	{
-		worldMatrix.r[3] =
+		// Calculate local translation using deltaTranslation above, and pass in as "newPos"
+		AABB prevPosHorizontal = { currentPlayerPos, player->m_hitbox.extent };
+		AABB newPosHorizontal = { finalTranslatedPosition, player->m_hitbox.extent };
+		bool horizontalCollision = CheckForHorizontalCollision(newPosHorizontal, prevPosHorizontal, dt);
+		finalTranslatedPosition = newPosHorizontal.center;
+		if (horizontalCollision)
 		{
-			playerPosAfterMovement.m128_f32[0],
-			floor(playerPosAfterMovement.m128_f32[1]),
-			playerPosAfterMovement.m128_f32[2]
-		};
+			vel = { 0.0f, vel.m128_f32[1], 0.0f };
+		}
 
-		// Set the W component of the position to 1
-		worldMatrix.r[3].m128_f32[3] = 1.0f;
+		// Apply gravity
+		Physics::ApplyAcceleration(vel, { 0.0f, GRAVITY, 0.0f }, dt);
 
-		// Reset acceleration and velocity
-		vel = { 0.0f, 0.0f, 0.0f };
+		// Cap velocity at a reasonable terminal velocity value
+		if (abs(vel.m128_f32[1]) > TERMINAL_VELOCITY) vel.m128_f32[1] = vel.m128_f32[1] > 0 ? TERMINAL_VELOCITY : -TERMINAL_VELOCITY;
+
+		// Apply acceleration to velocity
+		XMVECTOR posBeforeGravity = XMLoadFloat3(&finalTranslatedPosition);
+		XMVECTOR posAfterGravity = posBeforeGravity;
+		Physics::ApplyVelocity(posAfterGravity, vel, dt);
+		XMFLOAT3 posBeforeGravityF3 = { 0.0f, 0.0f, 0.0f };
+		XMFLOAT3 posAfterGravityF3 = { 0.0f, 0.0f, 0.0f };
+		XMStoreFloat3(&posBeforeGravityF3, posBeforeGravity);
+		XMStoreFloat3(&posAfterGravityF3, posAfterGravity);
+
+		// Takes in the following arguments: posAfterGravityF3, posBeforeGravityF3, dt
+		AABB prevPosVertical = { posBeforeGravityF3, player->m_hitbox.extent };
+		AABB newPosVertical = { posAfterGravityF3, player->m_hitbox.extent };
+		bool verticalCollision = CheckForVerticalCollision(newPosVertical, prevPosVertical, dt);
+		finalTranslatedPosition = newPosVertical.center;
+		if (verticalCollision)
+		{
+			vel = { vel.m128_f32[0], 0.0f, vel.m128_f32[2] };
+			player->m_allowJump = true;
+		}
 
 		// Allow the player to jump
 		if (Input::IsKeyDown(KeyCode::SPACE))
 		{
-			// Apply an initial vertical velocity
-			vel.m128_f32[1] += INITIAL_JUMP_VELOCITY;
-			Physics::ApplyVelocity(worldMatrix.r[3], vel, dt);
+			if (player->m_allowJump)
+			{
+				// Apply an initial vertical velocity
+				vel.m128_f32[1] += INITIAL_JUMP_VELOCITY;
+				XMVECTOR verticalVelocity = XMLoadFloat3(&finalTranslatedPosition);
+				Physics::ApplyVelocity(verticalVelocity, vel, dt);
+				XMStoreFloat3(&finalTranslatedPosition, verticalVelocity);
+				player->m_allowJump = false;
+			}
 		}
+
+		XMStoreFloat3(&player->m_velocity, vel);
+
+
+		// Finally store the final player position
+		player->m_position = finalTranslatedPosition;
+		player->m_hitbox.center = { finalTranslatedPosition.x, finalTranslatedPosition.y - 1.0f, finalTranslatedPosition.z };
+
+		BlockSelectionIndicator::Update(dt);
+
+		player->m_FPSCamera->SetCameraParameters(player->m_position, player->m_rotation);
+		player->m_FPSCamera->Update(dt);
+
+		// TEST RAYCASTING, PLEASE REMOVE
+#pragma region RAYCAST_TEST
+		VX_COOLDOWN(0.1f, dt)
+		{
+			XMFLOAT3 rayHit = { 0, 0, 0 };
+			if (Input::IsMouseDown(MouseCode::RBUTTON))
+			{
+				XMFLOAT3 rayPos, rayDir;
+				XMStoreFloat3(&rayPos, player->m_FPSCamera->GetWorldMatrix().r[3]);
+				XMStoreFloat3(&rayDir, DirectX::XMVector3Normalize(player->m_FPSCamera->GetWorldMatrix().r[2]));
+				if (VX_MATH::Raycast(rayPos, rayDir, player->GetInteractionRange(), ChunkManager::CheckBlockRaycast, &rayHit))
+				{
+					//VX_LOG("Target Hit - [%2.2f, %2.2f, %2.2f]", rayHit.x, rayHit.y, rayHit.z);
+					DebugRenderer::DrawLine(rayPos, rayHit, { 1.0f, 0, 0, 1.0f });
+					DebugRenderer::DrawSphere(1, rayHit, 0.01f, { 1.0f, 0, 0, 1.0f });
+				}
+				else
+				{
+					//VX_LOG("Target Missed");
+				}
+			}
+		}
+#pragma endregion
+		break;
+	}
+	case CameraType::Debug:
+	{
+		XMFLOAT3 deltaTranslation = { 0.0f, 0.0f, 0.0f };
+		XMFLOAT3 deltaRotation = { 0.0f, 0.0f, 0.0f };
+		static XMFLOAT3 position = player->m_position;
+		static XMFLOAT3 rotation = player->m_rotation;
+
+		// Update position
+		if (Input::IsKeyDown(KeyCode::O) || Input::IsKeyDown(KeyCode::W)) // FORWARD
+			deltaTranslation.z += player->m_movementSpeed * dt;
+		if (Input::IsKeyDown(KeyCode::L) || Input::IsKeyDown(KeyCode::S)) // BACKWARD
+			deltaTranslation.z -= player->m_movementSpeed * dt;
+		if (Input::IsKeyDown(KeyCode::K) || Input::IsKeyDown(KeyCode::A)) // LEFT
+			deltaTranslation.x -= player->m_movementSpeed * dt;
+		if (Input::IsKeyDown(KeyCode::SEMICOLON) || Input::IsKeyDown(KeyCode::D)) // RIGHT
+			deltaTranslation.x += player->m_movementSpeed * dt;
+		if (Input::IsKeyDown(KeyCode::SPACE)) // UP
+			deltaTranslation.y += player->m_movementSpeed * dt;
+		if (Input::IsKeyDown(KeyCode::RSHIFT)) // DOWN
+			deltaTranslation.y -= player->m_movementSpeed * dt;
+
+		// Update rotation only if LMB is held down
+		if (Input::IsMouseDown(MouseCode::LBUTTON))
+		{
+			// Rotation around the X axis (look up/down)
+			deltaRotation.x = Input::GetMouseDeltaY() * player->m_debugCamera->GetRotationSpeed();
+			// Rotation around the Y axis (look left/right)
+			deltaRotation.y = Input::GetMouseDeltaX() * player->m_debugCamera->GetRotationSpeed();
+		}
+
+		// X Rotation
+		rotation.y += deltaRotation.y;
+		VX_MATH::Wrap(rotation.y, 0.0f, 360.0f);
+
+		// Y Rotation
+		rotation.x += deltaRotation.x;
+		VX_MATH::Clamp(rotation.x, -89.9f, 89.9f);
+
+		XMMATRIX localTransform = XMMatrixIdentity();
+		XMMATRIX rotXMatrix = XMMatrixRotationX(VX_MATH::DegreesToRadians(rotation.x));
+		XMMATRIX rotYMatrix = XMMatrixRotationY(VX_MATH::DegreesToRadians(rotation.y));
+		XMMATRIX translationMatrixXZ = XMMatrixTranslation(deltaTranslation.x, 0.0f, deltaTranslation.z);
+		localTransform = localTransform * rotYMatrix;
+		localTransform = rotXMatrix * localTransform;
+		localTransform = translationMatrixXZ * localTransform; // Local XZ translation, global Y translation
+
+		position = { position.x + localTransform.r[3].m128_f32[0], position.y + localTransform.r[3].m128_f32[1] + deltaTranslation.y, position.z + localTransform.r[3].m128_f32[2]};
+
+		player->m_debugCamera->SetCameraParameters(position, rotation);
+		player->m_debugCamera->Update(dt);
+
+		break;
+	}
+	case CameraType::ThirdPerson:
+	{
+		// Unimplemented
+		break;
+	}
 	}
 
-	XMStoreFloat3(&player->m_velocity, vel);
+	// DEBUG STUFF
+	DebugRenderer::DrawAABB(player->m_hitbox.center, player->m_hitbox.extent, { 1.0f, 0.0f, 0.0f, 1.0f });
+	DebugRenderer::DrawSphere(1, { player->m_hitbox.center.x - player->m_hitbox.extent.x, player->m_hitbox.center.y - player->m_hitbox.extent.y, player->m_hitbox.center.z - player->m_hitbox.extent.z }, 0.05f, { 0.0f, 0.0f, 1.0f, 1.0f });
+	DebugRenderer::DrawSphere(1, { player->m_hitbox.center.x + player->m_hitbox.extent.x, player->m_hitbox.center.y + player->m_hitbox.extent.y, player->m_hitbox.center.z + player->m_hitbox.extent.z }, 0.05f, { 0.0f, 0.0f, 1.0f, 1.0f });
+	Physics::DetectCollision(player->m_hitbox);
+
+	// DEBUG SETTINGS
+	Renderer_Data::playerRot = { player->GetRotation().x, player->GetRotation().y, player->GetRotation().z };
+	PlayerPhysics_Data::accel = player->m_acceleration;
+	PlayerPhysics_Data::vel = player->m_velocity;
+}
+
+bool PlayerController::CheckForHorizontalCollision(AABB& newPos, const AABB& prevPos, const float& dt)
+{
+	// We have "moved into collision", so don't apply translation
+	//XMFLOAT3 prevPlayerFeetPos = { prevPos.center.x, prevPos.center.y - 2.0f, prevPos.center.z };
+	//XMVECTOR newPlayerFeetPos = { newPos.center.x, newPos.center.y - 2.0f, newPos.center.z };
+	bool isCollidingWithWall = Physics::DetectCollision(newPos);
+	PlayerPhysics_Data::isCollidingWall = isCollidingWithWall;
+
+	if (isCollidingWithWall)
+	{
+		XMFLOAT3 velocityToAdd = { newPos.center.x - prevPos.center.x, newPos.center.y - prevPos.center.y, newPos.center.z - prevPos.center.z };
+
+		// Only check X and Z axis
+		for (uint32_t axis = 0; axis <= 2; axis += 2)
+		{
+			AABB currentPos;
+			currentPos.center = prevPos.center;
+			currentPos.extent = prevPos.extent;
+			XMFLOAT3_BRACKET_OP_32(currentPos.center, axis) += XMFLOAT3_BRACKET_OP_32(velocityToAdd, axis);
+			if (Physics::DetectCollision(currentPos))
+			{
+				XMFLOAT3_BRACKET_OP_32(velocityToAdd, axis) = 0;
+			}
+		}
+
+		newPos.center = { prevPos.center.x + velocityToAdd.x, prevPos.center.y + velocityToAdd.y, prevPos.center.z + velocityToAdd.z };
+
+		VX_ASSERT((abs(velocityToAdd.x) >= 0 && abs(velocityToAdd.x) < 1));
+		VX_ASSERT((abs(velocityToAdd.z) >= 0 && abs(velocityToAdd.z) < 1));
+
+		return true;
+	}
+
+	return false;
+}
+
+bool PlayerController::CheckForVerticalCollision(AABB& newPos, const AABB& prevPos, const float& dt)
+{
+	//XMVECTOR playerFeetPosAfterGravity = { newPos.center.x, newPos.center.y - 2.0f, newPos.center.z };
+	bool isCollidingWithFloor = Physics::DetectCollision(newPos);
+	PlayerPhysics_Data::isCollidingFloor = isCollidingWithFloor;
+	// If collision is detected after applying gravity, revert
+	if (isCollidingWithFloor)
+	{
+		newPos.center = { prevPos.center.x, floor(prevPos.center.y), prevPos.center.z };
+		return true;
+	}
+
+	return false;
 }

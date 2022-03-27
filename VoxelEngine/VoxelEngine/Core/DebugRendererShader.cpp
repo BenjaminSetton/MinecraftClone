@@ -57,7 +57,7 @@ void DebugRendererShader::Render()
 	context->Draw(numVerts, 0);
 
 	// Clear the previous lines
-	//DebugLine::ClearLines();
+	DebugRenderer::Clear();
 }
 
 void DebugRendererShader::Shutdown()

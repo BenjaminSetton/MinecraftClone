@@ -19,6 +19,8 @@ public:
 
 	static void SetPrimaryPlayer(Player* player);
 
+	static void Update(const float dt);
+
 private:
 
 	static Player* m_primaryPlayer;

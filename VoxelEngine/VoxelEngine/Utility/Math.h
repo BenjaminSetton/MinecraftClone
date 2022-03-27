@@ -13,6 +13,10 @@
 
 namespace VX_MATH
 {
+	constexpr float E = 2.71828182845904523536f;
+	constexpr float PI = 3.14159265358979323846f;
+	constexpr float PI_DIV_2 = 1.57079632679489661923f;
+	constexpr float PI_DIV_4 = 0.785398163397448309616f;
 
 #define pow2(x) (x) * (x)
 
@@ -67,29 +71,26 @@ namespace VX_MATH
 		return { pos.x * CHUNK_SIZE, pos.y * CHUNK_SIZE, pos.z * CHUNK_SIZE };
 	}
 
-	inline float Lerp(const float& a, const float& b, const float& ratio)
+	template<typename T>
+	inline T Lerp(const T& a, const T& b, const T& ratio)
 	{
 		return (b - a) * ratio + a;
 	}
 
-	inline double Lerp(const double& a, const double& b, const double& ratio)
-	{
-		return ((1.0 - ratio) * a) + (ratio * b);
-		//return (b - a) * ratio + a;
-	}
-
-	inline double MapToCubicSCurve(const double x)
+	template<typename T>
+	inline T MapToCubicSCurve(const T x)
 	{
 		// Parameter "x" must be between [0, 1]
-		VX_ASSERT(x >= 0 && x <= 1);
+		VX_ASSERT(x >= 0.0 && x <= 1.0);
 		return (x * x * (3.0 - 2.0 * x));
 	}
 
-	inline double MapToQuinticSCurve(const double x)
+	template<typename T>
+	inline T MapToQuinticSCurve(const T x)
 	{
 		// Parameter "x" must be between [0, 1]
-		VX_ASSERT(x >= 0 && x <= 1);
-		return x * x * x * (x * (x * 6 - 15) + 10);
+		VX_ASSERT(x >= 0.0 && x <= 1.0);
+		return x * x * x * (x * (x * 6.0 - 15.0) + 10.0);
 	}
 
 	inline bool Raycast(const DirectX::XMFLOAT3& rayPos, const DirectX::XMFLOAT3& rayDir, const float maxDist, std::function<bool(const DirectX::XMFLOAT3&)> checkHit, DirectX::XMFLOAT3* outHit)
@@ -216,6 +217,33 @@ namespace VX_MATH
 		return false;
 
 	}
+
+	template<typename T>
+	inline void Clamp(T& value, const T min, const T max)
+	{
+		if (value < min) value = min;
+		else if (value > max) value = max;
+	}
+
+	template<typename T>
+	inline void Wrap(T& value, const T min, const T max)
+	{
+		if (value < min) value = max - (min - value);
+		else if (value > max) value = min + (value - max);
+	}
+
+	template<typename T>
+	inline int32_t Sign(const T& value) 
+	{
+		if (value < 0)			return -1;
+		else if (value > 0)		return 1;
+		else					return 0;
+	}
+
+	inline float DegreesToRadians(const float& degrees) { return (degrees * (PI / 180.0f)); }
+
+	inline float RadiansToDegrees(const float& radians) { return (radians * (180.0f / PI)); }
+	
 }
 
 #endif

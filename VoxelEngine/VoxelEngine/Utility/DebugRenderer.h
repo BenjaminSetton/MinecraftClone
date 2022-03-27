@@ -22,6 +22,8 @@ public:
 
 	static void DrawCircle(const int32_t levelOfDetail, const DirectX::XMFLOAT3& position, const float radius, const DirectX::XMFLOAT4& color);
 
+	static void DrawAABB(const DirectX::XMFLOAT3& center, const DirectX::XMFLOAT3& extents, const DirectX::XMFLOAT4& color);
+
 	static void Clear();
 
 	static const ColoredVertex* GetLineVertices();

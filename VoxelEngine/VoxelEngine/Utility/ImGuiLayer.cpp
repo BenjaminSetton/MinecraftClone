@@ -89,6 +89,7 @@ void ImGuiLayer::Draw()
 	ImGui::Text("Player Position: %2.2f, %2.2f, %2.2f (%i, %i, %i)",
 		Renderer_Data::playerPos.x, Renderer_Data::playerPos.y, Renderer_Data::playerPos.z,
 		(int)Renderer_Data::playerPosChunkSpace.x, (int)Renderer_Data::playerPosChunkSpace.y, (int)Renderer_Data::playerPosChunkSpace.z);
+	ImGui::Text("Player Rotation: %2.2f, %2.2f, %2.2f", Renderer_Data::playerRot.x, Renderer_Data::playerRot.y, Renderer_Data::playerRot.z);
 	ImGui::Text("Active Chunks: %i", Renderer_Data::numActiveChunks);
 	ImGui::Text("Render Distance: %i", Renderer_Data::renderDist);
 	ImGui::Checkbox("Enable Block Selector", &Renderer_Data::enableBlockSelector);
