@@ -18,7 +18,7 @@ namespace VX_MATH
 	constexpr float PI_DIV_2 = 1.57079632679489661923f;
 	constexpr float PI_DIV_4 = 0.785398163397448309616f;
 
-#define pow2(x) (x) * (x)
+#define POW2(x) (x) * (x)
 
 	// Some utility macros for DirectX::XMFLOAT structs
 	// THESE DO NOT HAVE ANY SAFETY CHECKS, USE AT YOUR OWN RISK
@@ -181,7 +181,6 @@ namespace VX_MATH
 			else					rayLength1D.z = (static_cast<float>(mapCheck.z) - rayPos.z) * rayUnitStepSize.z;
 		}
 		
-		bool targetFound = false;
 		float accDistance = 0.0f;
 
 		while (accDistance < maxDist)

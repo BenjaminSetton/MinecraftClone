@@ -12,9 +12,9 @@ class ImGuiLayer
 {
 public:
 
-	ImGuiLayer();
-	ImGuiLayer(const ImGuiLayer& layer);
-	~ImGuiLayer();
+	ImGuiLayer() = default;
+	ImGuiLayer(const ImGuiLayer& layer) = default;
+	~ImGuiLayer() = default;
 
 	void Initialize(HWND hwnd, ID3D11Device* device, ID3D11DeviceContext* context);
 

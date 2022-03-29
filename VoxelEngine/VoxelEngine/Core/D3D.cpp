@@ -397,6 +397,8 @@ void D3D::ClearDepthBuffer(float value)
 
 bool D3D::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+	UNREFERENCED_PARAMETER(hwnd);
+
 	switch(msg)
 	{
 	case WM_SIZE:

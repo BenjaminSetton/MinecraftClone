@@ -14,8 +14,6 @@ using namespace DirectX;
 
 void QuadShader::CreateObjects(const WCHAR* vsFilename, const WCHAR* vsNDCFilename, const WCHAR* psFilename)
 {
-	ID3D11Device* device = D3D::GetDevice();
-
 	// Create the shaders
 	CreateShaders(vsFilename, vsNDCFilename, psFilename);
 

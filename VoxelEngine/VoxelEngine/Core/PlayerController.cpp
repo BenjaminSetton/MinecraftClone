@@ -95,7 +95,7 @@ void PlayerController::Update(const float& dt, Player* player)
 		// Calculate local translation using deltaTranslation above, and pass in as "newPos"
 		AABB prevPosHorizontal = { currentPlayerPos, player->m_hitbox.extent };
 		AABB newPosHorizontal = { finalTranslatedPosition, player->m_hitbox.extent };
-		bool horizontalCollision = CheckForHorizontalCollision(newPosHorizontal, prevPosHorizontal, dt);
+		bool horizontalCollision = CheckForHorizontalCollision(newPosHorizontal, prevPosHorizontal);
 		finalTranslatedPosition = newPosHorizontal.center;
 		if (horizontalCollision)
 		{
@@ -120,7 +120,7 @@ void PlayerController::Update(const float& dt, Player* player)
 		// Takes in the following arguments: posAfterGravityF3, posBeforeGravityF3, dt
 		AABB prevPosVertical = { posBeforeGravityF3, player->m_hitbox.extent };
 		AABB newPosVertical = { posAfterGravityF3, player->m_hitbox.extent };
-		bool verticalCollision = CheckForVerticalCollision(newPosVertical, prevPosVertical, dt);
+		bool verticalCollision = CheckForVerticalCollision(newPosVertical, prevPosVertical);
 		finalTranslatedPosition = newPosVertical.center;
 		if (verticalCollision)
 		{
@@ -254,7 +254,7 @@ void PlayerController::Update(const float& dt, Player* player)
 	PlayerPhysics_Data::vel = player->m_velocity;
 }
 
-bool PlayerController::CheckForHorizontalCollision(AABB& newPos, const AABB& prevPos, const float& dt)
+bool PlayerController::CheckForHorizontalCollision(AABB& newPos, const AABB& prevPos)
 {
 
 	float epsilon = 0.0001f;
@@ -307,7 +307,7 @@ bool PlayerController::CheckForHorizontalCollision(AABB& newPos, const AABB& pre
 	return false;
 }
 
-bool PlayerController::CheckForVerticalCollision(AABB& newPos, const AABB& prevPos, const float& dt)
+bool PlayerController::CheckForVerticalCollision(AABB& newPos, const AABB& prevPos)
 {
 	bool isCollidingWithFloor = Physics::DetectCollision(newPos);
 

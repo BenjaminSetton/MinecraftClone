@@ -22,7 +22,7 @@ public:
 
 	void CreateObjects(const WCHAR* vsFilename, const WCHAR* gsFilename, const WCHAR* psFilename);
 
-	void Initialize(DirectX::XMMATRIX camViewMatrix, DirectX::XMMATRIX lightViewMatrix);
+	void Initialize(DirectX::XMMATRIX camViewMatrix);
 	
 	void Render(ID3D11ShaderResourceView* const* srvs);
 

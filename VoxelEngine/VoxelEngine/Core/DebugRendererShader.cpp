@@ -10,8 +10,6 @@ using namespace DirectX;
 
 void DebugRendererShader::CreateObjects(const WCHAR* vsFilename, const WCHAR* psFilename)
 {
-	ID3D11Device* device = D3D::GetDevice();
-
 	// Create the shaders
 	CreateShaders(vsFilename, psFilename);
 

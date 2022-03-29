@@ -111,9 +111,9 @@ ID3D11Buffer* QuadBufferManager::GetInstanceBuffer() { return m_instanceBuffer; 
 
 std::vector<QuadInstanceData>& QuadBufferManager::GetInstanceData() { return m_instanceData; }
 
-void QuadBufferManager::PushQuad(const QuadInstanceData& quadData) 
+void QuadBufferManager::PushQuad(const QuadInstanceData& quadInstanceData) 
 {
-	QuadInstanceData transposeTransform = quadData;
+	QuadInstanceData transposeTransform = quadInstanceData;
 	transposeTransform.transform = XMMatrixTranspose(transposeTransform.transform);
 	m_instanceData.push_back(transposeTransform);
 }

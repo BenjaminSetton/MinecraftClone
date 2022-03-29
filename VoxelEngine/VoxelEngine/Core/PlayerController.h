@@ -18,8 +18,8 @@ public:
 
 private:
 
-	static bool CheckForHorizontalCollision(AABB& newPos, const AABB& prevPos, const float& dt);
-	static bool CheckForVerticalCollision(AABB& newPos, const AABB& prevPos, const float& dt);
+	static bool CheckForHorizontalCollision(AABB& newPos, const AABB& prevPos);
+	static bool CheckForVerticalCollision(AABB& newPos, const AABB& prevPos);
 
 };
 

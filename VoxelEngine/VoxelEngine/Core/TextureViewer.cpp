@@ -220,7 +220,7 @@ void TextureViewer::CreateVertexBuffer()
 		float xPosNorm = m_x / static_cast<float>(windowWidth);
 		float yPosNorm = m_y / static_cast<float>(windowHeight);
 
-		QuadVertex verts[] = // CLOCKWISE winding, position must be in NDC
+		QuadVertex quadVertices[] = // CLOCKWISE winding, position must be in NDC
 		{
 			{{xPosNorm * 2.0f - 1.0f, -(yPosNorm * 2.0f - 1.0f), 0}, {0, 0}}, // TL
 			{{(xPosNorm + texWidthNorm) * 2.0f - 1.0f, -(yPosNorm * 2.0f - 1.0f), 0}, {1, 0}}, // TR
@@ -240,7 +240,7 @@ void TextureViewer::CreateVertexBuffer()
 		vBufferDesc.StructureByteStride = 0;
 
 		D3D11_SUBRESOURCE_DATA vBufferData;
-		vBufferData.pSysMem = &verts;
+		vBufferData.pSysMem = &quadVertices;
 		vBufferData.SysMemPitch = 0;
 		vBufferData.SysMemSlicePitch = 0;
 		hr = device->CreateBuffer(&vBufferDesc, &vBufferData, &m_vertexBuffer);

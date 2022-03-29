@@ -62,7 +62,7 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	// Create the chunk shader class object
 	m_chunkShader = new DefaultBlockShader();
 	m_chunkShader->CreateObjects(L"./Shaders/DefaultBlock_VS.hlsl", L"./Shaders/DefaultBlock_GS.hlsl", L"./Shaders/DefaultBlock_PS.hlsl");
-	m_chunkShader->Initialize(player->GetCamera(CameraType::FirstPerson)->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
+	m_chunkShader->Initialize(player->GetCamera(CameraType::FirstPerson)->GetViewMatrix());
 
 	// Create the debug renderer class object
 	m_debugShader = new DebugRendererShader();

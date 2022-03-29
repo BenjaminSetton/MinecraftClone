@@ -261,18 +261,8 @@ void Chunk::ShutdownVertexBuffer()
 		auto& vertexArray = ChunkBufferManager::GetVertexArray();
 		VX_ASSERT(m_vertexBufferStartIndex < vertexArray.size());
 
-		int debug_vertexArraySize = static_cast<int>(vertexArray.size());
-
-		if(m_blockCount == 34)
-		{
-			int test = 0;// VX_ASSERT_MSG(false, "fuck this");
-		}
-
 		// Remove vertices from the ChunkBufferManager
 		vertexArray.erase(vertexArray.begin() + m_vertexBufferStartIndex, vertexArray.begin() + m_vertexBufferStartIndex + m_blockCount);
-
-		//VX_LOG("[%2.2f, %2.2f, %2.2f] Removed %i blocks at index %i (to %i) NS %i", m_pos.x, m_pos.y, m_pos.z,
-		//	m_blockCount, m_vertexBufferStartIndex, m_vertexBufferStartIndex + m_blockCount, vertexArray.size());
 
 		auto chunkPool = ChunkManager::GetChunkPool();
 		for (uint32_t i = 0; i < chunkPool.Size(); i++)

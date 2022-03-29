@@ -63,9 +63,9 @@ private:
 	{
 	public:
 
-		static void DrawSphere(const int32_t _levelOfDetail, const DirectX::XMFLOAT3 _pos, const float _radius, const DirectX::XMFLOAT4 _color);
+		static void DrawSphere(const int32_t levelOfDetail, const DirectX::XMFLOAT3 pos, const float radius, const DirectX::XMFLOAT4 color);
 
-		static void DrawCircle(const int32_t _levelOfDetail, const DirectX::XMFLOAT3 _pos, const float _radius, const DirectX::XMFLOAT4 _color);
+		static void DrawCircle(const int32_t levelOfDetail, const DirectX::XMFLOAT3 pos, const float radius, const DirectX::XMFLOAT4 color);
 
 	private:
 
@@ -81,26 +81,11 @@ private:
 			int32_t v1, v2;
 		};
 
-		/// 
-		/// RETURN: int32_t
-		/// PARAMETERS: DirectX::XMFLOAT3 _vert, const float _radius, const DirectX::XMFLOAT3 _pos
-		/// DESCRIPTION: Adds a vertex to the vector of vertices with _radius and _pos
-		/// 
-		static int32_t AddVertex(DirectX::XMFLOAT3 _vert, const float _radius, const DirectX::XMFLOAT3 _pos);
+		static int32_t AddVertex(DirectX::XMFLOAT3 vert, const float radius);
 
-		/// 
-		/// RETURN: int32_t
-		/// PARAMETERS: NONE
-		/// DESCRIPTION: Returns the middle point between two points
-		/// 
-		static int32_t GetMiddlePoint(const int64_t _a, const int64_t _b, const float _radius, const DirectX::XMFLOAT3 _pos);
+		static int32_t GetMiddlePoint(const int64_t a, const int64_t b, const float radius, const DirectX::XMFLOAT3 pos);
 
-		/// 
-		/// RETURN: void
-		/// PARAMETERS: const int32_t ind1, const int32_t ind2, const int32_t ind3, DirectX::XMFLOAT4 _color
-		/// DESCRIPTION: Adds the face of the sphere to the debug renderer for drawing
-		/// 
-		static void AddFaceToRenderer(const int32_t ind1, const int32_t ind2, const int32_t ind3, const DirectX::XMFLOAT3 _pos, const DirectX::XMFLOAT4 _color);
+		static void AddFaceToRenderer(const int32_t ind1, const int32_t ind2, const int32_t ind3, const DirectX::XMFLOAT3 pos, const DirectX::XMFLOAT4 color);
 
 		static std::vector<DirectX::XMFLOAT3> mGeometry;
 		static int32_t mIndex;

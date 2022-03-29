@@ -16,8 +16,6 @@ using namespace DirectX;
 
 void DefaultBlockShader::CreateObjects(const WCHAR* vsFilename, const WCHAR* gsFilename, const WCHAR* psFilename) 
 {
-	ID3D11Device* device = D3D::GetDevice();
-
 	// Create the shaders
 	CreateShaders(vsFilename, gsFilename, psFilename);
 
@@ -25,8 +23,9 @@ void DefaultBlockShader::CreateObjects(const WCHAR* vsFilename, const WCHAR* gsF
 	CreateD3DObjects();
 }
 
-void DefaultBlockShader::Initialize(XMMATRIX camViewMatrix, XMMATRIX lightViewMatrix)
+void DefaultBlockShader::Initialize(XMMATRIX camViewMatrix)
 {
+
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
 	HRESULT hr;

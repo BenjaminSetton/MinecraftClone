@@ -107,6 +107,7 @@ void DebugRenderer::SetMaxClearTimer(const float& clearTimer)
 
 void DebugRenderer::DecreaseCurrentClearTimer(const float& dt) 
 {
+	UNREFERENCED_PARAMETER(dt);
 	//mClearCurrentTimer -= dt;
 	//if (mClearCurrentTimer <= 0)
 	//{
@@ -141,11 +142,11 @@ std::vector<DirectX::XMFLOAT3> DebugRenderer::DebugSphere::mGeometry = std::vect
 int32_t DebugRenderer::DebugSphere::mIndex = 0;
 std::map<int64_t, int32_t> DebugRenderer::DebugSphere::mMiddlePointIndexCache = std::map<int64_t, int32_t>();
 
-int32_t DebugRenderer::DebugSphere::AddVertex(DirectX::XMFLOAT3 _vert, const float _radius, const DirectX::XMFLOAT3 _pos)
+int32_t DebugRenderer::DebugSphere::AddVertex(DirectX::XMFLOAT3 vert, const float radius)
 {
-	float length = sqrt(_vert.x * _vert.x + _vert.y * _vert.y + _vert.z * _vert.z);
-	DirectX::XMFLOAT3 normPos = { _vert.x / length, _vert.y / length, _vert.z / length };
-	DirectX::XMFLOAT3 newPos = { normPos.x * _radius, normPos.y * _radius, normPos.z * _radius };
+	float length = sqrt(vert.x * vert.x + vert.y * vert.y + vert.z * vert.z);
+	DirectX::XMFLOAT3 normPos = { vert.x / length, vert.y / length, vert.z / length };
+	DirectX::XMFLOAT3 newPos = { normPos.x * radius, normPos.y * radius, normPos.z * radius };
 	mGeometry.push_back(newPos);
 	return mIndex++;
 }
@@ -177,7 +178,7 @@ int32_t DebugRenderer::DebugSphere::GetMiddlePoint(const int64_t _a, const int64
 	};
 
 	// Add to geometry vector
-	int32_t index = AddVertex(midPoint, _radius, _pos);
+	int32_t index = AddVertex(midPoint, _radius);
 
 	// Store it in map for future reference, saving a calculation
 	mMiddlePointIndexCache[mapKey] = index;
@@ -187,29 +188,29 @@ int32_t DebugRenderer::DebugSphere::GetMiddlePoint(const int64_t _a, const int64
 
 }
 
-void DebugRenderer::DebugSphere::AddFaceToRenderer(const int32_t ind1, const int32_t ind2, const int32_t ind3, const DirectX::XMFLOAT3 _pos, DirectX::XMFLOAT4 _color)
+void DebugRenderer::DebugSphere::AddFaceToRenderer(const int32_t ind1, const int32_t ind2, const int32_t ind3, const DirectX::XMFLOAT3 pos, DirectX::XMFLOAT4 color)
 {
 	DebugLine::AddLine
 	(
-		{ mGeometry[ind1].x + _pos.x, mGeometry[ind1].y + _pos.y, mGeometry[ind1].z + _pos.z },
-		{ mGeometry[ind2].x + _pos.x, mGeometry[ind2].y + _pos.y, mGeometry[ind2].z + _pos.z },
-		_color
+		{ mGeometry[ind1].x + pos.x, mGeometry[ind1].y + pos.y, mGeometry[ind1].z + pos.z },
+		{ mGeometry[ind2].x + pos.x, mGeometry[ind2].y + pos.y, mGeometry[ind2].z + pos.z },
+		color
 	);
 	DebugLine::AddLine
 	(
-		{ mGeometry[ind2].x + _pos.x, mGeometry[ind2].y + _pos.y, mGeometry[ind2].z + _pos.z },
-		{ mGeometry[ind3].x + _pos.x, mGeometry[ind3].y + _pos.y, mGeometry[ind3].z + _pos.z },
-		_color
+		{ mGeometry[ind2].x + pos.x, mGeometry[ind2].y + pos.y, mGeometry[ind2].z + pos.z },
+		{ mGeometry[ind3].x + pos.x, mGeometry[ind3].y + pos.y, mGeometry[ind3].z + pos.z },
+		color
 	);
 	DebugLine::AddLine
 	(
-		{ mGeometry[ind1].x + _pos.x, mGeometry[ind1].y + _pos.y, mGeometry[ind1].z + _pos.z },
-		{ mGeometry[ind3].x + _pos.x, mGeometry[ind3].y + _pos.y, mGeometry[ind3].z + _pos.z },
-		_color
+		{ mGeometry[ind1].x + pos.x, mGeometry[ind1].y + pos.y, mGeometry[ind1].z + pos.z },
+		{ mGeometry[ind3].x + pos.x, mGeometry[ind3].y + pos.y, mGeometry[ind3].z + pos.z },
+		color
 	);
 }
 
-void DebugRenderer::DebugSphere::DrawSphere(const int32_t _levelOfDetail, const DirectX::XMFLOAT3 _pos, const float _radius, const DirectX::XMFLOAT4 _color)
+void DebugRenderer::DebugSphere::DrawSphere(const int32_t levelOfDetail, const DirectX::XMFLOAT3 pos, const float radius, const DirectX::XMFLOAT4 color)
 {
 	// Reset all member variables
 	Reset();
@@ -221,35 +222,35 @@ void DebugRenderer::DebugSphere::DrawSphere(const int32_t _levelOfDetail, const 
 
 	// Create the initial vertices of the sphere
 	DirectX::XMFLOAT3 position = { -1.0f, t, 0 };
-	AddVertex(position, _radius, _pos);
+	AddVertex(position, radius);
 	position = { 1.0f, t, 0 };
-	AddVertex(position, _radius, _pos);
+	AddVertex(position, radius);
 	position = { -1.0f, -t, 0 };
-	AddVertex(position, _radius, _pos);
+	AddVertex(position, radius);
 	position = { 1.0f, -t, 0 };
-	AddVertex(position, _radius, _pos);
+	AddVertex(position, radius);
 
 	position = { 0, -1.0f, t };
-	AddVertex(position, _radius, _pos);
+	AddVertex(position, radius);
 	position = { 0, 1.0f, t };
-	AddVertex(position, _radius, _pos);
+	AddVertex(position, radius);
 	position = { 0, -1.0f, -t };
-	AddVertex(position, _radius, _pos);
+	AddVertex(position, radius);
 	position = { 0, 1.0f, -t };
-	AddVertex(position, _radius, _pos);
+	AddVertex(position, radius);
 
 	position = { t, 0, -1.0f };
-	AddVertex(position, _radius, _pos);
+	AddVertex(position, radius);
 	position = { t, 0, 1.0f };
-	AddVertex(position, _radius, _pos);
+	AddVertex(position, radius);
 	position = { -t, 0, -1.0f };
-	AddVertex(position, _radius, _pos);
+	AddVertex(position, radius);
 	position = { -t, 0, 1.0f };
-	AddVertex(position, _radius, _pos);
+	AddVertex(position, radius);
 
 	// Add the faces of the sphere to the debug renderer
 
-		// Five faces around first chosen point (point 0)
+	// Five faces around first chosen point (point 0)
 	faces.push_back({ 0, 11, 5 });
 	faces.push_back({ 0, 5, 1 });
 	faces.push_back({ 0, 1, 7 });
@@ -276,14 +277,14 @@ void DebugRenderer::DebugSphere::DrawSphere(const int32_t _levelOfDetail, const 
 
 	// Refine the triangles with _levelOfDetail
 
-	for (int i = 0; i < _levelOfDetail; i++)
+	for (int i = 0; i < levelOfDetail; i++)
 	{
 		std::vector<TriangleIndices> subfaces;
 		for (auto tri : faces)
 		{
-			int32_t a = GetMiddlePoint(tri.v1, tri.v2, _radius, _pos);
-			int32_t b = GetMiddlePoint(tri.v2, tri.v3, _radius, _pos);
-			int32_t c = GetMiddlePoint(tri.v1, tri.v3, _radius, _pos);
+			int32_t a = GetMiddlePoint(tri.v1, tri.v2, radius, pos);
+			int32_t b = GetMiddlePoint(tri.v2, tri.v3, radius, pos);
+			int32_t c = GetMiddlePoint(tri.v1, tri.v3, radius, pos);
 
 			subfaces.push_back({ tri.v1, a, c });
 			subfaces.push_back({ tri.v2, b, a });
@@ -296,73 +297,70 @@ void DebugRenderer::DebugSphere::DrawSphere(const int32_t _levelOfDetail, const 
 	// Loop through the faces and draw them using the debug renderer
 	for (auto tri : faces)
 	{
-		AddFaceToRenderer(tri.v1, tri.v2, tri.v3, _pos, _color);
+		AddFaceToRenderer(tri.v1, tri.v2, tri.v3, pos, color);
 	}
 
 }
 
-void DebugRenderer::DebugSphere::DrawCircle(const int32_t _levelOfDetail, const DirectX::XMFLOAT3 _pos, const float _radius, const DirectX::XMFLOAT4 _color)
+void DebugRenderer::DebugSphere::DrawCircle(const int32_t levelOfDetail, const DirectX::XMFLOAT3 pos, const float radius, const DirectX::XMFLOAT4 color)
 {
 	// Reset all member variables
 	Reset();
 
-	// Golden ratio variable used to generate spherical shape
-	float t = (1.0f + sqrt(5.0f)) / 2.0f;
-
-	std::vector<VertexIndices> verts;
+	std::vector<VertexIndices> circleVertices;
 
 	// Create the initial vertices of the sphere
 	DirectX::XMFLOAT3 position;
 
 	position = { 0, 0, -1.0f };
-	AddVertex(position, _radius, _pos);
+	AddVertex(position, radius);
 	position = { 1.0f, 0, -1.0f };
-	AddVertex(position, _radius, _pos);
+	AddVertex(position, radius);
 	position = { 1.0f, 0, 0 };
-	AddVertex(position, _radius, _pos);
+	AddVertex(position, radius);
 	position = { 1.0f, 0, 1.0f };
-	AddVertex(position, _radius, _pos);
+	AddVertex(position, radius);
 	position = { 0, 0, 1.0f };
-	AddVertex(position, _radius, _pos);
+	AddVertex(position, radius);
 	position = { -1.0f, 0, 1.0f };
-	AddVertex(position, _radius, _pos);
+	AddVertex(position, radius);
 	position = { -1.0f, 0, 0 };
-	AddVertex(position, _radius, _pos);
+	AddVertex(position, radius);
 	position = { -1.0f, 0, -1.0f };
-	AddVertex(position, _radius, _pos);
+	AddVertex(position, radius);
 
 
 	// Push back first 8 verts
-	verts.push_back({ 0, 1 });
-	verts.push_back({ 1, 2 });
-	verts.push_back({ 2, 3 });
-	verts.push_back({ 3, 4 });
-	verts.push_back({ 4, 5 });
-	verts.push_back({ 5, 6 });
-	verts.push_back({ 6, 7 });
-	verts.push_back({ 7, 0 });
+	circleVertices.push_back({ 0, 1 });
+	circleVertices.push_back({ 1, 2 });
+	circleVertices.push_back({ 2, 3 });
+	circleVertices.push_back({ 3, 4 });
+	circleVertices.push_back({ 4, 5 });
+	circleVertices.push_back({ 5, 6 });
+	circleVertices.push_back({ 6, 7 });
+	circleVertices.push_back({ 7, 0 });
 
-	for (int i = 0; i < _levelOfDetail; i++)
+	for (int i = 0; i < levelOfDetail; i++)
 	{
 		std::vector<VertexIndices> subverts;
-		for (auto vert : verts)
+		for (auto vertex : circleVertices)
 		{
-			int32_t midPoint = GetMiddlePoint(vert.v1, vert.v2, _radius, _pos);
+			int32_t midPoint = GetMiddlePoint(vertex.v1, vertex.v2, radius, pos);
 
-			subverts.push_back({ vert.v1, midPoint });
-			subverts.push_back({ midPoint, vert.v2 });
+			subverts.push_back({ vertex.v1, midPoint });
+			subverts.push_back({ midPoint, vertex.v2 });
 		}
-		verts = subverts;
+		circleVertices = subverts;
 	}
 
 	// Loop through the faces and draw them using the debug renderer
-	for (auto vert : verts)
+	for (auto vertex : circleVertices)
 	{
 		DebugLine::AddLine
 		(
-			{ mGeometry[vert.v1].x + _pos.x, mGeometry[vert.v1].y + _pos.y, mGeometry[vert.v1].z + _pos.z },
-			{ mGeometry[vert.v2].x + _pos.x, mGeometry[vert.v2].y + _pos.y, mGeometry[vert.v2].z + _pos.z },
-			_color
+			{ mGeometry[vertex.v1].x + pos.x, mGeometry[vertex.v1].y + pos.y, mGeometry[vertex.v1].z + pos.z },
+			{ mGeometry[vertex.v2].x + pos.x, mGeometry[vertex.v2].y + pos.y, mGeometry[vertex.v2].z + pos.z },
+			color
 		);
 	}
 }

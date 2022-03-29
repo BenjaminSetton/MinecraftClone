@@ -8,6 +8,11 @@ void DestroyConsole();
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PSTR pScmdline, _In_ int iCmdshow)
 {
+	UNREFERENCED_PARAMETER(hInstance);
+	UNREFERENCED_PARAMETER(hPrevInstance);
+	UNREFERENCED_PARAMETER(pScmdline);
+	UNREFERENCED_PARAMETER(iCmdshow);
+
 #ifdef _DEBUG
 	CreateConsole();
 #endif

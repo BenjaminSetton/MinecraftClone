@@ -13,6 +13,8 @@ FrustumCamera::FrustumCamera() :
 
 void FrustumCamera::Update(float dt)
 {
+	UNREFERENCED_PARAMETER(dt);
+
 	//XMFLOAT3 prevPos = m_position;
 	//XMVECTOR deltaTranslation = { 0, 0, 0, 1 };
 	//XMVECTOR deltaRotation = { 0.0f, 0.0f, 0.0f };

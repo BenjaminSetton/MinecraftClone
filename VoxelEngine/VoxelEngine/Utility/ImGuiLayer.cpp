@@ -1,14 +1,6 @@
 #include "../Misc/pch.h"
 #include "ImGuiLayer.h"
 
-
-
-ImGuiLayer::ImGuiLayer(){}
-
-ImGuiLayer::ImGuiLayer(const ImGuiLayer& layer){}
-
-ImGuiLayer::~ImGuiLayer(){}
-
 void ImGuiLayer::Initialize(HWND hwnd, ID3D11Device* device, ID3D11DeviceContext* context)
 {
 	// Setup Dear ImGui context

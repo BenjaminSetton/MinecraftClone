@@ -10,8 +10,6 @@ using namespace DirectX;
 
 void ShadowShader::CreateObjects(const WCHAR* vsFilename, const WCHAR* psFilename)
 {
-	ID3D11Device* device = D3D::GetDevice();
-
 	// Create the shaders
 	CreateShaders(vsFilename, psFilename);
 
@@ -197,7 +195,6 @@ void ShadowShader::CreateShaders(const WCHAR* vsFilename, const WCHAR* psFilenam
 void ShadowShader::CreateDepthBuffer(const uint32_t width, const uint32_t height)
 {
 	ID3D11Device* device = D3D::GetDevice();
-	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
 	HRESULT hr;
 

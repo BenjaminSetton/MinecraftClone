@@ -27,7 +27,7 @@ public:
 	static void UnloadChunk(Chunk* chunk);
 	static void UnloadChunk(const uint32_t& index);
 
-	static const uint16_t GetNumActiveChunks();
+	static const uint32_t GetNumActiveChunks();
 
 	static Chunk* GetChunkAtIndex(const uint16_t index);
 

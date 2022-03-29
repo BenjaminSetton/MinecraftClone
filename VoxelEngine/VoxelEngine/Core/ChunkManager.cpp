@@ -66,6 +66,7 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 	uint32_t desiredDepthSlicesPerThread, actualDepthSlicesPerThread;
 	desiredDepthSlicesPerThread = actualDepthSlicesPerThread = 2;
 	uint32_t numThreadsToRun = static_cast<uint32_t>(floor((2 * RENDER_DIST + 1) / desiredDepthSlicesPerThread));
+	VX_ASSERT(numThreadsToRun > 0);
 
 	// If we need more threads to run desired depth slices per thread, cap at map threads and recalculate
 	// actualDepthSlicesPerThread to reflect change in numThreadsToRun
@@ -83,10 +84,10 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 		// [MULTI-THREADED]		Load all of the initial chunks
 		VX_LOG_INFO("%i Chunk initializer threads launched", numThreadsToRun);
 		std::vector<std::thread*> chunkLoaderThreads(numThreadsToRun);
-		for (int16_t threadID = 0; threadID < static_cast<int32_t>(numThreadsToRun); threadID++)
+		for (int16_t threadID = 0; threadID < static_cast<int16_t>(numThreadsToRun); threadID++)
 		{
 			int32_t startingChunk = threadID * actualDepthSlicesPerThread - RENDER_DIST;
-			int32_t numChunksToInit = threadID == numThreadsToRun - 1 ? actualDepthSlicesPerThread + ((2 * RENDER_DIST + 1) - numThreadsToRun * actualDepthSlicesPerThread) : actualDepthSlicesPerThread;
+			int32_t numChunksToInit = threadID == static_cast<int16_t>(numThreadsToRun) - 1 ? actualDepthSlicesPerThread + ((2 * RENDER_DIST + 1) - numThreadsToRun * actualDepthSlicesPerThread) : actualDepthSlicesPerThread;
 			std::thread* currThread = new std::thread(InitChunksMultithreaded, startingChunk, numChunksToInit, playerPosCS);
 			chunkLoaderThreads[threadID] = currThread;
 
@@ -106,10 +107,10 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 		VX_LOG_INFO("%i vertex buffer initializer threads launched", numThreadsToRun);
 		std::vector<std::thread*> vertexBufferThreads(numThreadsToRun);
 		uint32_t numIndicesPerChunk = m_activeChunks.Size() / numThreadsToRun;
-		for (int16_t threadID = 0; threadID < static_cast<int32_t>(numThreadsToRun); threadID++)
+		for (int16_t threadID = 0; threadID < static_cast<int16_t>(numThreadsToRun); threadID++)
 		{
-			uint32_t startingIndex = threadID * numIndicesPerChunk;
-			uint32_t numIndiciesToInit = threadID == numThreadsToRun - 1 ? m_activeChunks.Size() - startingIndex : numIndicesPerChunk;
+			uint32_t startingIndex = threadID * static_cast<int32_t>(numIndicesPerChunk);
+			uint32_t numIndiciesToInit = threadID == static_cast<int32_t>(numThreadsToRun) - 1 ? m_activeChunks.Size() - startingIndex : numIndicesPerChunk;
 			std::thread* currThread = new std::thread(InitChunkVertexBuffersMultithreaded, startingIndex, numIndiciesToInit);
 			vertexBufferThreads[threadID] = currThread;
 			VX_LOG_INFO("Thread %i initialized %i indicies from %i to %i", threadID, numIndiciesToInit, startingIndex, startingIndex + numIndiciesToInit);
@@ -313,11 +314,6 @@ void ChunkManager::UnloadChunk(Chunk* chunk)
 void ChunkManager::UnloadChunk(const uint32_t& index)
 {
 
-	if(m_poolMap.size() != m_activeChunks.Size())
-	{
-		int breakHere = 0;
-	}
-
 	// Consider swapping chunk with last one from vector, and ZeroMemory the chunk
 	// When all the chunks have been unloaded (i.e. swapped to the last available chunk)
 	// all the zero'd chunks will be deleted from the vector
@@ -351,7 +347,7 @@ void ChunkManager::UnloadChunk(const uint32_t& index)
 
 }
 
-const uint16_t ChunkManager::GetNumActiveChunks()
+const uint32_t ChunkManager::GetNumActiveChunks()
 {
 	return m_activeChunks.Size();
 }
@@ -595,7 +591,10 @@ const int32_t ChunkManager::CheckForChunksToLoadOrUnload(const XMFLOAT3& current
 		}
 	}
 
-	VX_ASSERT(chunksUpdated % ((2 * RENDER_DIST + 1) * (2 * RENDER_DIST + 1)) == 0);
+	if (chunksUpdated % ((2 * RENDER_DIST + 1) * (2 * RENDER_DIST + 1)) != 0)
+	{
+		VX_LOG_WARN("Did not update a uniform number of chunks (%i)", chunksUpdated);
+	}
 
 	return chunksUpdated;
 }
