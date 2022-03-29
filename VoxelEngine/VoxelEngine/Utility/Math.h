@@ -29,6 +29,33 @@ namespace VX_MATH
 	(XMFLOAT3_BRACKET_OP_32(vecOne, 1) == XMFLOAT3_BRACKET_OP_32(vecTwo, 1)) && \
 	(XMFLOAT3_BRACKET_OP_32(vecOne, 2) == XMFLOAT3_BRACKET_OP_32(vecTwo, 2)))
 
+	template<typename T>
+	inline void Clamp(T& value, const T min, const T max)
+	{
+		if (value < min) value = min;
+		else if (value > max) value = max;
+	}
+
+	template<typename T>
+	inline void Wrap(T& value, const T min, const T max)
+	{
+		if (value < min) value = max - (min - value);
+		else if (value > max) value = min + (value - max);
+	}
+
+	template<typename T>
+	inline int32_t Sign(const T& value)
+	{
+		if (value < 0)			return -1;
+		else if (value > 0)		return 1;
+		else					return 0;
+	}
+
+	inline float Decimal(const float value) { return abs(value - static_cast<int>(value)); }
+
+	inline float DegreesToRadians(const float& degrees) { return (degrees * (PI / 180.0f)); }
+
+	inline float RadiansToDegrees(const float& radians) { return (radians * (180.0f / PI)); }
 
 	// This function returns a unique identifier for all chunks within a range of
 	// 65,536 in any dimension of chunkPos
@@ -56,13 +83,15 @@ namespace VX_MATH
 
 	inline DirectX::XMFLOAT3 WorldToChunkSpace(const DirectX::XMFLOAT3& pos)
 	{
-		DirectX::XMFLOAT3 convertedPos = { (float)((int32_t)pos.x / CHUNK_SIZE), (float)((int32_t)pos.y / CHUNK_SIZE), (float)((int32_t)pos.z / CHUNK_SIZE) };
+		DirectX::XMFLOAT3 convertedPos = { pos.x / CHUNK_SIZE, pos.y / CHUNK_SIZE, pos.z / CHUNK_SIZE };
 
-		// Adjust for negative coordinates
-		convertedPos.x = pos.x < 0 ? --convertedPos.x : convertedPos.x;
-		convertedPos.y = pos.y < 0 ? --convertedPos.y : convertedPos.y;
-		convertedPos.z = pos.z < 0 ? --convertedPos.z : convertedPos.z;
-		return convertedPos;
+		// For negative positions, if division does NOT give a decimal we subtract one
+		// otherwise, we leave as is
+		convertedPos.x = (convertedPos.x < 0.0f && Decimal(convertedPos.x) != 0.0f) ? --convertedPos.x : convertedPos.x;
+		convertedPos.y = (convertedPos.y < 0.0f && Decimal(convertedPos.y) != 0.0f) ? --convertedPos.y : convertedPos.y;
+		convertedPos.z = (convertedPos.z < 0.0f && Decimal(convertedPos.z) != 0.0f) ? --convertedPos.z : convertedPos.z;
+
+		return { static_cast<float>(static_cast<int32_t>(convertedPos.x)), static_cast<float>(static_cast<int32_t>(convertedPos.y)), static_cast<float>(static_cast<int32_t>(convertedPos.z)) };
 	}
 
 	inline DirectX::XMFLOAT3 ChunkToWorldSpace(const DirectX::XMFLOAT3& pos)
@@ -217,32 +246,6 @@ namespace VX_MATH
 		return false;
 
 	}
-
-	template<typename T>
-	inline void Clamp(T& value, const T min, const T max)
-	{
-		if (value < min) value = min;
-		else if (value > max) value = max;
-	}
-
-	template<typename T>
-	inline void Wrap(T& value, const T min, const T max)
-	{
-		if (value < min) value = max - (min - value);
-		else if (value > max) value = min + (value - max);
-	}
-
-	template<typename T>
-	inline int32_t Sign(const T& value) 
-	{
-		if (value < 0)			return -1;
-		else if (value > 0)		return 1;
-		else					return 0;
-	}
-
-	inline float DegreesToRadians(const float& degrees) { return (degrees * (PI / 180.0f)); }
-
-	inline float RadiansToDegrees(const float& radians) { return (radians * (180.0f / PI)); }
 	
 }
 

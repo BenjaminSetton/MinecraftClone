@@ -5,6 +5,9 @@
 #include "../Utility/Utility.h"
 #include "../Utility/Math.h"
 
+// TEMP DEBUG
+#include "../Utility/ImGuiDrawData.h"
+
 using namespace DirectX;
 
 void Physics::ApplyVelocity(DirectX::XMVECTOR& pos, const DirectX::XMVECTOR& vel, const float& dt)
@@ -75,7 +78,9 @@ const bool Physics::DetectCollision(const DirectX::XMVECTOR& pos)
 	else return false;
 }
 
-const bool Physics::DetectCollision(const AABB& aabb)
+// out_collisionPositions contains a list of all intersected blocks. This means that it will keep checking for collisions even after
+// it finds a collision, so in that sense it's inefficient. However, it's sometimes useful to know the positions of the blocks we hit
+const bool Physics::DetectCollision(const AABB& aabb, std::vector<XMFLOAT3>* out_collisionPositions)
 {
 	XMFLOAT3 aabbMin = { aabb.center.x - aabb.extent.x, aabb.center.y - aabb.extent.y, aabb.center.z - aabb.extent.z };
 	XMFLOAT3 aabbMax = { aabb.center.x + aabb.extent.x, aabb.center.y + aabb.extent.y, aabb.center.z + aabb.extent.z };
@@ -89,6 +94,12 @@ const bool Physics::DetectCollision(const AABB& aabb)
 		static_cast<float>(abs(static_cast<int32_t>(aabbMax.z) - static_cast<int32_t>(aabbMin.z)) + 1)
 	};
 
+	// temp debug
+	PlayerPhysics_Data::AABBMin = aabbMin;
+	PlayerPhysics_Data::AABBCollisionRange = range;
+	//
+
+	bool collisionHappened = false;
 	for (uint32_t x = 0; x < range.x; x++)
 	{
 		for (uint32_t y = 0; y < range.y; y++)
@@ -96,7 +107,7 @@ const bool Physics::DetectCollision(const AABB& aabb)
 			for (uint32_t z = 0; z < range.z; z++)
 			{
 				// intersected block pos in world space
-				XMFLOAT3 intersectedBlockPos = { aabbMin.x + x, aabbMin.y + y, aabbMin.z + z };
+				XMFLOAT3 intersectedBlockPos = { floor(aabbMin.x) + x, floor(aabbMin.y) + y, floor(aabbMin.z) + z };
 
 				XMFLOAT3 posCS = VX_MATH::WorldToChunkSpace(intersectedBlockPos);
 				XMFLOAT3 chunkPosWS = VX_MATH::ChunkToWorldSpace(posCS);
@@ -110,13 +121,20 @@ const bool Physics::DetectCollision(const AABB& aabb)
 				localZ = static_cast<uint32_t>(intersectedBlockPos.z - chunkPosWS.z);
 				BlockType blockType = chunk->GetBlock(localX, localY, localZ)->GetType();
 
-				DebugRenderer::DrawAABB({ intersectedBlockPos.x + 0.5f, intersectedBlockPos.y + 0.5f, intersectedBlockPos.z + 0.5f }, { 0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f, 1.0f, 1.0f });
+				if(blockType != BlockType::Air)
+					DebugRenderer::DrawAABB({ intersectedBlockPos.x + 0.5f, intersectedBlockPos.y + 0.5f, intersectedBlockPos.z + 0.5f }, { 0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f, 1.0f, 1.0f });
+				else
+					DebugRenderer::DrawAABB({ intersectedBlockPos.x + 0.5f, intersectedBlockPos.y + 0.5f, intersectedBlockPos.z + 0.5f }, { 0.5f, 0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f, 1.0f });
 
-				if (blockType != BlockType::Air) return true;
+				if (blockType != BlockType::Air)
+				{
+					if(out_collisionPositions) out_collisionPositions->push_back(intersectedBlockPos);
+					collisionHappened = true;
+				}
 			}
 		}
 	}
 
-	return false;
+	return collisionHappened;
 
 }

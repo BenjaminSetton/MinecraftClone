@@ -1,6 +1,7 @@
 #include "../Misc/pch.h"
 
 #include "BlockSelectionIndicator.h"
+#include "ChunkManager.h"
 #include "Game.h"
 #include "../Utility/Math.h"
 #include "Player.h"
@@ -80,7 +81,6 @@ void BlockSelectionIndicator::Update(const float dt)
 
 		if (Renderer_Data::enableBlockSelector)
 		{
-
 			// Create quads
 			QuadInstanceData quadData[6];
 			GenerateQuadsInPos(m_currentIndicatorPos, quadData);
@@ -93,6 +93,16 @@ void BlockSelectionIndicator::Update(const float dt)
 			QuadBufferManager::PushQuad(quadData[4]);
 			QuadBufferManager::PushQuad(quadData[5]);
 		}
+
+		// DEBUG INFO
+
+		Chunk* selectedChunk = ChunkManager::GetChunkAtPos(VX_MATH::WorldToChunkSpace(m_targetIndicatorPos));
+		XMFLOAT3 selectedBlockPosCS = VX_MATH::ChunkToWorldSpace(VX_MATH::WorldToChunkSpace(m_targetIndicatorPos)); 
+		XMFLOAT3 selectedBlockPosLocal = { m_targetIndicatorPos.x - selectedBlockPosCS.x, m_targetIndicatorPos.y - selectedBlockPosCS.y, m_targetIndicatorPos.z - selectedBlockPosCS.z};
+		BlockType currentBlock = selectedChunk->GetBlock(static_cast<unsigned int>(selectedBlockPosLocal.x), static_cast<unsigned int>(selectedBlockPosLocal.y), static_cast<unsigned int>(selectedBlockPosLocal.z))->GetType();
+		Renderer_Data::playerLookAt = { m_targetIndicatorPos.x - 0.5f, m_targetIndicatorPos.y - 0.5f , m_targetIndicatorPos.z - 0.5f };
+		Renderer_Data::blockType = static_cast<uint8_t>(currentBlock);
+		//
 	}
 
 }

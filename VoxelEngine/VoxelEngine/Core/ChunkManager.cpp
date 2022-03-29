@@ -164,6 +164,7 @@ void ChunkManager::Update()
 	XMFLOAT3 playerPosChunkSpace = VX_MATH::WorldToChunkSpace(m_playerPos);
 
 	int32_t numChunksUnloaded = 0;
+
 	{
 		VX_PROFILE_OUT(&ChunkManager_Data::deletionLoop);
 
@@ -212,6 +213,11 @@ void ChunkManager::Update()
 		for (uint16_t i = 0; i < m_newChunkList.size(); i++)
 		{
 			Chunk* newChunk = LoadChunk(m_newChunkList[i]);
+			if (!newChunk)
+			{
+				VX_LOG_WARN("Potential new chunk skipped");
+				continue;
+			}
 			XMFLOAT3 chunkPosCS = newChunk->GetPosition();
 
 			// Left neighbor
@@ -247,13 +253,6 @@ void ChunkManager::Update()
 		//	VX_LOG("Loaded %i chunks", m_newChunkList.size());
 		//}
 	}
-
-	// DEBUG LOOP
-	//for (uint32_t i = 0; i < m_activeChunks.Size(); i++)
-	//{
-	//	Chunk* currChunk = m_activeChunks[i];
-	//	currChunk->DrawChunkBorder();
-	//}
 	
 	VX_ASSERT(m_activeChunks.Size() == pow((2 * RENDER_DIST + 1), 3));
 
@@ -277,6 +276,7 @@ Chunk* ChunkManager::LoadChunk(const XMFLOAT3 chunkCS)
 	Chunk chunk(chunkCS);
 	chunk.Init();
 	Chunk* chunkPtr = m_activeChunks.Insert_Move(std::move(chunk));
+	if (!chunkPtr) return nullptr;
 
 	uint64_t hashKey = VX_MATH::GetHashKeyFromChunkPosition(chunkCS);
 	VX_ASSERT(m_chunkMap.find(hashKey) == m_chunkMap.end());
@@ -408,11 +408,6 @@ const int32_t ChunkManager::CheckForChunksToLoadOrUnload(const XMFLOAT3& current
 	std::unordered_map<uint64_t, XMFLOAT3> checkForDuplicateCreations;
 
 	VX_ASSERT(checkFlag == 0 || checkFlag == 1);
-
-	// prev pos.x = 2 | currpos.x = 4
-	// render dist = 2
-
-	// unload chunks in currpos.x - sign * (renderDist + difference) = 5 - 2 - 3 = 0
 
 	// X AXIS
 	if (prevPlayerPosCS.x != currentPlayerPosCS.x)
@@ -578,7 +573,8 @@ const int32_t ChunkManager::CheckForChunksToLoadOrUnload(const XMFLOAT3& current
 						}
 						else
 						{
-							VX_ASSERT(false && "Attempting to delete chunk that doesn't exist");
+							//VX_ASSERT(false && "Attempting to delete chunk that doesn't exist");
+							VX_LOG_WARN("Skipped deletion of chunk at position %2.2f, %2.2f, %2.2f", newXPos, newYPos, newZPos);
 						}
 					}
 					else // checkFlag == 1 (for creation)

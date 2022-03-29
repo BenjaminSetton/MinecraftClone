@@ -26,7 +26,7 @@ ScopeTimer::~ScopeTimer()
 	{
 	case 0:
 	{
-		ImGui::Begin("Debug Panel");
+		ImGui::Begin("Timing Panel");
 		//ImGui::Text("\"%s\" scope took %2.3f ms (%3.0f us)", m_name.c_str(), duration / 1000.0f, duration);
 		ImGui::Text("\"%s\" runs at %3.3f FPS (%2.3f ms)", m_name.c_str(), 1000000.0f / duration, duration / 1000.0f);
 		ImGui::End();

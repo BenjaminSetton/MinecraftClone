@@ -44,6 +44,8 @@ struct Renderer_Data
 	static int numActiveChunks;
 	static uint32_t renderDist;
 	static bool enableBlockSelector;
+	static DirectX::XMFLOAT3 playerLookAt;
+	static uint8_t blockType;
 
 };
 
@@ -53,6 +55,8 @@ struct PlayerPhysics_Data
 	static DirectX::XMFLOAT3 vel;
 	static bool isCollidingFloor;
 	static bool isCollidingWall;
+	static DirectX::XMFLOAT3 AABBCollisionRange;
+	static DirectX::XMFLOAT3 AABBMin;
 };
 
 struct ChunkManager_Data

@@ -64,7 +64,6 @@ float DayNightCycle::m_elapsedTime = 0.0f;
 
 void DayNightCycle::Update(const float& dt)
 {
-	if (Cycle_Data::pauseCycle) return;
 
 	m_elapsedTime += dt;
 
@@ -74,6 +73,10 @@ void DayNightCycle::Update(const float& dt)
 	}
 
 	float timePct = m_elapsedTime / ce_cycleDuration; // Ranges from 0-2
+	if (Cycle_Data::pauseCycle)
+	{
+		timePct = Cycle_Data::timeOfDay;
+	}
 
 	if (timePct < 1.0f) m_cycle = Cycle::DAY;
 	else if (timePct >= 1.0f && timePct <= 2.0f) m_cycle = Cycle::NIGHT;

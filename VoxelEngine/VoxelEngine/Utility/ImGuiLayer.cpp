@@ -38,7 +38,7 @@ void ImGuiLayer::Draw()
 
 #pragma region DAYNIGHT_CYCLE
 
-	ImGui::Begin("Day/Night Cycle Debug");
+	ImGui::Begin("General Info");
 
 	ImGui::Text("Sun/Moon Direction: (%2.2f, %2.2f, %2.2f) / (%2.2f, %2.2f, %2.2f)",
 		Cycle_Data::sunDir.x, Cycle_Data::sunDir.y, Cycle_Data::sunDir.z,
@@ -72,9 +72,9 @@ void ImGuiLayer::Draw()
 
 #pragma region BLOCK_SHADER
 
-	ImGui::Begin("Debug Panel");
+	ImGui::Begin("General Info");
 
-	ImGui::Checkbox("Enable Frustum Culling", &BlockShader_Data::enableFrustumCulling);
+	//ImGui::Checkbox("Enable Frustum Culling", &BlockShader_Data::enableFrustumCulling);
 
 	ImGui::Text("Vertex Count: %i", BlockShader_Data::debugVerts);
 	ImGui::Text("Draw Calls: %i", BlockShader_Data::numDrawCalls);
@@ -89,6 +89,8 @@ void ImGuiLayer::Draw()
 	ImGui::Text("Player Position: %2.2f, %2.2f, %2.2f (%i, %i, %i)",
 		Renderer_Data::playerPos.x, Renderer_Data::playerPos.y, Renderer_Data::playerPos.z,
 		(int)Renderer_Data::playerPosChunkSpace.x, (int)Renderer_Data::playerPosChunkSpace.y, (int)Renderer_Data::playerPosChunkSpace.z);
+	ImGui::Text("Player LookAt: %2.2f, %2.2f, %2.2f (BlockType: %i)", Renderer_Data::playerLookAt.x, Renderer_Data::playerLookAt.y,
+		Renderer_Data::playerLookAt.z, Renderer_Data::blockType);
 	ImGui::Text("Player Rotation: %2.2f, %2.2f, %2.2f", Renderer_Data::playerRot.x, Renderer_Data::playerRot.y, Renderer_Data::playerRot.z);
 	ImGui::Text("Active Chunks: %i", Renderer_Data::numActiveChunks);
 	ImGui::Text("Render Distance: %i", Renderer_Data::renderDist);
@@ -106,6 +108,10 @@ void ImGuiLayer::Draw()
 		PlayerPhysics_Data::accel.x, PlayerPhysics_Data::accel.y, PlayerPhysics_Data::accel.z);
 	ImGui::Text("IsCollidingWall: %i", PlayerPhysics_Data::isCollidingWall);
 	ImGui::Text("IsCollidingFloor: %i", PlayerPhysics_Data::isCollidingFloor);
+	ImGui::Text("AABB Collision Range: %2.2f, %2.2f, %2.2f",
+		PlayerPhysics_Data::AABBCollisionRange.x, PlayerPhysics_Data::AABBCollisionRange.y, PlayerPhysics_Data::AABBCollisionRange.z);
+	ImGui::Text("AABB Min: %2.2f, %2.2f, %2.2f",
+		PlayerPhysics_Data::AABBMin.x, PlayerPhysics_Data::AABBMin.y, PlayerPhysics_Data::AABBMin.z);
 	ImGui::End();
 
 #pragma endregion

@@ -36,7 +36,7 @@ public:
 
 	static const bool DetectCollision(const DirectX::XMVECTOR& pos);
 
-	static const bool DetectCollision(const AABB& aabb);
+	static const bool DetectCollision(const AABB& aabb, std::vector<DirectX::XMFLOAT3>* out_collisionPositions = nullptr);
 
 private:
 

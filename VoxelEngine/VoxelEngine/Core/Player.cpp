@@ -16,7 +16,7 @@ Player::Player() :	m_acceleration({0.0f, 0.0f, 0.0f}), m_velocity({0.0f, 0.0f, 0
 	m_debugCamera->ConstructMatrix(m_position, m_rotation);
 
 	m_hitbox.center = { m_position.x, m_position.y - 2.0f, m_position.z };
-	m_hitbox.extent = { 0.5f, 1.0f, 0.5f };
+	m_hitbox.extent = { 0.25f, 1.0f, 0.25f };
 }
 
 Player::~Player()

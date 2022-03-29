@@ -37,10 +37,7 @@ void PlayerController::Update(const float& dt, Player* player)
 	{
 	case CameraType::FirstPerson:
 	{
-		XMFLOAT3 currPos = player->m_position;
-		XMFLOAT3 currRot = player->m_rotation;
 		XMVECTOR vel = XMLoadFloat3(&player->m_velocity);
-		XMVECTOR prevPlayerFeetPos = { currPos.x, currPos.y - 2.0f, currPos.z };
 		XMVECTOR deltaTranslation = { 0.0f, 0.0f, 0.0f, 1.0f };
 		XMVECTOR deltaRotation = { 0.0f, 0.0f, 0.0f };
 		player->m_acceleration = { 0.0f, GRAVITY, 0.0f };
@@ -74,7 +71,7 @@ void PlayerController::Update(const float& dt, Player* player)
 
 		// we have rotations for x and y
 		// create two rotation matrices, and translate along those axis for "newPos"
-		XMFLOAT3 currentPlayerPos = player->GetPosition();
+		XMFLOAT3 currentPlayerPos = player->m_hitbox.center;
 		XMMATRIX localTransform = XMMatrixIdentity();
 		XMMATRIX rotXMatrix = XMMatrixRotationX(VX_MATH::DegreesToRadians(player->m_rotation.x));
 		XMMATRIX rotYMatrix = XMMatrixRotationY(VX_MATH::DegreesToRadians(player->m_rotation.y));
@@ -149,8 +146,9 @@ void PlayerController::Update(const float& dt, Player* player)
 
 
 		// Finally store the final player position
-		player->m_position = finalTranslatedPosition;
-		player->m_hitbox.center = { finalTranslatedPosition.x, finalTranslatedPosition.y - 1.0f, finalTranslatedPosition.z };
+		player->m_position = { finalTranslatedPosition.x, finalTranslatedPosition.y + 1.0f, finalTranslatedPosition.z };
+		player->m_hitbox.center = finalTranslatedPosition;
+		DebugRenderer::DrawAABB(player->m_hitbox.center, player->m_hitbox.extent, { 1.0f, 0.0f, 0.0f, 1.0f });
 
 		BlockSelectionIndicator::Update(dt);
 
@@ -243,10 +241,12 @@ void PlayerController::Update(const float& dt, Player* player)
 	}
 
 	// DEBUG STUFF
+	XMFLOAT3 zAxis = { 0.0f, 0.0f, 0.0f };
+	XMStoreFloat3(&zAxis, player->m_FPSCamera->GetWorldMatrix().r[2]);
 	DebugRenderer::DrawAABB(player->m_hitbox.center, player->m_hitbox.extent, { 1.0f, 0.0f, 0.0f, 1.0f });
-	DebugRenderer::DrawSphere(1, { player->m_hitbox.center.x - player->m_hitbox.extent.x, player->m_hitbox.center.y - player->m_hitbox.extent.y, player->m_hitbox.center.z - player->m_hitbox.extent.z }, 0.05f, { 0.0f, 0.0f, 1.0f, 1.0f });
-	DebugRenderer::DrawSphere(1, { player->m_hitbox.center.x + player->m_hitbox.extent.x, player->m_hitbox.center.y + player->m_hitbox.extent.y, player->m_hitbox.center.z + player->m_hitbox.extent.z }, 0.05f, { 0.0f, 0.0f, 1.0f, 1.0f });
-	Physics::DetectCollision(player->m_hitbox);
+	//DebugRenderer::DrawSphere(1, { player->m_hitbox.center.x - player->m_hitbox.extent.x, player->m_hitbox.center.y - player->m_hitbox.extent.y, player->m_hitbox.center.z - player->m_hitbox.extent.z }, 0.05f, { 0.0f, 0.0f, 1.0f, 1.0f });
+	//DebugRenderer::DrawSphere(1, { player->m_hitbox.center.x + player->m_hitbox.extent.x, player->m_hitbox.center.y + player->m_hitbox.extent.y, player->m_hitbox.center.z + player->m_hitbox.extent.z }, 0.05f, { 0.0f, 0.0f, 1.0f, 1.0f });
+	DebugRenderer::DrawLine(player->m_position, { player->m_position.x + zAxis.x, player->m_position.y + zAxis.y, player->m_position.z + zAxis.z }, { 0.0f, 1.0f, 0.0f, 1.0f });
 
 	// DEBUG SETTINGS
 	Renderer_Data::playerRot = { player->GetRotation().x, player->GetRotation().y, player->GetRotation().z };
@@ -256,12 +256,12 @@ void PlayerController::Update(const float& dt, Player* player)
 
 bool PlayerController::CheckForHorizontalCollision(AABB& newPos, const AABB& prevPos, const float& dt)
 {
-	// We have "moved into collision", so don't apply translation
-	//XMFLOAT3 prevPlayerFeetPos = { prevPos.center.x, prevPos.center.y - 2.0f, prevPos.center.z };
-	//XMVECTOR newPlayerFeetPos = { newPos.center.x, newPos.center.y - 2.0f, newPos.center.z };
+
+	float epsilon = 0.0001f;
 	bool isCollidingWithWall = Physics::DetectCollision(newPos);
 	PlayerPhysics_Data::isCollidingWall = isCollidingWithWall;
 
+	// We have "moved into collision", so revert enough distance to resolve AABB to AABB collision
 	if (isCollidingWithWall)
 	{
 		XMFLOAT3 velocityToAdd = { newPos.center.x - prevPos.center.x, newPos.center.y - prevPos.center.y, newPos.center.z - prevPos.center.z };
@@ -273,16 +273,33 @@ bool PlayerController::CheckForHorizontalCollision(AABB& newPos, const AABB& pre
 			currentPos.center = prevPos.center;
 			currentPos.extent = prevPos.extent;
 			XMFLOAT3_BRACKET_OP_32(currentPos.center, axis) += XMFLOAT3_BRACKET_OP_32(velocityToAdd, axis);
+			if (XMFLOAT3_BRACKET_OP_32(velocityToAdd, axis) == 0.0f) continue;
+
 			if (Physics::DetectCollision(currentPos))
 			{
-				XMFLOAT3_BRACKET_OP_32(velocityToAdd, axis) = 0;
+				float overlap = 0.0f;
+				if (XMFLOAT3_BRACKET_OP_32(velocityToAdd, axis) > 0)
+				{
+					XMFLOAT3 aabbMax = { newPos.center.x + newPos.extent.x, newPos.center.y + newPos.extent.y, newPos.center.z + newPos.extent.z };
+					overlap = XMFLOAT3_BRACKET_OP_32(aabbMax, axis) - floor(XMFLOAT3_BRACKET_OP_32(aabbMax, axis)) + epsilon;
+				}
+				else if (XMFLOAT3_BRACKET_OP_32(velocityToAdd, axis) < 0)
+				{
+					XMFLOAT3 aabbMin = { newPos.center.x - newPos.extent.x, newPos.center.y - newPos.extent.y, newPos.center.z - newPos.extent.z };
+					overlap = ceil(XMFLOAT3_BRACKET_OP_32(aabbMin, axis)) - XMFLOAT3_BRACKET_OP_32(aabbMin, axis);
+				}
+
+				XMFLOAT3_BRACKET_OP_32(velocityToAdd, axis) = VX_MATH::Sign(XMFLOAT3_BRACKET_OP_32(velocityToAdd, axis)) * (abs(XMFLOAT3_BRACKET_OP_32(velocityToAdd, axis)) - overlap);
+				VX_ASSERT(overlap > 0);
 			}
 		}
 
-		newPos.center = { prevPos.center.x + velocityToAdd.x, prevPos.center.y + velocityToAdd.y, prevPos.center.z + velocityToAdd.z };
+		newPos.center = { prevPos.center.x + velocityToAdd.x, newPos.center.y, prevPos.center.z + velocityToAdd.z };
 
 		VX_ASSERT((abs(velocityToAdd.x) >= 0 && abs(velocityToAdd.x) < 1));
 		VX_ASSERT((abs(velocityToAdd.z) >= 0 && abs(velocityToAdd.z) < 1));
+
+		//VX_LOG("Horizontal collision detected, resolved collision to %2.2f, %2.2f, %2.2f", newPos.center.x, newPos.center.y, newPos.center.z);
 
 		return true;
 	}
@@ -292,13 +309,39 @@ bool PlayerController::CheckForHorizontalCollision(AABB& newPos, const AABB& pre
 
 bool PlayerController::CheckForVerticalCollision(AABB& newPos, const AABB& prevPos, const float& dt)
 {
-	//XMVECTOR playerFeetPosAfterGravity = { newPos.center.x, newPos.center.y - 2.0f, newPos.center.z };
 	bool isCollidingWithFloor = Physics::DetectCollision(newPos);
+
+	// DEBUG
 	PlayerPhysics_Data::isCollidingFloor = isCollidingWithFloor;
+	static XMFLOAT3 uniqueCollisionPos = { 0.0f, 0.0f, 0.0f };
+	//
+
+	float velocityToAddOnY = newPos.center.y - prevPos.center.y;
+
 	// If collision is detected after applying gravity, revert
 	if (isCollidingWithFloor)
 	{
-		newPos.center = { prevPos.center.x, floor(prevPos.center.y), prevPos.center.z };
+		float overlap = 0;
+		if (velocityToAddOnY > 0)
+		{
+			XMFLOAT3 aabbMax = { newPos.center.x + newPos.extent.x, newPos.center.y + newPos.extent.y, newPos.center.z + newPos.extent.z };
+			overlap = aabbMax.y - floor(aabbMax.y);
+		}
+		else if (velocityToAddOnY < 0)
+		{
+			XMFLOAT3 aabbMin = { newPos.center.x - newPos.extent.x, newPos.center.y - newPos.extent.y, newPos.center.z - newPos.extent.z };
+			overlap = ceil(aabbMin.y) - aabbMin.y;
+		}
+		VX_ASSERT(overlap > 0);
+		velocityToAddOnY = VX_MATH::Sign(velocityToAddOnY) * (abs(velocityToAddOnY) - overlap);
+		newPos.center.y = prevPos.center.y + velocityToAddOnY;
+
+		if (!XMFLOAT3_IS_EQUAL(newPos.center, uniqueCollisionPos))
+		{
+			//VX_LOG("Vertical collision detected, resolved collision to %2.2f, %2.2f, %2.2f", newPos.center.x, newPos.center.y, newPos.center.z);
+			uniqueCollisionPos = newPos.center;
+		}
+
 		return true;
 	}
 

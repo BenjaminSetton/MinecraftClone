@@ -33,6 +33,8 @@ DirectX::XMFLOAT3 Renderer_Data::playerPosChunkSpace = { 0.0f, 0.0f, 0.0f };
 int Renderer_Data::numActiveChunks = 0;
 uint32_t Renderer_Data::renderDist = 0;
 bool Renderer_Data::enableBlockSelector = true;
+DirectX::XMFLOAT3 Renderer_Data::playerLookAt = { 0.0f, 0.0f, 0.0f };
+uint8_t Renderer_Data::blockType = 0;
 
 //
 // PLAYERPHYSICS_DATA
@@ -41,6 +43,8 @@ DirectX::XMFLOAT3 PlayerPhysics_Data::accel = { 0.0f, 0.0f, 0.0f };
 DirectX::XMFLOAT3 PlayerPhysics_Data::vel = { 0.0f, 0.0f, 0.0f };
 bool PlayerPhysics_Data::isCollidingWall = false;
 bool PlayerPhysics_Data::isCollidingFloor = false;
+DirectX::XMFLOAT3 PlayerPhysics_Data::AABBCollisionRange = { 0.0f, 0.0f, 0.0f };
+DirectX::XMFLOAT3 PlayerPhysics_Data::AABBMin = { 0.0f, 0.0f, 0.0f };
 
 //
 // CHUNKMANAGER_DATA
