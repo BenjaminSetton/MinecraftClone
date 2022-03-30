@@ -83,7 +83,7 @@ private:
 
 		static int32_t AddVertex(DirectX::XMFLOAT3 vert, const float radius);
 
-		static int32_t GetMiddlePoint(const int64_t a, const int64_t b, const float radius, const DirectX::XMFLOAT3 pos);
+		static int32_t GetMiddlePoint(const int64_t a, const int64_t b, const float radius);
 
 		static void AddFaceToRenderer(const int32_t ind1, const int32_t ind2, const int32_t ind3, const DirectX::XMFLOAT3 pos, const DirectX::XMFLOAT4 color);
 

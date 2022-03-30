@@ -152,7 +152,7 @@ int32_t DebugRenderer::DebugSphere::AddVertex(DirectX::XMFLOAT3 vert, const floa
 }
 
 
-int32_t DebugRenderer::DebugSphere::GetMiddlePoint(const int64_t _a, const int64_t _b, const float _radius, const DirectX::XMFLOAT3 _pos)
+int32_t DebugRenderer::DebugSphere::GetMiddlePoint(const int64_t _a, const int64_t _b, const float _radius)
 {
 	// Check map to see if value is already stored there
 	bool firstIsSmaller = _a < _b;
@@ -282,9 +282,9 @@ void DebugRenderer::DebugSphere::DrawSphere(const int32_t levelOfDetail, const D
 		std::vector<TriangleIndices> subfaces;
 		for (auto tri : faces)
 		{
-			int32_t a = GetMiddlePoint(tri.v1, tri.v2, radius, pos);
-			int32_t b = GetMiddlePoint(tri.v2, tri.v3, radius, pos);
-			int32_t c = GetMiddlePoint(tri.v1, tri.v3, radius, pos);
+			int32_t a = GetMiddlePoint(tri.v1, tri.v2, radius);
+			int32_t b = GetMiddlePoint(tri.v2, tri.v3, radius);
+			int32_t c = GetMiddlePoint(tri.v1, tri.v3, radius);
 
 			subfaces.push_back({ tri.v1, a, c });
 			subfaces.push_back({ tri.v2, b, a });
@@ -345,7 +345,7 @@ void DebugRenderer::DebugSphere::DrawCircle(const int32_t levelOfDetail, const D
 		std::vector<VertexIndices> subverts;
 		for (auto vertex : circleVertices)
 		{
-			int32_t midPoint = GetMiddlePoint(vertex.v1, vertex.v2, radius, pos);
+			int32_t midPoint = GetMiddlePoint(vertex.v1, vertex.v2, radius);
 
 			subverts.push_back({ vertex.v1, midPoint });
 			subverts.push_back({ midPoint, vertex.v2 });

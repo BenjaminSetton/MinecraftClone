@@ -64,19 +64,12 @@ static DirectX::XMFLOAT4 uvs[NUM_BLOCKS][36]
 
     // GRASS
     {
-        //TOP_FACE(0.0f, 0.0f, 16.0f, 16.0f),
-        //BOTTOM_FACE(0.0f, 16.0f, 16.0f, 16.0f),
-        //LEFT_FACE(16.0f, 0.0f, 16.0f, 16.0f),
-        //RIGHT_FACE(16.0f, 0.0f, 16.0f, 16.0f),
-        //FRONT_FACE(16.0f, 0.0f, 16.0f, 16.0f),
-        //BACK_FACE(16.0f, 0.0f, 16.0f, 16.0f)
-
-        TOP_FACE(0.0f, 16.0f, 16.0f, 16.0f),
+        TOP_FACE(0.0f, 0.0f, 16.0f, 16.0f),
         BOTTOM_FACE(0.0f, 16.0f, 16.0f, 16.0f),
-        LEFT_FACE(0.0f, 16.0f, 16.0f, 16.0f),
-        RIGHT_FACE(0.0f, 16.0f, 16.0f, 16.0f),
-        FRONT_FACE(0.0f, 16.0f, 16.0f, 16.0f),
-        BACK_FACE(0.0f, 16.0f, 16.0f, 16.0f)
+        LEFT_FACE(16.0f, 0.0f, 16.0f, 16.0f),
+        RIGHT_FACE(16.0f, 0.0f, 16.0f, 16.0f),
+        FRONT_FACE(16.0f, 0.0f, 16.0f, 16.0f),
+        BACK_FACE(16.0f, 0.0f, 16.0f, 16.0f)
     },
 };
 
