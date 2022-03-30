@@ -18,8 +18,8 @@ public:
 
 private:
 
-	static bool CheckForHorizontalCollision(AABB& newPos, const AABB& prevPos);
-	static bool CheckForVerticalCollision(AABB& newPos, const AABB& prevPos);
+	static DirectX::XMFLOAT3 CheckForHorizontalCollision(AABB& newPos, const AABB& prevPos);
+	static DirectX::XMFLOAT3 CheckForVerticalCollision(AABB& newPos, const AABB& prevPos);
 
 };
 

@@ -49,6 +49,7 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	
 	// Initialize ChunkManager class (DefaultBlockShader will use it's data so initialization has to take place before it)
 	ChunkManager::Initialize(player->GetPosition());
+
 	// Initialize ChunkBufferManager class
 	ChunkBufferManager::Initialize();
 	QuadBufferManager::Initialize();
@@ -89,6 +90,7 @@ void Graphics::Shutdown()
 	ChunkManager::Shutdown();
 	ChunkBufferManager::Shutdown();
 	QuadBufferManager::Shutdown();
+	QuadNDCBufferManager::Shutdown();
 
 	if (m_quadShader)
 	{

@@ -32,41 +32,117 @@ void PlayerController::Update(const float& dt, Player* player)
 {
 	// DEBUG
 	static bool isColliding = false;
+	//
+
+	int32_t numberOfCurveSamples = 15;
+	static XMFLOAT3 startingLerpValues = { 0.0f, 0.0f, 0.0f };
+	static XMFLOAT3 stoppingLerpValues = { 0.0f, 0.0f, 0.0f };
 
 	switch (player->GetSelectedCameraType())
 	{
 	case CameraType::FirstPerson:
 	{
-		XMVECTOR vel = XMLoadFloat3(&player->m_velocity);
-		XMVECTOR deltaTranslation = { 0.0f, 0.0f, 0.0f, 1.0f };
-		XMVECTOR deltaRotation = { 0.0f, 0.0f, 0.0f };
-		player->m_acceleration = { 0.0f, GRAVITY, 0.0f };
+		XMFLOAT3 deltaTranslation = { 0.0f, 0.0f, 0.0f };
+		XMFLOAT3 deltaRotation = { 0.0f, 0.0f, 0.0f };
+		XMFLOAT3 currentVelocity = { 0.0f, player->m_velocity.y, 0.0f };
+		std::function<float(float)> startFunction = [=](const float val) { return POW2(val); };
+		std::function<float(float)> stopFunction = [=](const float val) 
+		{
+			float mappedVal = (-0.2f * log(val));
+			VX_MATH::Clamp(mappedVal, 0.0f, 1.0f);
+			return mappedVal;
+		};
 
 		// Update position
 		if (Input::IsKeyDown(KeyCode::O) || Input::IsKeyDown(KeyCode::W)) // FORWARD
-			deltaTranslation.m128_f32[2] += player->m_movementSpeed * dt;
+		{
+			// We're switching directions, so stop first
+			if (currentVelocity.z < 0)
+			{
+				stoppingLerpValues.z += 1.0f / static_cast<float>(numberOfCurveSamples);
+				startingLerpValues.z = 0.0f;
+				VX_MATH::Clamp(stoppingLerpValues.z, 0.0f, 1.0f);
+				currentVelocity.z = stopFunction(stoppingLerpValues.z) * player->m_movementSpeed;
+			}
+			else
+			{
+				stoppingLerpValues.z = 0.0f;
+				startingLerpValues.z += 1.0f / static_cast<float>(numberOfCurveSamples);
+				VX_MATH::Clamp(startingLerpValues.z, 0.0f, 1.0f);
+				currentVelocity.z = startFunction(startingLerpValues.z) * player->m_movementSpeed;
+			}
+		}
 		if (Input::IsKeyDown(KeyCode::L) || Input::IsKeyDown(KeyCode::S)) // BACKWARD
-			deltaTranslation.m128_f32[2] -= player->m_movementSpeed * dt;
+		{ 
+			if (currentVelocity.z > 0)
+			{
+				stoppingLerpValues.z += 1.0f / static_cast<float>(numberOfCurveSamples);
+				startingLerpValues.z = 0.0f;
+				VX_MATH::Clamp(stoppingLerpValues.z, 0.0f, 1.0f);
+				currentVelocity.z = -stopFunction(stoppingLerpValues.z) * player->m_movementSpeed;
+			}
+			else
+			{
+				stoppingLerpValues.z = 0.0f;
+				startingLerpValues.z += 1.0f / static_cast<float>(numberOfCurveSamples);
+				VX_MATH::Clamp(startingLerpValues.z, 0.0f, 1.0f);
+				currentVelocity.z = -startFunction(startingLerpValues.z) * player->m_movementSpeed;
+
+			}
+		}
 		if (Input::IsKeyDown(KeyCode::K) || Input::IsKeyDown(KeyCode::A)) // LEFT
-			deltaTranslation.m128_f32[0] -= player->m_movementSpeed * dt;
+		{
+			if (currentVelocity.x > 0)
+			{
+				stoppingLerpValues.x += 1.0f / static_cast<float>(numberOfCurveSamples);
+				startingLerpValues.x = 0.0f;
+				VX_MATH::Clamp(stoppingLerpValues.x, 0.0f, 1.0f);
+				currentVelocity.x = -stopFunction(stoppingLerpValues.x) * player->m_movementSpeed;
+			}
+			else
+			{
+				stoppingLerpValues.x = 0.0f;
+				startingLerpValues.x += 1.0f / static_cast<float>(numberOfCurveSamples);
+				VX_MATH::Clamp(startingLerpValues.x, 0.0f, 1.0f);
+				currentVelocity.x = -startFunction(startingLerpValues.x) * player->m_movementSpeed;
+			}
+		}
 		if (Input::IsKeyDown(KeyCode::SEMICOLON) || Input::IsKeyDown(KeyCode::D)) // RIGHT
-			deltaTranslation.m128_f32[0] += player->m_movementSpeed * dt;
+		{
+			if (currentVelocity.x < 0)
+			{
+				stoppingLerpValues.x += 1.0f / static_cast<float>(numberOfCurveSamples);
+				startingLerpValues.x = 0.0f;
+				VX_MATH::Clamp(stoppingLerpValues.x, 0.0f, 1.0f);
+				currentVelocity.x = stopFunction(stoppingLerpValues.x) * player->m_movementSpeed;
+			}
+			else
+			{
+				stoppingLerpValues.x = 0.0f;
+				startingLerpValues.x += 1.0f / static_cast<float>(numberOfCurveSamples);
+				VX_MATH::Clamp(startingLerpValues.x, 0.0f, 1.0f);
+				currentVelocity.x = startFunction(startingLerpValues.x) * player->m_movementSpeed;
+			}
+		}
+
+		// Use Euler integration to get the translation
+		Physics::ApplyVelocity(deltaTranslation, currentVelocity, dt);
 
 		// Update rotation only if LMB is held down
 		if (Input::IsMouseDown(MouseCode::LBUTTON))
 		{
 			// Rotation around the X axis (look up/down)
-			deltaRotation.m128_f32[0] = Input::GetMouseDeltaY() * player->m_FPSCamera->GetRotationSpeed();
+			deltaRotation.x = Input::GetMouseDeltaY() * player->m_FPSCamera->GetRotationSpeed();
 			// Rotation around the Y axis (look left/right)
-			deltaRotation.m128_f32[1] = Input::GetMouseDeltaX() * player->m_FPSCamera->GetRotationSpeed();
+			deltaRotation.y = Input::GetMouseDeltaX() * player->m_FPSCamera->GetRotationSpeed();
 		}
 
 		// X Rotation
-		player->m_rotation.y += deltaRotation.m128_f32[1];
+		player->m_rotation.y += deltaRotation.y;
 		VX_MATH::Wrap(player->m_rotation.y, 0.0f, 360.0f);
 
 		// Y Rotation
-		player->m_rotation.x += deltaRotation.m128_f32[0];
+		player->m_rotation.x += deltaRotation.x;
 		VX_MATH::Clamp(player->m_rotation.x, -89.9f, 89.9f);
 
 		// we have rotations for x and y
@@ -77,7 +153,7 @@ void PlayerController::Update(const float& dt, Player* player)
 		XMMATRIX rotYMatrix = XMMatrixRotationY(VX_MATH::DegreesToRadians(player->m_rotation.y));
 		localTransform = localTransform * rotYMatrix;
 		localTransform = rotXMatrix * localTransform;
-		XMMATRIX translationMatrixXZ = XMMatrixTranslation(deltaTranslation.m128_f32[0], deltaTranslation.m128_f32[1], deltaTranslation.m128_f32[2]);
+		XMMATRIX translationMatrixXZ = XMMatrixTranslation(deltaTranslation.x, 0.0f, deltaTranslation.z);
 
 		XMVECTOR realZ = localTransform.r[2];
 
@@ -95,36 +171,38 @@ void PlayerController::Update(const float& dt, Player* player)
 		// Calculate local translation using deltaTranslation above, and pass in as "newPos"
 		AABB prevPosHorizontal = { currentPlayerPos, player->m_hitbox.extent };
 		AABB newPosHorizontal = { finalTranslatedPosition, player->m_hitbox.extent };
-		bool horizontalCollision = CheckForHorizontalCollision(newPosHorizontal, prevPosHorizontal);
+		XMFLOAT3 horizontalCollision = CheckForHorizontalCollision(newPosHorizontal, prevPosHorizontal);
 		finalTranslatedPosition = newPosHorizontal.center;
-		if (horizontalCollision)
+		// Cancel out velocity on axes of collision
+		if (horizontalCollision.x)
 		{
-			vel = { 0.0f, vel.m128_f32[1], 0.0f };
+			startingLerpValues.x = 0.0f;
+			currentVelocity.x = 0.0f;
+		}
+		if (horizontalCollision.z)
+		{
+			startingLerpValues.z = 0.0f;
+			currentVelocity.z = 0.0f;
 		}
 
 		// Apply gravity
-		Physics::ApplyAcceleration(vel, { 0.0f, GRAVITY, 0.0f }, dt);
+		Physics::ApplyAcceleration(currentVelocity, { 0.0f, GRAVITY, 0.0f }, dt);
 
 		// Cap velocity at a reasonable terminal velocity value
-		if (abs(vel.m128_f32[1]) > TERMINAL_VELOCITY) vel.m128_f32[1] = vel.m128_f32[1] > 0 ? TERMINAL_VELOCITY : -TERMINAL_VELOCITY;
+		if (abs(currentVelocity.y) > TERMINAL_VELOCITY) currentVelocity.y = VX_MATH::Sign(currentVelocity.y) * TERMINAL_VELOCITY;
 
 		// Apply acceleration to velocity
-		XMVECTOR posBeforeGravity = XMLoadFloat3(&finalTranslatedPosition);
-		XMVECTOR posAfterGravity = posBeforeGravity;
-		Physics::ApplyVelocity(posAfterGravity, vel, dt);
-		XMFLOAT3 posBeforeGravityF3 = { 0.0f, 0.0f, 0.0f };
-		XMFLOAT3 posAfterGravityF3 = { 0.0f, 0.0f, 0.0f };
-		XMStoreFloat3(&posBeforeGravityF3, posBeforeGravity);
-		XMStoreFloat3(&posAfterGravityF3, posAfterGravity);
+		XMFLOAT3 posBeforeGravity = finalTranslatedPosition;
+		Physics::ApplyVelocity(finalTranslatedPosition, { 0.0f, currentVelocity.y, 0.0f }, dt);
 
 		// Takes in the following arguments: posAfterGravityF3, posBeforeGravityF3, dt
-		AABB prevPosVertical = { posBeforeGravityF3, player->m_hitbox.extent };
-		AABB newPosVertical = { posAfterGravityF3, player->m_hitbox.extent };
-		bool verticalCollision = CheckForVerticalCollision(newPosVertical, prevPosVertical);
+		AABB prevPosVertical = { posBeforeGravity, player->m_hitbox.extent };
+		AABB newPosVertical = { finalTranslatedPosition, player->m_hitbox.extent };
+		XMFLOAT3 verticalCollision = CheckForVerticalCollision(newPosVertical, prevPosVertical);
 		finalTranslatedPosition = newPosVertical.center;
-		if (verticalCollision)
+		if (verticalCollision.y == 1.0f)
 		{
-			vel = { vel.m128_f32[0], 0.0f, vel.m128_f32[2] };
+			currentVelocity.y = 0.0f;
 			player->m_allowJump = true;
 		}
 
@@ -134,19 +212,17 @@ void PlayerController::Update(const float& dt, Player* player)
 			if (player->m_allowJump)
 			{
 				// Apply an initial vertical velocity
-				vel.m128_f32[1] += INITIAL_JUMP_VELOCITY;
-				XMVECTOR verticalVelocity = XMLoadFloat3(&finalTranslatedPosition);
-				Physics::ApplyVelocity(verticalVelocity, vel, dt);
-				XMStoreFloat3(&finalTranslatedPosition, verticalVelocity);
+				currentVelocity.y += INITIAL_JUMP_VELOCITY;
+				Physics::ApplyVelocity(finalTranslatedPosition, { 0.0f, currentVelocity.y, 0.0f }, dt);
 				player->m_allowJump = false;
 			}
 		}
 
-		XMStoreFloat3(&player->m_velocity, vel);
 
 
 		// Finally store the final player position
 		player->m_position = { finalTranslatedPosition.x, finalTranslatedPosition.y + 1.0f, finalTranslatedPosition.z };
+		player->m_velocity = currentVelocity;
 		player->m_hitbox.center = finalTranslatedPosition;
 		DebugRenderer::DrawAABB(player->m_hitbox.center, player->m_hitbox.extent, { 1.0f, 0.0f, 0.0f, 1.0f });
 
@@ -254,12 +330,13 @@ void PlayerController::Update(const float& dt, Player* player)
 	PlayerPhysics_Data::vel = player->m_velocity;
 }
 
-bool PlayerController::CheckForHorizontalCollision(AABB& newPos, const AABB& prevPos)
+XMFLOAT3 PlayerController::CheckForHorizontalCollision(AABB& newPos, const AABB& prevPos)
 {
 
 	float epsilon = 0.0001f;
 	bool isCollidingWithWall = Physics::DetectCollision(newPos);
 	PlayerPhysics_Data::isCollidingWall = isCollidingWithWall;
+	XMFLOAT3 axesOfCollision = { 0.0f, 0.0f, 0.0f };
 
 	// We have "moved into collision", so revert enough distance to resolve AABB to AABB collision
 	if (isCollidingWithWall)
@@ -291,6 +368,10 @@ bool PlayerController::CheckForHorizontalCollision(AABB& newPos, const AABB& pre
 
 				XMFLOAT3_BRACKET_OP_32(velocityToAdd, axis) = VX_MATH::Sign(XMFLOAT3_BRACKET_OP_32(velocityToAdd, axis)) * (abs(XMFLOAT3_BRACKET_OP_32(velocityToAdd, axis)) - overlap);
 				VX_ASSERT(overlap > 0);
+
+				// Set collision flag to true on current axis
+				XMFLOAT3_BRACKET_OP_32(axesOfCollision, axis) = 1.0f;
+				
 			}
 		}
 
@@ -298,18 +379,15 @@ bool PlayerController::CheckForHorizontalCollision(AABB& newPos, const AABB& pre
 
 		VX_ASSERT((abs(velocityToAdd.x) >= 0 && abs(velocityToAdd.x) < 1));
 		VX_ASSERT((abs(velocityToAdd.z) >= 0 && abs(velocityToAdd.z) < 1));
-
-		//VX_LOG("Horizontal collision detected, resolved collision to %2.2f, %2.2f, %2.2f", newPos.center.x, newPos.center.y, newPos.center.z);
-
-		return true;
 	}
 
-	return false;
+	return axesOfCollision;
 }
 
-bool PlayerController::CheckForVerticalCollision(AABB& newPos, const AABB& prevPos)
+XMFLOAT3 PlayerController::CheckForVerticalCollision(AABB& newPos, const AABB& prevPos)
 {
 	bool isCollidingWithFloor = Physics::DetectCollision(newPos);
+	XMFLOAT3 axesOfCollision = { 0.0f, 0.0f, 0.0f };
 
 	// DEBUG
 	PlayerPhysics_Data::isCollidingFloor = isCollidingWithFloor;
@@ -336,14 +414,10 @@ bool PlayerController::CheckForVerticalCollision(AABB& newPos, const AABB& prevP
 		velocityToAddOnY = VX_MATH::Sign(velocityToAddOnY) * (abs(velocityToAddOnY) - overlap);
 		newPos.center.y = prevPos.center.y + velocityToAddOnY;
 
-		if (!XMFLOAT3_IS_EQUAL(newPos.center, uniqueCollisionPos))
-		{
-			//VX_LOG("Vertical collision detected, resolved collision to %2.2f, %2.2f, %2.2f", newPos.center.x, newPos.center.y, newPos.center.z);
-			uniqueCollisionPos = newPos.center;
-		}
+		// Set collision flag to true on Y axis
+		axesOfCollision.y = 1.0f;
 
-		return true;
 	}
 
-	return false;
+	return axesOfCollision;
 }

@@ -69,6 +69,18 @@ void QuadShader::Shutdown()
 		m_matrixBuffer = nullptr;
 	}
 
+	if (m_blendState)
+	{
+		m_blendState->Release();
+		m_blendState = nullptr;
+	}
+
+	if (m_inputNDCLayout)
+	{
+		m_inputNDCLayout->Release();
+		m_inputNDCLayout = nullptr;
+	}
+
 	if (m_inputWSLayout)
 	{
 		m_inputWSLayout->Release();
@@ -79,6 +91,12 @@ void QuadShader::Shutdown()
 	{
 		m_pixelShader->Release();
 		m_pixelShader = nullptr;
+	}
+
+	if (m_vertexNDCShader)
+	{
+		m_vertexNDCShader->Release();
+		m_vertexNDCShader = nullptr;
 	}
 
 	if (m_vertexShader)

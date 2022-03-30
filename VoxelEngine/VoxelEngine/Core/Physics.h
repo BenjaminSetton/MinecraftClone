@@ -26,15 +26,15 @@ class Physics
 {
 public:
 
-	static void ApplyVelocity(DirectX::XMVECTOR& pos, const DirectX::XMVECTOR& vel, const float& dt);
-	static void ApplyAcceleration(DirectX::XMVECTOR& vel, const DirectX::XMVECTOR& accel, const float& dt);
-	static void ApplyGravity(DirectX::XMVECTOR& vel, const float& dt);
+	static void ApplyVelocity(DirectX::XMFLOAT3& pos, const DirectX::XMFLOAT3& vel, const float& dt);
+	static void ApplyAcceleration(DirectX::XMFLOAT3& vel, const DirectX::XMFLOAT3& accel, const float& dt);
+	static void ApplyGravity(DirectX::XMFLOAT3& vel, const float& dt);
 
 	static void ConvertPositionToVelocity(DirectX::XMFLOAT3& vel, const DirectX::XMFLOAT3& pos, const float& dt);
 	static void ConvertVelocityToAcceleration(DirectX::XMFLOAT3& accel, const DirectX::XMFLOAT3& vel, const float& dt);
 	static void ConvertPositionToAcceleration(DirectX::XMFLOAT3& accel, const DirectX::XMFLOAT3& pos, const float& dt);
 
-	static const bool DetectCollision(const DirectX::XMVECTOR& pos);
+	static const bool DetectCollision(const DirectX::XMFLOAT3& pos);
 
 	static const bool DetectCollision(const AABB& aabb, std::vector<DirectX::XMFLOAT3>* out_collisionPositions = nullptr);
 

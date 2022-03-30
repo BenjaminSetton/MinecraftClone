@@ -10,33 +10,27 @@
 
 using namespace DirectX;
 
-void Physics::ApplyVelocity(DirectX::XMVECTOR& pos, const DirectX::XMVECTOR& vel, const float& dt)
+void Physics::ApplyVelocity(XMFLOAT3& pos, const XMFLOAT3& vel, const float& dt)
 {
-	//pos =
-	//{
-	//	pos.m128_f32[0] + (vel.m128_f32[0] * dt),
-	//	pos.m128_f32[1] + (vel.m128_f32[1] * dt),
-	//	pos.m128_f32[3] + (vel.m128_f32[2] * dt),
-	//	1.0f
-	//};
-	pos += XMVectorScale(vel, dt);
+	XMVECTOR newPos = XMLoadFloat3(&pos);
+	XMVECTOR newVel = XMLoadFloat3(&vel);
+	newPos += XMVectorScale(newVel, dt);
+	XMStoreFloat3(&pos, newPos);
 }
 
-void Physics::ApplyAcceleration(DirectX::XMVECTOR& vel, const DirectX::XMVECTOR& accel, const float& dt)
+void Physics::ApplyAcceleration(XMFLOAT3& vel, const XMFLOAT3& accel, const float& dt)
 {
-	//vel =
-	//{
-	//	vel.m128_f32[0] + (accel.m128_f32[0] * dt),
-	//	vel.m128_f32[1] + (accel.m128_f32[1] * dt),
-	//	vel.m128_f32[2] + (accel.m128_f32[2] * dt),
-	//	1.0f
-	//};
-	vel += XMVectorScale(accel, dt);
+	XMVECTOR newVel = XMLoadFloat3(&vel);
+	XMVECTOR newAccel = XMLoadFloat3(&accel);
+	newVel += XMVectorScale(newAccel, dt);
+	XMStoreFloat3(&vel, newVel);
 }
-void Physics::ApplyGravity(DirectX::XMVECTOR& vel, const float& dt)
+void Physics::ApplyGravity(XMFLOAT3& vel, const float& dt)
 {
 	const XMVECTOR gravityVector = { 0.0f, -9.8f, 0.0f };
-	vel += gravityVector * dt;
+	XMVECTOR newVel = XMLoadFloat3(&vel);
+	newVel += gravityVector * dt;
+	XMStoreFloat3(&vel, newVel);
 }
 
 void Physics::ConvertPositionToVelocity(DirectX::XMFLOAT3& vel, const DirectX::XMFLOAT3& pos, const float& dt)
@@ -57,21 +51,19 @@ void Physics::ConvertPositionToAcceleration(DirectX::XMFLOAT3& accel, const Dire
 	ConvertVelocityToAcceleration(accel, pos, dt);
 }
 
-const bool Physics::DetectCollision(const DirectX::XMVECTOR& pos)
+const bool Physics::DetectCollision(const DirectX::XMFLOAT3& pos)
 {
-	XMFLOAT3 pos_f3;
-	XMStoreFloat3(&pos_f3, pos);
 
-	XMFLOAT3 posCS = VX_MATH::WorldToChunkSpace(pos_f3);
+	XMFLOAT3 posCS = VX_MATH::WorldToChunkSpace(pos);
 	XMFLOAT3 chunkPosWS = VX_MATH::ChunkToWorldSpace(posCS);
 
 	Chunk* chunk = ChunkManager::GetChunkAtPos(posCS);
 	VX_ASSERT(chunk != nullptr);
 	
 	uint32_t x, y, z;
-	x = static_cast<uint32_t>(pos.m128_f32[0] - chunkPosWS.x);
-	y = static_cast<uint32_t>(pos.m128_f32[1] - chunkPosWS.y);
-	z = static_cast<uint32_t>(pos.m128_f32[2] - chunkPosWS.z);
+	x = static_cast<uint32_t>(pos.x - chunkPosWS.x);
+	y = static_cast<uint32_t>(pos.y - chunkPosWS.y);
+	z = static_cast<uint32_t>(pos.z - chunkPosWS.z);
 	BlockType blockType = chunk->GetBlock(x, y, z)->GetType();
 	
 	if (blockType != BlockType::Air) return true;
@@ -121,10 +113,10 @@ const bool Physics::DetectCollision(const AABB& aabb, std::vector<XMFLOAT3>* out
 				localZ = static_cast<uint32_t>(intersectedBlockPos.z - chunkPosWS.z);
 				BlockType blockType = chunk->GetBlock(localX, localY, localZ)->GetType();
 
-				if(blockType != BlockType::Air)
-					DebugRenderer::DrawAABB({ intersectedBlockPos.x + 0.5f, intersectedBlockPos.y + 0.5f, intersectedBlockPos.z + 0.5f }, { 0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f, 1.0f, 1.0f });
-				else
-					DebugRenderer::DrawAABB({ intersectedBlockPos.x + 0.5f, intersectedBlockPos.y + 0.5f, intersectedBlockPos.z + 0.5f }, { 0.5f, 0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f, 1.0f });
+				//if(blockType != BlockType::Air)
+				//	DebugRenderer::DrawAABB({ intersectedBlockPos.x + 0.5f, intersectedBlockPos.y + 0.5f, intersectedBlockPos.z + 0.5f }, { 0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f, 1.0f, 1.0f });
+				//else
+				//	DebugRenderer::DrawAABB({ intersectedBlockPos.x + 0.5f, intersectedBlockPos.y + 0.5f, intersectedBlockPos.z + 0.5f }, { 0.5f, 0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f, 1.0f });
 
 				if (blockType != BlockType::Air)
 				{

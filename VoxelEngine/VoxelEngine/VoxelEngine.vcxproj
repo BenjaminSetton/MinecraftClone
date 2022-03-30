@@ -375,6 +375,7 @@
     <ClInclude Include="Utility\Input.h" />
     <ClInclude Include="Utility\Log.h" />
     <ClInclude Include="Utility\Math.h" />
+    <ClInclude Include="Utility\MathConstants.h" />
     <ClInclude Include="Utility\ScopeTimer.h" />
     <ClInclude Include="Utility\SimplexNoise.h" />
     <ClInclude Include="Utility\SortedPool.h" />

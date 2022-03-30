@@ -338,6 +338,9 @@
     <ClInclude Include="Core\Crosshair.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="Utility\MathConstants.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\DefaultBlock_VS.hlsl">
