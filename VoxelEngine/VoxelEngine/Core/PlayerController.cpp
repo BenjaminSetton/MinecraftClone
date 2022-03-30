@@ -62,14 +62,14 @@ void PlayerController::Update(const float& dt, Player* player)
 				stoppingLerpValues.z += 1.0f / static_cast<float>(numberOfCurveSamples);
 				startingLerpValues.z = 0.0f;
 				VX_MATH::Clamp(stoppingLerpValues.z, 0.0f, 1.0f);
-				currentVelocity.z = stopFunction(stoppingLerpValues.z) * player->m_movementSpeed;
+				currentVelocity.z = stopFunction(stoppingLerpValues.z);
 			}
 			else
 			{
 				stoppingLerpValues.z = 0.0f;
 				startingLerpValues.z += 1.0f / static_cast<float>(numberOfCurveSamples);
 				VX_MATH::Clamp(startingLerpValues.z, 0.0f, 1.0f);
-				currentVelocity.z = startFunction(startingLerpValues.z) * player->m_movementSpeed;
+				currentVelocity.z = startFunction(startingLerpValues.z);
 			}
 		}
 		if (Input::IsKeyDown(KeyCode::L) || Input::IsKeyDown(KeyCode::S)) // BACKWARD
@@ -79,14 +79,14 @@ void PlayerController::Update(const float& dt, Player* player)
 				stoppingLerpValues.z += 1.0f / static_cast<float>(numberOfCurveSamples);
 				startingLerpValues.z = 0.0f;
 				VX_MATH::Clamp(stoppingLerpValues.z, 0.0f, 1.0f);
-				currentVelocity.z = -stopFunction(stoppingLerpValues.z) * player->m_movementSpeed;
+				currentVelocity.z = -stopFunction(stoppingLerpValues.z);
 			}
 			else
 			{
 				stoppingLerpValues.z = 0.0f;
 				startingLerpValues.z += 1.0f / static_cast<float>(numberOfCurveSamples);
 				VX_MATH::Clamp(startingLerpValues.z, 0.0f, 1.0f);
-				currentVelocity.z = -startFunction(startingLerpValues.z) * player->m_movementSpeed;
+				currentVelocity.z = -startFunction(startingLerpValues.z);
 
 			}
 		}
@@ -97,14 +97,14 @@ void PlayerController::Update(const float& dt, Player* player)
 				stoppingLerpValues.x += 1.0f / static_cast<float>(numberOfCurveSamples);
 				startingLerpValues.x = 0.0f;
 				VX_MATH::Clamp(stoppingLerpValues.x, 0.0f, 1.0f);
-				currentVelocity.x = -stopFunction(stoppingLerpValues.x) * player->m_movementSpeed;
+				currentVelocity.x = -stopFunction(stoppingLerpValues.x);
 			}
 			else
 			{
 				stoppingLerpValues.x = 0.0f;
 				startingLerpValues.x += 1.0f / static_cast<float>(numberOfCurveSamples);
 				VX_MATH::Clamp(startingLerpValues.x, 0.0f, 1.0f);
-				currentVelocity.x = -startFunction(startingLerpValues.x) * player->m_movementSpeed;
+				currentVelocity.x = -startFunction(startingLerpValues.x);
 			}
 		}
 		if (Input::IsKeyDown(KeyCode::SEMICOLON) || Input::IsKeyDown(KeyCode::D)) // RIGHT
@@ -114,16 +114,24 @@ void PlayerController::Update(const float& dt, Player* player)
 				stoppingLerpValues.x += 1.0f / static_cast<float>(numberOfCurveSamples);
 				startingLerpValues.x = 0.0f;
 				VX_MATH::Clamp(stoppingLerpValues.x, 0.0f, 1.0f);
-				currentVelocity.x = stopFunction(stoppingLerpValues.x) * player->m_movementSpeed;
+				currentVelocity.x = stopFunction(stoppingLerpValues.x);
 			}
 			else
 			{
 				stoppingLerpValues.x = 0.0f;
 				startingLerpValues.x += 1.0f / static_cast<float>(numberOfCurveSamples);
 				VX_MATH::Clamp(startingLerpValues.x, 0.0f, 1.0f);
-				currentVelocity.x = startFunction(startingLerpValues.x) * player->m_movementSpeed;
+				currentVelocity.x = startFunction(startingLerpValues.x);
 			}
 		}
+
+		// Normalize velocity and scale to player velocity
+		float yVelocity = currentVelocity.y;
+		currentVelocity.y = 0.0f;
+		XMVECTOR normVelocityVector = XMVector3Normalize(XMLoadFloat3(&currentVelocity));
+		normVelocityVector = XMVectorScale(normVelocityVector, player->m_movementSpeed);
+		XMStoreFloat3(&currentVelocity, normVelocityVector);
+		currentVelocity.y = yVelocity;
 
 		// Use Euler integration to get the translation
 		Physics::ApplyVelocity(deltaTranslation, currentVelocity, dt);
@@ -174,12 +182,12 @@ void PlayerController::Update(const float& dt, Player* player)
 		XMFLOAT3 horizontalCollision = CheckForHorizontalCollision(newPosHorizontal, prevPosHorizontal);
 		finalTranslatedPosition = newPosHorizontal.center;
 		// Cancel out velocity on axes of collision
-		if (horizontalCollision.x)
+		if (horizontalCollision.x == 1.0f)
 		{
 			startingLerpValues.x = 0.0f;
 			currentVelocity.x = 0.0f;
 		}
-		if (horizontalCollision.z)
+		if (horizontalCollision.z == 1.0f)
 		{
 			startingLerpValues.z = 0.0f;
 			currentVelocity.z = 0.0f;

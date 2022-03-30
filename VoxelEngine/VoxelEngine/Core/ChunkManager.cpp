@@ -583,7 +583,7 @@ const int32_t ChunkManager::CheckForChunksToLoadOrUnload(const XMFLOAT3& current
 						}
 						else
 						{
-							VX_ASSERT(false && "Attempting to add duplicate chunk");
+							VX_LOG_WARN("Attempting to add duplicate chunk");
 						}
 					}
 				}

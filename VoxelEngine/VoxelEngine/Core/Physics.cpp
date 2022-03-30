@@ -81,9 +81,9 @@ const bool Physics::DetectCollision(const AABB& aabb, std::vector<XMFLOAT3>* out
 	// after finding the range for each axis, find the position of included blocks
 	XMFLOAT3 range = 
 	{ 
-		static_cast<float>(abs(static_cast<int32_t>(aabbMax.x) - static_cast<int32_t>(aabbMin.x)) + 1),
-		static_cast<float>(abs(static_cast<int32_t>(aabbMax.y) - static_cast<int32_t>(aabbMin.y)) + 1),
-		static_cast<float>(abs(static_cast<int32_t>(aabbMax.z) - static_cast<int32_t>(aabbMin.z)) + 1)
+		static_cast<float>(abs(floor(aabbMax.x) - floor(aabbMin.x)) + 1),
+		static_cast<float>(abs(floor(aabbMax.y) - floor(aabbMin.y)) + 1),
+		static_cast<float>(abs(floor(aabbMax.z) - floor(aabbMin.z)) + 1)
 	};
 
 	// temp debug
