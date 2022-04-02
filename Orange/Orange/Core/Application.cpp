@@ -1,80 +1,63 @@
 #include "../Misc/pch.h"
 
 #include "Application.h"
-#include "./Events/KeyCodes.h"
 #include "Game.h"
+#include "../Utility/ImGuiLayer.h"
+#include "./Events/KeyCodes.h"
 
-HWND Application::m_hwnd = HWND();
-
-// Windows procedure
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-	return ApplicationHandle->MessageHandler(hwnd, msg, wparam, lparam);
-}
+Application* Application::Handle = nullptr;
 
 Application::Application() : EventSubject(),
-	m_applicationName(L""), m_hinstance(nullptr), m_Input(nullptr), m_Graphics(nullptr), m_Clock(nullptr)
+	m_mainWindow(nullptr), m_Input(nullptr), m_Graphics(nullptr),
+	m_Clock(nullptr), m_editorLayer(nullptr)
 {
 }
 
-Application::~Application()
+Application::~Application() 
 {
-	// Clean up in reverse order of object initialization
-
-	if (m_Clock)
-	{
-		delete m_Clock;
-		m_Clock = nullptr;
-	}
-
-	if (m_Graphics)
-	{
-		// Shutdown the graphics class before deleting
-		m_Graphics->Shutdown();
-		delete m_Graphics;
-		m_Graphics = nullptr;
-	}
-
-	if(m_Input)
-	{
-		delete m_Input;
-		m_Input = nullptr;
-	}
-
 }
 
 bool Application::Initialize() 
 {
-	UINT screenWidth, screenHeight;
 	bool result;
-	ApplicationHandle = this;
 
-	// Initialize the width and height of the screen to zero before sending the variables into the function.
-	screenWidth = 0;
-	screenHeight = 0;
+	if (Handle == nullptr)
+	{
+		Handle = this;
+	}
+	else
+	{
+		OG_ASSERT_MSG(false, "Why are we trying to create multiple applications?");
+	}
 
-	// Initialize the windows api.
-	InitializeWindows(screenWidth, screenHeight);
+	// Populate the window parameters
+	WindowParameters params;
+	params.fullScreen = false;
+	params.width = 1600;
+	params.height = 900;
+	params.x = 0;
+	params.y = 0;
+	params.name = L"Orange";
+	params.alignment = Centered;
+
+	// Create the main window
+	m_mainWindow = new Window();
+	m_mainWindow->Create(params);
 
 	// Create the input object.  This object will be used to handle reading the keyboard input from the user.
-	m_Input = new Input;
+	m_Input = new Input();
 	Subscribe(m_Input);
-
-	// Create the graphics object.  This object will handle rendering all the graphics for this application.
-	m_Graphics = new Graphics;
-	if (!m_Graphics) { return false; }
 
 	// Initialize the game object
 	Game::Initialize();
 
-	// Initialize the graphics object.
-	result = m_Graphics->Initialize(screenWidth, screenHeight, m_hwnd);
+	// Create the graphics object
+	m_Graphics = new Graphics();
+	result = m_Graphics->Initialize();
 	if (!result) return false;
 
-	// Create the clock object
-	m_Clock = new Clock;
-	if (!m_Clock) return false;
-
+	m_editorLayer = new EditorLayer();
+	m_editorLayer->Initialize();
 
 	return true;
 }
@@ -95,18 +78,13 @@ void Application::Run()
 			if (msg.message == WM_QUIT) return;
 		}
 
-		isRunning = Frame();
+		isRunning = Update();
 	}
 
 }
 
 void Application::Shutdown() 
 {
-	if (m_Input) 
-	{
-		delete m_Input;
-		m_Input = nullptr;
-	}
 	if (m_Graphics)
 	{
 		m_Graphics->Shutdown();
@@ -114,7 +92,18 @@ void Application::Shutdown()
 		m_Graphics = nullptr;
 	}
 
-	Game::Shutdown();
+	if (m_mainWindow)
+	{
+		m_mainWindow->Destroy();
+		delete m_mainWindow;
+		m_mainWindow = nullptr;
+	}
+
+	if (m_Input)
+	{
+		delete m_Input;
+		m_Input = nullptr;
+	}
 
 	if (m_Clock)
 	{
@@ -122,11 +111,21 @@ void Application::Shutdown()
 		m_Clock = nullptr;
 	}
 
-	ShutdownWindows();
+	if (m_editorLayer)
+	{
+		m_editorLayer->Shutdown();
+		delete m_editorLayer;
+		m_editorLayer = nullptr;
+	}
+
+	Game::Shutdown();
+
+	Handle = nullptr;
 }
 
-bool Application::Frame() 
+bool Application::Update()
 {
+	ImGuiLayer::BeginFrame();
 
 	// Quit running if ESC is pressed
 	if (m_Input->IsKeyDown(VK_ESCAPE)) return false;
@@ -137,10 +136,8 @@ bool Application::Frame()
 
 	// Store the frame's delta time in dt
 	float dt = m_Clock->GetDeltaTime(Clock::TimePrecision::SECONDS);
-	// Prevent delta time from giving wack results after moving game window
+	// Prevent delta time from giving bad results after moving game window
 	dt = dt > 0.5f ? 0.016666f : dt;
-	
-	// Update physics
 
 	// Update the player
 	Game::Update(dt);
@@ -148,93 +145,16 @@ bool Application::Frame()
 	// Process each frame in the graphics class
 	m_Graphics->Frame(dt);
 
+	// We should consider using a switch case to check which layer is active
+	m_editorLayer->Update(dt);
+
+	ImGuiLayer::Draw();
+	ImGuiLayer::EndFrame();
+
+	m_Graphics->Present();
+
 	return true;
 }
-
-void Application::InitializeWindows(UINT& screenWidth, UINT& screenHeight) 
-{
-	int posX, posY;
-
-	// Get the instance of this application.
-	m_hinstance = GetModuleHandle(NULL);
-
-	// Give the application a name.
-	m_applicationName = L"Orange";
-
-	ApplicationHandle = this;
-
-	// Setup the windows class
-	WNDCLASSEX wc;
-	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC | CS_DBLCLKS;
-	wc.lpfnWndProc = WndProc;
-	wc.cbClsExtra = 0;
-	wc.cbWndExtra = 0;
-	wc.hInstance = m_hinstance;
-	wc.hIcon = LoadIcon(NULL, IDI_WINLOGO);
-	wc.hIconSm = wc.hIcon;
-	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-	wc.lpszMenuName = NULL;
-	wc.lpszClassName = m_applicationName;
-	wc.cbSize = sizeof(WNDCLASSEX);
-
-	// Register the window class.
-	RegisterClassEx(&wc);
-
-	// Determine the resolution of the clients desktop screen.
-	screenWidth = GetSystemMetrics(SM_CXSCREEN);
-	screenHeight = GetSystemMetrics(SM_CYSCREEN);
-
-	// Setup the screen settings depending on whether it is running in full screen or in windowed mode.
-	if (FULL_SCREEN)
-	{
-		// If full screen set the screen to maximum size of the users desktop and 32bit.
-		DEVMODE dmScreenSettings;
-		memset(&dmScreenSettings, 0, sizeof(dmScreenSettings));
-		dmScreenSettings.dmSize = sizeof(dmScreenSettings);
-		dmScreenSettings.dmPelsWidth = (unsigned long)screenWidth;
-		dmScreenSettings.dmPelsHeight = (unsigned long)screenHeight;
-		dmScreenSettings.dmBitsPerPel = 32;
-		dmScreenSettings.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
-
-		// Change the display settings to full screen.
-		ChangeDisplaySettings(&dmScreenSettings, CDS_FULLSCREEN);
-
-		// Set the position of the window to the top left corner.
-		posX = posY = 0;
-	}
-	else
-	{
-		// If windowed then set it to 1600x900 (16:9) resolution.
-		screenWidth = 1920;
-		screenHeight = 1080;
-
-		// Place middle of second monitor is two monitors are attached to PC
-		if (false/*GetSystemMetrics(SM_CMONITORS) == 2*/)
-		{
-			posX = static_cast<int>((GetSystemMetrics(SM_CXVIRTUALSCREEN) * 0.75f) - screenWidth * 0.5f);
-			posY = static_cast<int>((GetSystemMetrics(SM_CYSCREEN) - screenHeight) * 0.5f);
-		}
-		else // place in middle of primary monitor
-		{
-			posX = static_cast<int>((GetSystemMetrics(SM_CXSCREEN) - screenWidth) * 0.5f);
-			posY = static_cast<int>((GetSystemMetrics(SM_CYSCREEN) - screenHeight) * 0.5f);
-		}
-	}
-
-	// Create the window with the screen settings and get the handle to it.
-	m_hwnd = CreateWindowEx(WS_EX_APPWINDOW, m_applicationName, m_applicationName,
-		WS_OVERLAPPEDWINDOW | WS_POPUP,
-		posX, posY, screenWidth, screenHeight, NULL, NULL, m_hinstance, NULL);
-
-	// Bring the window up on the screen and set it as main focus.
-	ShowWindow(m_hwnd, SW_SHOW);
-	SetForegroundWindow(m_hwnd);
-	SetFocus(m_hwnd);
-
-	return;
-}
-
 
 LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -306,43 +226,4 @@ LRESULT CALLBACK Application::MessageHandler(HWND hwnd, UINT msg, WPARAM wparam,
 
 }
 
-const uint32_t Application::GetWindowWidth()
-{
-	WINDOWINFO wi;
-	wi.cbSize = sizeof(WINDOWINFO);
-	GetWindowInfo(m_hwnd, &wi);
-	return wi.rcClient.right - wi.rcClient.left;
-}
-
-const uint32_t Application::GetWindowHeight()
-{
-	WINDOWINFO wi;
-	wi.cbSize = sizeof(WINDOWINFO);
-	GetWindowInfo(m_hwnd, &wi);
-	return wi.rcClient.bottom - wi.rcClient.top;
-}
-
-const float Application::GetAspectRatio() { return static_cast<float>(GetWindowWidth()) / GetWindowHeight(); }
-
-void Application::ShutdownWindows()
-{
-
-	// Fix the display settings if leaving full screen mode.
-	if (FULL_SCREEN)
-	{
-		ChangeDisplaySettings(nullptr, 0);
-	}
-
-	// Remove the window.
-	DestroyWindow(m_hwnd);
-	m_hwnd = nullptr;
-
-	// Remove the application instance.
-	UnregisterClass(m_applicationName, m_hinstance);
-	m_hinstance = nullptr;
-
-	// Release the pointer to this class.
-	ApplicationHandle = nullptr;
-
-	return;
-}
+const Window* Application::GetMainWindow() { return m_mainWindow; }

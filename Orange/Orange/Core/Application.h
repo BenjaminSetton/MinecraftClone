@@ -1,26 +1,20 @@
 #ifndef _APPLICATION_H
 #define _APPLICATION_H
 
-///////////////////////////////
-// PRE-PROCESSING DIRECTIVES //
-///////////////////////////////
-#define WIN32_LEAN_AND_MEAN
-
-////////////////////////
-///	INCLUDES
-////////////////////////
-#include <windows.h>
-
+#include "EditorLayer.h"
 #include "../Utility/Input.h"
 #include "Graphics.h"
 #include "../Utility/Clock.h"
 #include "./Events/IEvent.h"
 #include "./Events/KeyboardEvent.h"
 #include "./Events/MouseEvent.h"
+#include "Window.h"
 
 class Application : public EventSubject
 {
 public:
+
+	static Application* Handle;
 
 	Application();
 	Application(const Application&) = default;
@@ -34,32 +28,21 @@ public:
 
 	LRESULT CALLBACK MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam);
 
-	static const uint32_t GetWindowWidth();
-
-	static const uint32_t GetWindowHeight();
-
-	static const float GetAspectRatio();
+	const Window* GetMainWindow();
 
 private:
 
-	bool Frame();
+	bool Update();
 
-	void InitializeWindows(UINT& screenWidth, UINT& screenHeight);
-
-	void ShutdownWindows();
-
-	static HWND m_hwnd;
-
-	LPCWSTR m_applicationName;
-	HINSTANCE m_hinstance;
+	Window* m_mainWindow;
 
 	Input* m_Input;
 	Graphics* m_Graphics;
 	Clock* m_Clock;
 
-};
+	EditorLayer* m_editorLayer;
 
-// Static application handle pointer
-static Application* ApplicationHandle = nullptr;
+
+};
 
 #endif

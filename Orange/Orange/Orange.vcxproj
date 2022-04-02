@@ -202,6 +202,8 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../Misc/pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Core\main.cpp" />
+    <ClCompile Include="Core\Panel.cpp" />
+    <ClCompile Include="Core\EditorLayer.cpp" />
     <ClCompile Include="Core\Physics.cpp" />
     <ClCompile Include="Core\Player.cpp" />
     <ClCompile Include="Core\PlayerController.cpp" />
@@ -227,6 +229,7 @@
     <ClCompile Include="Core\ShadowShader.cpp" />
     <ClCompile Include="Core\TextureManager.cpp" />
     <ClCompile Include="Core\TextureViewer.cpp" />
+    <ClCompile Include="Core\Window.cpp" />
     <ClCompile Include="imgui\imgui.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -307,6 +310,9 @@
     <ClInclude Include="Core\FrustumCulling.h" />
     <ClInclude Include="Core\Game.h" />
     <ClInclude Include="Core\Graphics.h" />
+    <ClInclude Include="Core\Layer.h" />
+    <ClInclude Include="Core\Panel.h" />
+    <ClInclude Include="Core\EditorLayer.h" />
     <ClInclude Include="Core\Physics.h" />
     <ClInclude Include="Core\Player.h" />
     <ClInclude Include="Core\PlayerController.h" />
@@ -315,8 +321,10 @@
     <ClInclude Include="Core\ShaderBufferManagers\QuadBufferManager.h" />
     <ClInclude Include="Core\ShaderBufferManagers\QuadNDCBufferManager.h" />
     <ClInclude Include="Core\ShadowShader.h" />
+    <ClInclude Include="Core\Texture.h" />
     <ClInclude Include="Core\TextureManager.h" />
     <ClInclude Include="Core\TextureViewer.h" />
+    <ClInclude Include="Core\Window.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_impl_dx11.h" />

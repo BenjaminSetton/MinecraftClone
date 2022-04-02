@@ -38,7 +38,7 @@ void ImGuiLayer::BeginFrame()
 
 void ImGuiLayer::Draw()
 {
-	ImGui::ShowDemoWindow();
+	//ImGui::ShowDemoWindow();
 
 #pragma region DAYNIGHT_CYCLE
 

@@ -20,8 +20,7 @@ public:
 	D3D(const D3D&) = default;
 	~D3D() = default;
 
-	static bool Initialize(int32_t* out_screenWidth, int32_t* out_screenHeight, HWND hwnd, const bool& vsync, 
-					const bool& fullscreen, const float& screenFar, const float& screenNear);
+	static bool Initialize(int32_t* out_screenWidth, int32_t* out_screenHeight, const bool& vsync, const float& screenFar, const float& screenNear);
 	static void Shutdown();
 
 	static void BeginScene(DirectX::XMFLOAT4 clearToColor);

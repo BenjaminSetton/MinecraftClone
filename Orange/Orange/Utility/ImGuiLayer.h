@@ -8,25 +8,26 @@
 
 #include "ImGuiDrawData.h"
 
+// Declares a base class, from which derived classes can implement ImGui functionality
 class ImGuiLayer
 {
 public:
 
-	ImGuiLayer() = default;
-	ImGuiLayer(const ImGuiLayer& layer) = default;
-	~ImGuiLayer() = default;
+	ImGuiLayer() = delete;
+	ImGuiLayer(const ImGuiLayer& layer) = delete;
+	~ImGuiLayer() = delete;
 
-	void Initialize(HWND hwnd, ID3D11Device* device, ID3D11DeviceContext* context);
+	static void Initialize(HWND hwnd, ID3D11Device* device, ID3D11DeviceContext* context);
 
-	void BeginFrame();
+	static void BeginFrame();
 
-	void Draw();
+	static void Draw();
 
-	void EndFrame();
+	static void EndFrame();
 
-	void Shutdown();
+	static void Shutdown();
 
-	bool WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+	static bool WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 private:
 

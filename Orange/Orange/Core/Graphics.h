@@ -19,7 +19,6 @@
 /////////////
 // GLOBALS
 /////////////
-const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = false;
 const float SCREEN_FAR = 1000.0f;
 const float SCREEN_NEAR = 0.1f;
@@ -37,11 +36,13 @@ public:
 	Graphics(const Graphics&) = default;
 	~Graphics() = default;
 
-	bool Initialize(const int& screenWidth, const int& screenHeight, HWND windowHandle);
+	bool Initialize();
 
 	void Shutdown();
 
 	bool Frame(const float deltaTime);
+
+	void Present();
 
 	bool WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
@@ -55,8 +56,6 @@ private:
 	QuadShader* m_quadShader = nullptr;
 
 	TextureManager* m_textureManager = nullptr;
-
-	ImGuiLayer* m_imGuiLayer = nullptr;
 
 	TextureViewer* m_texViewer = nullptr;
 

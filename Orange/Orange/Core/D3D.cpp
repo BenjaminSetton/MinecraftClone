@@ -1,5 +1,6 @@
 #include "../Misc/pch.h"
 
+#include "Application.h"
 #include "D3D.h"
 #include "../Utility/Utility.h"
 
@@ -31,8 +32,7 @@ DirectX::XMMATRIX D3D::m_orthoMatrix = XMMatrixIdentity();
 
 bool D3D::m_depthDisabled = false;
 
-bool D3D::Initialize(int32_t* out_screenWidth, int32_t* out_screenHeight, HWND hwnd, const bool& vsync,
-					 const bool& fullscreen, const float& screenFar, const float& screenNear)
+bool D3D::Initialize(int32_t* out_screenWidth, int32_t* out_screenHeight, const bool& vsync, const float& screenFar, const float& screenNear)
 {
 	HRESULT result;
 	IDXGIFactory* factory;
@@ -146,12 +146,12 @@ bool D3D::Initialize(int32_t* out_screenWidth, int32_t* out_screenHeight, HWND h
 
 	// Set the usage of the back buffer.
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapChainDesc.OutputWindow = hwnd; // Set the handle for the window to render to.
+	swapChainDesc.OutputWindow = Application::Handle->GetMainWindow()->GetHWND(); // Set the handle for the window to render to.
 
 	swapChainDesc.SampleDesc.Count = 1; // Turn multisampling off.
 	swapChainDesc.SampleDesc.Quality = 0;
 
-	swapChainDesc.Windowed = !fullscreen; // Set to full screen or windowed mode.
+	swapChainDesc.Windowed = !Application::Handle->GetMainWindow()->IsFullScreen(); // Set to full screen or windowed mode.
 
 	swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED; // Set the scan line ordering and scaling to unspecified.
 	swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
@@ -226,8 +226,8 @@ bool D3D::Initialize(int32_t* out_screenWidth, int32_t* out_screenHeight, HWND h
 
 	// Setup the viewport for rendering.
 	D3D11_VIEWPORT viewport;
-	viewport.Width = *out_screenWidth;
-	viewport.Height = *out_screenHeight;
+	viewport.Width = static_cast<FLOAT>(*out_screenWidth);
+	viewport.Height = static_cast<FLOAT>(*out_screenHeight);
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
 	viewport.TopLeftX = 0;

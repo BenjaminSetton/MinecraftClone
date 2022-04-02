@@ -8,12 +8,12 @@
 
 #ifdef _DEBUG
 
-	// Misc defines
+// Misc defines
 #define OG_CONCAT_(a, b) a ## b
 #define OG_CONCAT(a, b) OG_CONCAT_(a, b)
 #define OG_VARNAME(var) OG_CONCAT(var, __LINE__)
-
 #define OG_BIT(x) (1 << x)
+#define UNUSED(x) UNREFERENCED_PARAMETER(x)
 
 // Asserting
 #define OG_ASSERT(cond) assert(cond)
@@ -70,8 +70,8 @@ OG_VARNAME(log).End();
 #define OG_CONCAT_(a, b)
 #define OG_CONCAT(a, b)
 #define OG_VARNAME(var)
-
 #define OG_BIT(x) (1 << x)
+#define UNUSED(x)
 
 // Assert defines
 #define OG_ASSERT(cond)

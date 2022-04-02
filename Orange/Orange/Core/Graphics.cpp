@@ -1,5 +1,6 @@
 #include "../Misc/pch.h"
 
+#include "Application.h"
 #include "Game.h"
 #include "Graphics.h"
 #include "../Utility/Utility.h"
@@ -18,29 +19,27 @@
 #include "FrustumCulling.h"
 #include "Crosshair.h"
 
-#include "../Utility/ImGuiLayer.h"
-
 #include "../Utility/Math.h"
 
 using namespace DirectX;
 
 
-bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND hwnd)
+bool Graphics::Initialize()
 {
 	bool initResult;
 
 	int32_t rtWidth, rtHeight;
-	initResult = D3D::Initialize(&rtWidth, &rtHeight, hwnd, VSYNC_ENABLED, FULL_SCREEN, SCREEN_FAR, SCREEN_NEAR);
+	initResult = D3D::Initialize(&rtWidth, &rtHeight, VSYNC_ENABLED, SCREEN_FAR, SCREEN_NEAR);
 	if (!initResult) return false;
 
-	m_screenWidth = screenWidth;
-	m_screenHeight = screenHeight;
+	m_screenWidth = Application::Handle->GetMainWindow()->GetWidth();
+	m_screenHeight = Application::Handle->GetMainWindow()->GetHeight();
 
 	Player* player = Game::GetPrimaryPlayer();
 
 	m_frustumCam = new FrustumCamera();
 	m_frustumCam->ConstructMatrix({ -15.0f, 20.0f, 15.0f }, { 0.0f, 0.0f, 0.0f });
-	FrustumCulling::CalculateFrustum(XM_PIDIV4, (float)screenWidth / screenHeight,
+	FrustumCulling::CalculateFrustum(XM_PIDIV4, (float)m_screenWidth / m_screenHeight,
 		SCREEN_NEAR, SCREEN_FAR, player->GetCamera(CameraType::FirstPerson)->GetWorldMatrix(), player->GetPosition());
 
 	// Create and initialize the texture manager
@@ -75,10 +74,8 @@ bool Graphics::Initialize(const int& screenWidth, const int& screenHeight, HWND 
 	m_quadShader->CreateObjects(L"./Shaders/Quad_VS.hlsl", L"./Shaders/NDCQuad_VS.hlsl", L"./Shaders/Quad_PS.hlsl");
 	m_quadShader->Initialize();
 	
-
-	// Create and initialize the ImGuiLayer
-	m_imGuiLayer = new ImGuiLayer();
-	m_imGuiLayer->Initialize(hwnd, D3D::GetDevice(), D3D::GetDeviceContext());
+	// Initialize the ImGuiLayer
+	ImGuiLayer::Initialize(Application::Handle->GetMainWindow()->GetHWND(), D3D::GetDevice(), D3D::GetDeviceContext());
 
 	m_texViewer = new TextureViewer(nullptr, 5, 5, 0.15f);
 
@@ -109,13 +106,6 @@ void Graphics::Shutdown()
 	{
 		delete m_texViewer;
 		m_texViewer = nullptr;
-	}
-
-	if(m_imGuiLayer)
-	{
-		m_imGuiLayer->Shutdown();
-		delete m_imGuiLayer;
-		m_imGuiLayer = nullptr;
 	}
 
 	if(m_debugShader)
@@ -154,9 +144,6 @@ bool Graphics::Frame(const float dt)
 	OG_PROFILE_OUT(&GraphicsTimer_Data::frameTimer);
 
 	Player* player = Game::GetPrimaryPlayer();
-
-	// Begin the ImGui frame
-	m_imGuiLayer->BeginFrame();
 
 	ImGui::Begin("Timing Panel");
 	ImGui::Text("FRAMERATE: %2.2f FPS", 1.0f / dt);
@@ -258,29 +245,25 @@ bool Graphics::Frame(const float dt)
 	Renderer_Data::playerPosChunkSpace = Orange::Math::WorldToChunkSpace(player->GetPosition());
 	Renderer_Data::numActiveChunks = ChunkManager::GetNumActiveChunks();
 
-	// End the ImGui frame
-	D3D::ClearDepthBuffer(1.0f); // Clear the depth buffer so GUI draws on top of everything
-	m_imGuiLayer->Draw();
-	m_imGuiLayer->EndFrame();
-
-	{
-		OG_PROFILE_OUT(&GraphicsTimer_Data::presentTimer);
-		// End the scene and present the swap chain
-		D3D::EndScene();
-	}
+	//D3D::ClearDepthBuffer(1.0f); // Clear the depth buffer so GUI draws on top of everything
 
 	return true;
 }
 
+void Graphics::Present()
+{
+	OG_PROFILE_OUT(&GraphicsTimer_Data::presentTimer);
+	// End the scene and present the swap chain
+	D3D::EndScene();
+}
+
 bool Graphics::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-
 	// Call the ImGuiLayer WndProc
-	if (m_imGuiLayer->WndProc(hwnd, msg, wparam, lparam)) return true;
+	if (ImGuiLayer::WndProc(hwnd, msg, wparam, lparam)) return true;
 
 	// Call the D3D WndProc
 	if (D3D::WndProc(hwnd, msg, wparam, lparam)) return true;
 
 	return false;
-	
 }
