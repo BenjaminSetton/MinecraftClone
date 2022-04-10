@@ -8,6 +8,7 @@
 #include "../Core/TextureManager.h"
 #include "../Utility/ImGuiLayer.h"
 #include "TextureViewer.h"
+#include "Texture2D.h"
 
 #include "DayNightCycle.h"
 
@@ -51,7 +52,6 @@ private:
 	FrustumCamera* m_frustumCam = nullptr;
 
 	DefaultBlockShader* m_chunkShader = nullptr;
-	ShadowShader* m_shadowShader = nullptr;
 	DebugRendererShader* m_debugShader = nullptr;
 	QuadShader* m_quadShader = nullptr;
 

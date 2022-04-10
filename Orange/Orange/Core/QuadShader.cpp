@@ -2,6 +2,7 @@
 #include "QuadShader.h"
 #include "D3D.h"
 
+#include "DefaultBlockShader.h"
 #include "../Utility/Utility.h"
 
 // ImGui Debug
@@ -27,9 +28,7 @@ void QuadShader::Initialize() {}
 
 void QuadShader::Render()
 {
-
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
-
 
 	BindObjects();
 
@@ -280,9 +279,12 @@ void QuadShader::BindObjects()
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
 	// Set the back buffer and the depth buffer
-	ID3D11RenderTargetView* backBuffer = D3D::GetBackBuffer();
-	context->OMSetDepthStencilState(D3D::GetDepthStencilState(), 1);
-	context->OMSetRenderTargets(1, &backBuffer, D3D::GetDepthStencilView());
+	ID3D11RenderTargetView* rttRTV = DefaultBlockShader::GetRenderToTextureRTV();
+	ID3D11DepthStencilView* rttDSV = DefaultBlockShader::GetDepthStencilView();
+	ID3D11DepthStencilState* rttDSS = DefaultBlockShader::GetDepthStencilState();
+
+	context->OMSetDepthStencilState(rttDSS, 1);
+	context->OMSetRenderTargets(1, &rttRTV, rttDSV);
 
 
 	if (m_renderInNDC)

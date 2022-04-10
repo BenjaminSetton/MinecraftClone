@@ -1,13 +1,16 @@
 #include "../Misc/pch.h"
 
-#include "TextureViewer.h"
-#include "../Utility/Utility.h"
-#include "D3D.h"
 #include <d3dcompiler.h>
 
 #include "Application.h"
+#include "D3D.h"
+#include "MathTypes.h"
+#include "TextureViewer.h"
+#include "../Utility/Utility.h"
+
 
 using namespace DirectX;
+using namespace Orange;
 
 TextureViewer::TextureViewer(ID3D11ShaderResourceView* tex, float x /*= 0.0f*/, float y /*= 0.0f*/,
 	float scale /*= 1.0f*/)
@@ -211,14 +214,13 @@ void TextureViewer::CreateVertexBuffer()
 		resource->QueryInterface<ID3D11Texture2D>(&tex);
 		tex->GetDesc(&texDesc);
 
-		uint32_t windowWidth = Application::Handle->GetMainWindow()->GetWidth();
-		uint32_t windowHeight = Application::Handle->GetMainWindow()->GetHeight();
+		Vec2 windowDimensions = Application::Handle->GetMainWindow()->GetDimensions();
 
 		// Positions and width/height mapped from [-1, 1], instead of [0, 1]
-		float texWidthNorm = texDesc.Width / static_cast<float>(windowWidth) * m_scale;
-		float texHeightNorm = texDesc.Height / static_cast<float>(windowHeight) * m_scale;
-		float xPosNorm = m_x / static_cast<float>(windowWidth);
-		float yPosNorm = m_y / static_cast<float>(windowHeight);
+		float texWidthNorm = texDesc.Width / windowDimensions.x * m_scale;
+		float texHeightNorm = texDesc.Height / windowDimensions.y * m_scale;
+		float xPosNorm = m_x / windowDimensions.x;
+		float yPosNorm = m_y / windowDimensions.y;
 
 		QuadVertex quadVertices[] = // CLOCKWISE winding, position must be in NDC
 		{

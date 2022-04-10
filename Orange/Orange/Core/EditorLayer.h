@@ -4,30 +4,30 @@
 #include <unordered_map>
 
 #include "Layer.h"
-
-class Panel;
+#include "Panels/Panel.h"
 
 class EditorLayer : public Layer
 {
 public:
 
-	void Initialize();
-	void Shutdown();
+	EditorLayer() = delete;
+	EditorLayer(const EditorLayer& other) = delete;
+	~EditorLayer() = delete;
 
-	void AddPanel(Panel* panel);
-	void RemovePanel(Panel* panel);
-	Panel* GetPanel(const std::string& name);
+	static void Initialize();
+	static void Shutdown();
 
-	void Update(const float& dt);
+	static void AddPanel(Panel* panel);
+	static void RemovePanel(Panel* panel);
+	static Panel* GetPanel(const std::string& name);
 
-	void BeginFrame();
-	void EndFrame();
+	static void Update(const float& dt);
 
 private:
 
-	void DrawPanels();
+	static void DrawPanels();
 
-	std::vector<Panel*> m_panels;
+	static std::vector<Panel*> m_panels;
 
 };
 

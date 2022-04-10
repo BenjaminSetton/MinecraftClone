@@ -20,7 +20,7 @@ public:
 	D3D(const D3D&) = default;
 	~D3D() = default;
 
-	static bool Initialize(int32_t* out_screenWidth, int32_t* out_screenHeight, const bool& vsync, const float& screenFar, const float& screenNear);
+	static bool Initialize(const bool& vsync, const float& screenFar, const float& screenNear);
 	static void Shutdown();
 
 	static void BeginScene(DirectX::XMFLOAT4 clearToColor);
@@ -33,8 +33,6 @@ public:
 	static DirectX::XMMATRIX GetWorldMatrix();
 	static DirectX::XMMATRIX GetProjectionMatrix();
 	static DirectX::XMMATRIX GetOrthoMatrix();
-
-	static ID3D11RenderTargetView* GetRenderTargetView();
 
 	static void GetVideoCardInfo(char*, int&);
 
@@ -51,11 +49,13 @@ public:
 
 	static void SetWireframeRasterState(const bool isWireframe);
 
+	static void RenderToBackBuffer();
+
 private:
 
 	static void CreateRenderTargetView();
 
-	static void CreateDepthStencilView(UINT width, UINT height);
+	static void CreateDepthStencilView();
 
 	static void OnResize(LPARAM lparam);
 

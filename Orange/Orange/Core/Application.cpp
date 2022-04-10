@@ -8,8 +8,7 @@
 Application* Application::Handle = nullptr;
 
 Application::Application() : EventSubject(),
-	m_mainWindow(nullptr), m_Input(nullptr), m_Graphics(nullptr),
-	m_Clock(nullptr), m_editorLayer(nullptr)
+	m_mainWindow(nullptr), m_Input(nullptr), m_Graphics(nullptr), m_Clock(nullptr)
 {
 }
 
@@ -48,6 +47,8 @@ bool Application::Initialize()
 	m_Input = new Input();
 	Subscribe(m_Input);
 
+	EditorLayer::Initialize();
+
 	// Initialize the game object
 	Game::Initialize();
 
@@ -55,9 +56,6 @@ bool Application::Initialize()
 	m_Graphics = new Graphics();
 	result = m_Graphics->Initialize();
 	if (!result) return false;
-
-	m_editorLayer = new EditorLayer();
-	m_editorLayer->Initialize();
 
 	return true;
 }
@@ -111,13 +109,7 @@ void Application::Shutdown()
 		m_Clock = nullptr;
 	}
 
-	if (m_editorLayer)
-	{
-		m_editorLayer->Shutdown();
-		delete m_editorLayer;
-		m_editorLayer = nullptr;
-	}
-
+	EditorLayer::Shutdown();
 	Game::Shutdown();
 
 	Handle = nullptr;
@@ -146,7 +138,7 @@ bool Application::Update()
 	m_Graphics->Frame(dt);
 
 	// We should consider using a switch case to check which layer is active
-	m_editorLayer->Update(dt);
+	EditorLayer::Update(dt);
 
 	ImGuiLayer::Draw();
 	ImGuiLayer::EndFrame();

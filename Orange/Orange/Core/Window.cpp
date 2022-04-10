@@ -3,6 +3,8 @@
 #include "Application.h"
 #include "Window.h"
 
+using namespace Orange;
+
 // Windows procedure
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -115,41 +117,26 @@ void Window::Destroy()
 	return;
 }
 
-int32_t Window::GetWidth() const
+Vec2 Window::GetDimensions() const
 {
 	WINDOWINFO wi;
 	wi.cbSize = sizeof(WINDOWINFO);
 	GetWindowInfo(m_hwnd, &wi);
-	return wi.rcClient.right - wi.rcClient.left;
+	return { static_cast<float>(wi.rcClient.right - wi.rcClient.left), static_cast<float>(wi.rcClient.bottom - wi.rcClient.top) };
 }
 
-int32_t Window::GetHeight() const
+Vec2 Window::GetPosition() const
 {
 	WINDOWINFO wi;
 	wi.cbSize = sizeof(WINDOWINFO);
 	GetWindowInfo(m_hwnd, &wi);
-	return wi.rcClient.bottom - wi.rcClient.top;
-}
-
-int32_t Window::GetX() const
-{
-	WINDOWINFO wi;
-	wi.cbSize = sizeof(WINDOWINFO);
-	GetWindowInfo(m_hwnd, &wi);
-	return wi.rcWindow.left;
-}
-
-int32_t Window::GetY() const
-{
-	WINDOWINFO wi;
-	wi.cbSize = sizeof(WINDOWINFO);
-	GetWindowInfo(m_hwnd, &wi);
-	return wi.rcWindow.top;
+	return { static_cast<float>(wi.rcClient.left), static_cast<float>(wi.rcClient.top) };
 }
 
 float Window::GetAspectRatio() const
 {
-	return static_cast<float>(GetWidth()) / GetHeight();
+	Vec2 dimensions = GetDimensions();
+	return static_cast<float>(dimensions.x) / dimensions.y;
 }
 
 LPCWSTR Window::GetName() const

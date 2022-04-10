@@ -40,9 +40,6 @@ private:
 	Graphics* m_Graphics;
 	Clock* m_Clock;
 
-	EditorLayer* m_editorLayer;
-
-
 };
 
 #endif

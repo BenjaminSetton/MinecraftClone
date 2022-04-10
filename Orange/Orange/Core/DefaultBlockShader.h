@@ -8,13 +8,21 @@
 
 #include "ChunkManager.h"
 
+struct RenderToTexture
+{
+	ID3D11Texture2D* texture;
+	ID3D11Texture2D* depthTexture;
+	ID3D11RenderTargetView* renderTargetView;
+	ID3D11ShaderResourceView* shaderResourceView;
+	ID3D11DepthStencilState* depthStencilState;
+	ID3D11DepthStencilView* depthStencilView;
+};
 
 // TODO: Track the following rendering stats
 //
 //	- Number of draw calls per frame
 //	- Number of vertices being rendered per frame (so the sum of all chunk vertices being rendered)
 //	- Time taken to render? (maybe)
-//
 //
 class DefaultBlockShader
 {
@@ -32,6 +40,10 @@ public:
 
 	void UpdateLightMatrix();
 
+	static ID3D11ShaderResourceView* GetRenderToTextureSRV();
+	static ID3D11RenderTargetView* GetRenderToTextureRTV();
+	static ID3D11DepthStencilState* GetDepthStencilState();
+	static ID3D11DepthStencilView* GetDepthStencilView();
 
 private:
 
@@ -52,7 +64,6 @@ private:
 		DirectX::XMFLOAT4 lightAmbient[2];
 	};
 
-
 	void CreateD3DObjects();
 
 	void CreateShaders(const WCHAR* vsFilename, const WCHAR* gsFilename, const WCHAR* psFilename);
@@ -60,6 +71,8 @@ private:
 	void BindVertexBuffers();
 
 	void BindObjects(ID3D11ShaderResourceView* const* srvs);
+
+	static void CreateRTTObjects();
 
 private:
 
@@ -78,6 +91,8 @@ private:
 
 	ID3D11SamplerState* m_samplerWrap;
 	ID3D11SamplerState* m_samplerClamp;
+
+	static RenderToTexture m_viewportTextureData;
 
 	// Stores the transposed projection matrix
 	DirectX::XMMATRIX m_camPM;

@@ -4,6 +4,7 @@
 #include "Game.h"
 #include "Graphics.h"
 #include "../Utility/Utility.h"
+#include "MathTypes.h"
 
 #include "../Utility/Input.h"
 
@@ -22,18 +23,19 @@
 #include "../Utility/Math.h"
 
 using namespace DirectX;
+using namespace Orange;
 
 
 bool Graphics::Initialize()
 {
 	bool initResult;
 
-	int32_t rtWidth, rtHeight;
-	initResult = D3D::Initialize(&rtWidth, &rtHeight, VSYNC_ENABLED, SCREEN_FAR, SCREEN_NEAR);
+	initResult = D3D::Initialize(VSYNC_ENABLED, SCREEN_FAR, SCREEN_NEAR);
 	if (!initResult) return false;
 
-	m_screenWidth = Application::Handle->GetMainWindow()->GetWidth();
-	m_screenHeight = Application::Handle->GetMainWindow()->GetHeight();
+	Vec2 screenDimensions = Application::Handle->GetMainWindow()->GetDimensions();
+	m_screenWidth = static_cast<int>(screenDimensions.x);
+	m_screenHeight = static_cast<int>(screenDimensions.y);
 
 	Player* player = Game::GetPrimaryPlayer();
 
@@ -53,11 +55,6 @@ bool Graphics::Initialize()
 	ChunkBufferManager::Initialize();
 	QuadBufferManager::Initialize();
 	QuadNDCBufferManager::Initialize();
-
-	// Create the shadow shader class
-	m_shadowShader = new ShadowShader();
-	m_shadowShader->CreateObjects(L"./Shaders/ShadowMap_VS.hlsl", L"./Shaders/ShadowMap_PS.hlsl");
-	m_shadowShader->Initialize(rtWidth, rtHeight);
 
 	// Create the chunk shader class object
 	m_chunkShader = new DefaultBlockShader();
@@ -113,13 +110,6 @@ void Graphics::Shutdown()
 		m_debugShader->Shutdown();
 		delete m_debugShader;
 		m_debugShader = nullptr;
-	}
-
-	if(m_shadowShader)
-	{
-		m_shadowShader->Shutdown();
-		delete m_shadowShader;
-		m_shadowShader = nullptr;
 	}
 
 	if (m_chunkShader)
@@ -186,7 +176,6 @@ bool Graphics::Frame(const float dt)
 		{
 			OG_PROFILE_SCOPE("[UPDATE] Update Light Matrices");
 			// Update the position and color of the light/sun
-			m_shadowShader->UpdateLightMatrix();
 			m_chunkShader->UpdateLightMatrix();
 		}
 
@@ -196,21 +185,16 @@ bool Graphics::Frame(const float dt)
 		//	m_shadowShader->Render();
 		//}
 
-		ID3D11ShaderResourceView* srvs[2];
+		ID3D11ShaderResourceView* srvs[1];
 		{
 			OG_PROFILE_SCOPE("[SRV] Settings SRVs");
-			m_texViewer->SetTexture(m_shadowShader->GetShadowMap());
-
-
 			srvs[0] = m_textureManager->GetTexture(std::string("TEXTUREATLAS_TEX"));
-			srvs[1] = m_shadowShader->GetShadowMap();
-				
 		}
 
 		{
 			OG_PROFILE_SCOPE("[RENDER] Chunk");
 			// Send the chunks to the shader and render
-			m_chunkShader->UpdateViewMatrices(player->GetCamera(player->GetSelectedCameraType())->GetViewMatrix(), m_shadowShader->GetLightViewMatrix());
+			m_chunkShader->UpdateViewMatrices(player->GetCamera(player->GetSelectedCameraType())->GetViewMatrix(), XMMatrixIdentity());
 			m_chunkShader->Render(srvs);
 		}
 

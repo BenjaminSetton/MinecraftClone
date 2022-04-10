@@ -3,6 +3,7 @@
 #define WIN32_LEAN_AND_MEAN
 
 #include <windows.h>
+#include "MathTypes.h"
 
 enum WindowAlignment
 {
@@ -33,10 +34,8 @@ public:
 	void Create(const WindowParameters& parameters);
 	void Destroy();
 
-	int32_t GetWidth() const;
-	int32_t GetHeight() const;
-	int32_t GetX() const;
-	int32_t GetY() const;
+	Orange::Vec2 GetDimensions() const;
+	Orange::Vec2 GetPosition() const;
 	float GetAspectRatio() const;
 	LPCWSTR GetName() const;
 	HWND GetHWND() const;

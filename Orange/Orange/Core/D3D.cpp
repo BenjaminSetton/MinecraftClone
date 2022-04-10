@@ -2,9 +2,11 @@
 
 #include "Application.h"
 #include "D3D.h"
+#include "MathTypes.h"
 #include "../Utility/Utility.h"
 
 using namespace DirectX;
+using namespace Orange;
 
 bool D3D::m_vsync_enabled;
 int D3D::m_videoCardMemory;
@@ -32,7 +34,7 @@ DirectX::XMMATRIX D3D::m_orthoMatrix = XMMatrixIdentity();
 
 bool D3D::m_depthDisabled = false;
 
-bool D3D::Initialize(int32_t* out_screenWidth, int32_t* out_screenHeight, const bool& vsync, const float& screenFar, const float& screenNear)
+bool D3D::Initialize(const bool& vsync, const float& screenFar, const float& screenNear)
 {
 	HRESULT result;
 	IDXGIFactory* factory;
@@ -127,8 +129,8 @@ bool D3D::Initialize(int32_t* out_screenWidth, int32_t* out_screenHeight, const 
 	swapChainDesc.BufferCount = 2;
 
 	// Set the width and height of the back buffer.
-	swapChainDesc.BufferDesc.Width = 0;
-	swapChainDesc.BufferDesc.Height = 0;
+	swapChainDesc.BufferDesc.Width = static_cast<UINT>(Application::Handle->GetMainWindow()->GetDimensions().x);
+	swapChainDesc.BufferDesc.Height = static_cast<UINT>(Application::Handle->GetMainWindow()->GetDimensions().y);
 
 	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // Set regular 32-bit surface for the back buffer.
 
@@ -180,12 +182,11 @@ bool D3D::Initialize(int32_t* out_screenWidth, int32_t* out_screenHeight, const 
 	// These should be considered to be the "real" width/height values
 	HRESULT hr = m_swapChain->GetDesc(&swapChainDesc);
 	OG_ASSERT(!FAILED(hr));
-	*out_screenWidth = swapChainDesc.BufferDesc.Width;
-	*out_screenHeight = swapChainDesc.BufferDesc.Height;
+	Vec2 dimensions = Application::Handle->GetMainWindow()->GetDimensions();
 
 
 	// Create the depth/stencil view and all of it's related objects
-	CreateDepthStencilView(*out_screenWidth, *out_screenHeight);
+	CreateDepthStencilView();
 
 	// Setup the default raster description which will determine how and what polygons will be drawn.
 	defaultRasterDesc.AntialiasedLineEnable = false;
@@ -224,10 +225,14 @@ bool D3D::Initialize(int32_t* out_screenWidth, int32_t* out_screenHeight, const 
 
 	CreateRenderTargetView();
 
+	Panel* viewportPanel = EditorLayer::GetPanel(std::string("MainViewportPanel"));
+	OG_ASSERT_MSG(viewportPanel != nullptr, "Couldn't find viewport panel by name");
+	Vec2 viewportDimensions = viewportPanel->GetDimensions();
+
 	// Setup the viewport for rendering.
 	D3D11_VIEWPORT viewport;
-	viewport.Width = static_cast<FLOAT>(*out_screenWidth);
-	viewport.Height = static_cast<FLOAT>(*out_screenHeight);
+	viewport.Width = static_cast<FLOAT>(viewportDimensions.x);
+	viewport.Height = static_cast<FLOAT>(viewportDimensions.y);
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
 	viewport.TopLeftX = 0;
@@ -236,14 +241,15 @@ bool D3D::Initialize(int32_t* out_screenWidth, int32_t* out_screenHeight, const 
 	// Create the viewport.
 	m_deviceContext->RSSetViewports(1, &viewport);
 
+
 	// Create the projection matrix for 3D rendering.
 	m_projectionMatrix = XMMatrixPerspectiveFovLH(XM_PIDIV4, 
-		(float)*out_screenWidth / *out_screenHeight, screenNear, screenFar);
+		static_cast<float>(viewportDimensions.x) / viewportDimensions.y, screenNear, screenFar);
 
 	// Create an orthographic projection matrix for 2D rendering.
 	m_orthoMatrix = XMMatrixOrthographicOffCenterLH(
-		(-static_cast<int32_t>(*out_screenWidth) / 20.0f), (static_cast<int32_t>(*out_screenWidth) / 20.0f),
-		(-static_cast<int32_t>(*out_screenHeight) / 20.0f), (static_cast<int32_t>(*out_screenHeight) / 20.0f),
+		(-static_cast<int32_t>(viewportDimensions.x) / 20.0f), (static_cast<int32_t>(viewportDimensions.x) / 20.0f),
+		(-static_cast<int32_t>(viewportDimensions.y) / 20.0f), (static_cast<int32_t>(viewportDimensions.y) / 20.0f),
 		screenNear, screenFar);
 	
 	// Initialize the world matrix to the identity matrix.
@@ -361,8 +367,6 @@ XMMATRIX D3D::GetWorldMatrix() { return m_worldMatrix; }
 XMMATRIX D3D::GetProjectionMatrix() { return m_projectionMatrix; }
 XMMATRIX D3D::GetOrthoMatrix() { return m_orthoMatrix; }
 
-ID3D11RenderTargetView* D3D::GetRenderTargetView() { return m_renderTargetView; }
-
 void D3D::GetVideoCardInfo(char* videoCardDescription, int& videoCardMemory)
 {
 	videoCardDescription = m_videoCardDescription;
@@ -417,21 +421,27 @@ void D3D::SetWireframeRasterState(const bool isWireframe)
 	isWireframe ? m_deviceContext->RSSetState(m_wireframeRasterState) : m_deviceContext->RSSetState(m_defaultRasterState);
 }
 
+void D3D::RenderToBackBuffer()
+{
+	ID3D11RenderTargetView* rtvs[] = {m_renderTargetView};
+	m_deviceContext->OMSetRenderTargets(1, rtvs, m_depthStencilView);
+}
+
 void D3D::CreateRenderTargetView()
 {
 	HRESULT hr;
-	ID3D11Texture2D* backBufferPtr;
+	ID3D11Texture2D* texture2D;
+	Vec2 dimensions = Application::Handle->GetMainWindow()->GetDimensions();
 
 	// Clear the render targets
 	m_deviceContext->OMSetRenderTargets(0, 0, 0);
 	if (m_renderTargetView) { m_renderTargetView->Release(); m_renderTargetView = NULL; }
 
 	// Get the pointer to the back buffer.
-	hr = m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBufferPtr);
+	hr = m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&texture2D);
 	OG_ASSERT(!FAILED(hr));
 
-	//D3D11_DSV_DIMENSION_TEXTURE2D
-	hr = m_device->CreateRenderTargetView(backBufferPtr, NULL, &m_renderTargetView);
+	hr = m_device->CreateRenderTargetView(texture2D, NULL, &m_renderTargetView);
 	OG_ASSERT(!FAILED(hr));
 
 	// Set the newly-created render target
@@ -443,17 +453,18 @@ void D3D::CreateRenderTargetView()
 		m_deviceContext->OMSetRenderTargets(1, &m_renderTargetView, NULL);
 	}
 
-	backBufferPtr->Release();
-	backBufferPtr = nullptr;
+	texture2D->Release();
+	texture2D = nullptr;
 }
 
-void D3D::CreateDepthStencilView(UINT width, UINT height)
+void D3D::CreateDepthStencilView()
 {
 	HRESULT hr;
 	D3D11_TEXTURE2D_DESC depthBufferDesc;
 	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
 	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
 	D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc;
+	Vec2 dimensions = Application::Handle->GetMainWindow()->GetDimensions();
 
 	// Release the previous objects, if necessary
 	if (m_depthDisabledStencilState){ m_depthDisabledStencilState->Release(); m_depthDisabledStencilState = nullptr; }
@@ -465,8 +476,8 @@ void D3D::CreateDepthStencilView(UINT width, UINT height)
 	ZeroMemory(&depthBufferDesc, sizeof(depthBufferDesc));
 
 	// Set up the description of the depth buffer.
-	depthBufferDesc.Width = width;
-	depthBufferDesc.Height = height;
+	depthBufferDesc.Width = static_cast<UINT>(dimensions.x);
+	depthBufferDesc.Height = static_cast<UINT>(dimensions.y);
 	depthBufferDesc.MipLevels = 1;
 	depthBufferDesc.ArraySize = 1;
 	depthBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -560,7 +571,7 @@ void D3D::OnResize(LPARAM lparam)
 	HRESULT hr = m_swapChain->ResizeBuffers(0, newWidth, newHeight, DXGI_FORMAT_UNKNOWN, 0);
 	OG_ASSERT(!FAILED(hr));
 
-	CreateDepthStencilView(newWidth, newHeight);
+	CreateDepthStencilView();
 	CreateRenderTargetView();
 
 	// Resize the projection matrix

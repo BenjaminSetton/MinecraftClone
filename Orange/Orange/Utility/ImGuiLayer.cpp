@@ -1,4 +1,6 @@
 #include "../Misc/pch.h"
+
+#include "../Core/D3D.h"
 #include "ImGuiLayer.h"
 
 void ImGuiLayer::Initialize(HWND hwnd, ID3D11Device* device, ID3D11DeviceContext* context)
@@ -145,6 +147,9 @@ void ImGuiLayer::Draw()
 
 void ImGuiLayer::EndFrame()
 {
+	// Set the backbuffer as the render target
+	D3D::RenderToBackBuffer();
+
 	// Rendering
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());

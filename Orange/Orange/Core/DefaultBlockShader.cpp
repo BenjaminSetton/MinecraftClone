@@ -1,18 +1,22 @@
 #include "../Misc/pch.h"
-#include "DefaultBlockShader.h"
-#include "D3D.h"
-
-#include "../Utility/Utility.h"
-#include "DayNightCycle.h"
-
-// ImGui Debug
-#include "../Utility/ImGuiLayer.h"
 
 #include "Block.h"
 #include "BlockUVs.h"
 #include "../Core/ShaderBufferManagers/ChunkBufferManager.h"
+#include "D3D.h"
+#include "DayNightCycle.h"
+#include "DefaultBlockShader.h"
+#include "EditorLayer.h"
+#include "Panels/MainViewportPanel.h"
+#include "../Utility/ImGuiLayer.h" // ImGui Debug
+#include "MathTypes.h"
+#include "../Utility/Utility.h"
+
 
 using namespace DirectX;
+using namespace Orange;
+
+RenderToTexture DefaultBlockShader::m_viewportTextureData = { nullptr, nullptr, nullptr };
 
 void DefaultBlockShader::CreateObjects(const WCHAR* vsFilename, const WCHAR* gsFilename, const WCHAR* psFilename) 
 {
@@ -77,8 +81,14 @@ void DefaultBlockShader::Render(ID3D11ShaderResourceView* const* srvs)
 {
 	BlockShader_Data::debugVerts = 0;
 	BlockShader_Data::numDrawCalls = 0;
+	XMFLOAT4 skyColor = DayNightCycle::GetSkyColor();
+	const FLOAT colors[4] = { skyColor.x, skyColor.y, skyColor.z, skyColor.w };
 
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
+
+	// Reset the RTV
+	context->ClearRenderTargetView(m_viewportTextureData.renderTargetView, colors);
+	context->ClearDepthStencilView(m_viewportTextureData.depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0.0f);
 
 	BindObjects(srvs);
 
@@ -145,6 +155,42 @@ void DefaultBlockShader::Shutdown()
 	{
 		m_vertexShader->Release();
 		m_vertexShader = nullptr;
+	}
+
+	if (m_viewportTextureData.texture)
+	{
+		m_viewportTextureData.texture->Release();
+		m_viewportTextureData.texture = nullptr;
+	}
+
+	if (m_viewportTextureData.shaderResourceView)
+	{
+		m_viewportTextureData.shaderResourceView->Release();
+		m_viewportTextureData.shaderResourceView = nullptr;
+	}
+
+	if (m_viewportTextureData.renderTargetView)
+	{
+		m_viewportTextureData.renderTargetView->Release();
+		m_viewportTextureData.renderTargetView = nullptr;
+	}
+
+	if (m_viewportTextureData.depthStencilState)
+	{
+		m_viewportTextureData.depthStencilState->Release();
+		m_viewportTextureData.depthStencilState = nullptr;
+	}
+
+	if (m_viewportTextureData.depthStencilView)
+	{
+		m_viewportTextureData.depthStencilView->Release();
+		m_viewportTextureData.depthStencilView = nullptr;
+	}
+
+	if (m_viewportTextureData.depthTexture)
+	{
+		m_viewportTextureData.depthTexture->Release();
+		m_viewportTextureData.depthTexture = nullptr;
 	}
 
 }
@@ -226,6 +272,8 @@ void DefaultBlockShader::CreateD3DObjects()
 	hr = device->CreateSamplerState(&samplerDesc, &m_samplerClamp);
 	OG_ASSERT(!FAILED(hr));
 	
+	CreateRTTObjects();
+
 }
 
 void DefaultBlockShader::CreateShaders(const WCHAR* vsFilename, const WCHAR* gsFilename, const WCHAR* psFilename)
@@ -315,9 +363,15 @@ void DefaultBlockShader::BindObjects(ID3D11ShaderResourceView* const* srvs)
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
 	// Set the back buffer and the depth buffer
-	ID3D11RenderTargetView* backBuffer = D3D::GetBackBuffer();
-	context->OMSetDepthStencilState(D3D::GetDepthStencilState(), 1);
-	context->OMSetRenderTargets(1, &backBuffer, D3D::GetDepthStencilView());
+	ID3D11RenderTargetView* rttRTV = GetRenderToTextureRTV();
+	ID3D11DepthStencilView* rttDSV = GetDepthStencilView();
+	ID3D11DepthStencilState* rttDSS = GetDepthStencilState();
+	context->OMSetDepthStencilState(rttDSS, 1);
+
+	// !!!!
+	// TODO: Rethink this because we only want to render to a texture now, since we can't see the back-buffer we present
+	// !!!!
+	context->OMSetRenderTargets(1, &rttRTV, rttDSV);
 
 	// Now set the matrix constant buffer in the vertex shader with the updated values.
 	ID3D11Buffer* buffers[] = { m_UVBuffer, m_matrixBuffer };
@@ -327,7 +381,7 @@ void DefaultBlockShader::BindObjects(ID3D11ShaderResourceView* const* srvs)
 	context->PSSetConstantBuffers(0, 1, &m_lightBuffer);
 
 	// Bind the block texture and shadow map
-	context->PSSetShaderResources(0, 2, srvs);
+	context->PSSetShaderResources(0, 1, srvs);
 
 	// Set the vertex input layout.
 	context->IASetInputLayout(m_inputLayout);
@@ -346,6 +400,117 @@ void DefaultBlockShader::BindObjects(ID3D11ShaderResourceView* const* srvs)
 
 	// Set the type of primitive that should be rendered from this vertex buffer, in this case triangles.
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+}
+
+void DefaultBlockShader::CreateRTTObjects()
+{
+	ID3D11Device* device = D3D::GetDevice();
+	MainViewportPanel* viewportPanel = dynamic_cast<MainViewportPanel*>(EditorLayer::GetPanel(std::string("MainViewportPanel")));
+	if (!viewportPanel) OG_ASSERT_MSG(false, "Could not find main viewport panel by name");
+
+	Vec2 viewportDimensions = { 0, 0 };
+	if(viewportPanel) viewportDimensions = viewportPanel->GetDimensions();
+
+	HRESULT hr;
+
+	// Set up the texture that we use to create the RTV and the SRV
+	D3D11_TEXTURE2D_DESC textureDesc;
+	ZeroMemory(&textureDesc, sizeof(textureDesc));
+
+	textureDesc.Width = static_cast<UINT>(viewportDimensions.x);
+	textureDesc.Height = static_cast<UINT>(viewportDimensions.y);
+	textureDesc.MipLevels = 1;
+	textureDesc.ArraySize = 1;
+	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	textureDesc.CPUAccessFlags = 0;
+	textureDesc.MiscFlags = 0;
+	hr = device->CreateTexture2D(&textureDesc, NULL, &m_viewportTextureData.texture);
+	OG_ASSERT(!FAILED(hr));
+
+	// Create the RTV
+	D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
+	renderTargetViewDesc.Format = textureDesc.Format;
+	renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	renderTargetViewDesc.Texture2D.MipSlice = 0;
+	hr = device->CreateRenderTargetView(m_viewportTextureData.texture, &renderTargetViewDesc, &m_viewportTextureData.renderTargetView);
+	OG_ASSERT(!FAILED(hr));
+
+	// Create the SRV
+	D3D11_SHADER_RESOURCE_VIEW_DESC shaderResourceViewDesc;
+	ZeroMemory(&shaderResourceViewDesc, sizeof(shaderResourceViewDesc));
+	shaderResourceViewDesc.Format = textureDesc.Format;
+	shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
+	shaderResourceViewDesc.Texture2D.MipLevels = 1;
+
+	hr = device->CreateShaderResourceView(m_viewportTextureData.texture, &shaderResourceViewDesc, &m_viewportTextureData.shaderResourceView);
+	OG_ASSERT(!FAILED(hr));
+
+	// Set the main viewport panel's texture data to be the new SRV
+	viewportPanel->SetTexture(static_cast<void*>(m_viewportTextureData.shaderResourceView), viewportDimensions);
+
+
+	// Set up the description of the depth buffer texture resource.
+	D3D11_TEXTURE2D_DESC depthBufferDesc;
+	ZeroMemory(&depthBufferDesc, sizeof(depthBufferDesc));
+
+	depthBufferDesc.Width = static_cast<UINT>(viewportDimensions.x);
+	depthBufferDesc.Height = static_cast<UINT>(viewportDimensions.y);
+	depthBufferDesc.MipLevels = 1;
+	depthBufferDesc.ArraySize = 1;
+	depthBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthBufferDesc.SampleDesc.Count = 1;
+	depthBufferDesc.SampleDesc.Quality = 0;
+	depthBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthBufferDesc.CPUAccessFlags = 0;
+	depthBufferDesc.MiscFlags = 0;
+
+	// Create the texture for the depth buffer
+	hr = device->CreateTexture2D(&depthBufferDesc, NULL, &m_viewportTextureData.depthTexture);
+	OG_ASSERT(!FAILED(hr));
+
+	// Set up the description of the stencil state.
+	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
+	ZeroMemory(&depthStencilDesc, sizeof(depthStencilDesc));
+
+	depthStencilDesc.DepthEnable = true;
+	depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+
+	depthStencilDesc.StencilEnable = true;
+	depthStencilDesc.StencilReadMask = 0xFF;
+	depthStencilDesc.StencilWriteMask = 0xFF;
+
+	depthStencilDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+	depthStencilDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+	depthStencilDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+	depthStencilDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	depthStencilDesc.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+
+	// Create the depth stencil state.
+	hr = device->CreateDepthStencilState(&depthStencilDesc, &m_viewportTextureData.depthStencilState);
+	OG_ASSERT(!FAILED(hr));
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
+	ZeroMemory(&depthStencilViewDesc, sizeof(depthStencilViewDesc));
+
+	// Set up the depth stencil view description.
+	depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	depthStencilViewDesc.Texture2D.MipSlice = 0;
+
+	// Create the depth stencil view.
+	hr = device->CreateDepthStencilView(m_viewportTextureData.depthTexture, &depthStencilViewDesc, &m_viewportTextureData.depthStencilView);
+	OG_ASSERT(!FAILED(hr));
+
 }
 
 void DefaultBlockShader::UpdateViewMatrices(DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX lightViewMatrix)
@@ -395,4 +560,24 @@ void DefaultBlockShader::UpdateLightMatrix()
 	lightBufferPtr->lightAmbient[1].x = DayNightCycle::GetLightAmbient(DayNightCycle::CelestialBody::MOON);
 	// Unlock the matrix constant buffer.
 	context->Unmap(m_lightBuffer, 0);
+}
+
+ID3D11ShaderResourceView* DefaultBlockShader::GetRenderToTextureSRV()
+{
+	return m_viewportTextureData.shaderResourceView;
+}
+
+ID3D11RenderTargetView* DefaultBlockShader::GetRenderToTextureRTV()
+{
+	return m_viewportTextureData.renderTargetView;
+}
+
+ID3D11DepthStencilState* DefaultBlockShader::GetDepthStencilState()
+{
+	return m_viewportTextureData.depthStencilState;
+}
+
+ID3D11DepthStencilView* DefaultBlockShader::GetDepthStencilView()
+{
+	return m_viewportTextureData.depthStencilView;
 }

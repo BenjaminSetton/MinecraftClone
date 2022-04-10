@@ -171,13 +171,22 @@
     <ClCompile Include="Core\ShaderBufferManagers\QuadNDCBufferManager.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="Core\Panel.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="Core\EditorLayer.cpp">
       <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="Core\Window.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Panels\Panel.cpp">
+      <Filter>Core\Panels</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Panels\MainViewportPanel.cpp">
+      <Filter>Core\Panels</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Texture.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Texture2D.cpp">
       <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
@@ -329,12 +338,6 @@
     <ClInclude Include="Utility\Log.h">
       <Filter>Utility</Filter>
     </ClInclude>
-    <ClInclude Include="Utility\Math.h">
-      <Filter>Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="Utility\MathConstants.h">
-      <Filter>Utility</Filter>
-    </ClInclude>
     <ClInclude Include="Core\TextureViewer.h">
       <Filter>Utility</Filter>
     </ClInclude>
@@ -347,9 +350,6 @@
     <ClInclude Include="Core\Texture.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="Core\Panel.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="Core\EditorLayer.h">
       <Filter>Core</Filter>
     </ClInclude>
@@ -357,6 +357,24 @@
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Core\Window.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\MathConstants.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Utility\Math.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\MathTypes.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Panels\Panel.h">
+      <Filter>Core\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Panels\MainViewportPanel.h">
+      <Filter>Core\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Texture2D.h">
       <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
@@ -384,6 +402,9 @@
     </Filter>
     <Filter Include="ImGui\ImGui Backend">
       <UniqueIdentifier>{77da7ed7-8eab-4ef9-9bdc-6f0294f90b46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Panels">
+      <UniqueIdentifier>{ed15386f-2eb7-4c7a-9cb1-0e250f0a3439}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

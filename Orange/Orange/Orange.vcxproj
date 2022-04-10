@@ -202,8 +202,15 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../Misc/pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Core\main.cpp" />
-    <ClCompile Include="Core\Panel.cpp" />
     <ClCompile Include="Core\EditorLayer.cpp" />
+    <ClCompile Include="Core\Panels\MainViewportPanel.cpp">
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../../Misc/pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../../Misc/pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="Core\Panels\Panel.cpp">
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../../Misc/pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../../Misc/pch.h</PrecompiledHeaderFile>
+    </ClCompile>
     <ClCompile Include="Core\Physics.cpp" />
     <ClCompile Include="Core\Player.cpp" />
     <ClCompile Include="Core\PlayerController.cpp" />
@@ -227,6 +234,8 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../Misc/pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Core\ShadowShader.cpp" />
+    <ClCompile Include="Core\Texture.cpp" />
+    <ClCompile Include="Core\Texture2D.cpp" />
     <ClCompile Include="Core\TextureManager.cpp" />
     <ClCompile Include="Core\TextureViewer.cpp" />
     <ClCompile Include="Core\Window.cpp" />
@@ -311,8 +320,10 @@
     <ClInclude Include="Core\Game.h" />
     <ClInclude Include="Core\Graphics.h" />
     <ClInclude Include="Core\Layer.h" />
-    <ClInclude Include="Core\Panel.h" />
+    <ClInclude Include="Core\MathTypes.h" />
     <ClInclude Include="Core\EditorLayer.h" />
+    <ClInclude Include="Core\Panels\MainViewportPanel.h" />
+    <ClInclude Include="Core\Panels\Panel.h" />
     <ClInclude Include="Core\Physics.h" />
     <ClInclude Include="Core\Player.h" />
     <ClInclude Include="Core\PlayerController.h" />
@@ -322,6 +333,7 @@
     <ClInclude Include="Core\ShaderBufferManagers\QuadNDCBufferManager.h" />
     <ClInclude Include="Core\ShadowShader.h" />
     <ClInclude Include="Core\Texture.h" />
+    <ClInclude Include="Core\Texture2D.h" />
     <ClInclude Include="Core\TextureManager.h" />
     <ClInclude Include="Core\TextureViewer.h" />
     <ClInclude Include="Core\Window.h" />
