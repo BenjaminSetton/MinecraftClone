@@ -1,0 +1,254 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Distribution|x64">
+      <Configuration>Distribution</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{418A6CC8-2D2C-979E-16E7-AAF202281EEF}</ProjectGuid>
+    <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Orange</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>..\bin\Debug\windows\x86_64\Orange\</OutDir>
+    <IntDir>..\bin\intermediate\Debug\windows\x86_64\Orange\</IntDir>
+    <TargetName>Orange</TargetName>
+    <TargetExt>.exe</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>..\bin\Release\windows\x86_64\Orange\</OutDir>
+    <IntDir>..\bin\intermediate\Release\windows\x86_64\Orange\</IntDir>
+    <TargetName>Orange</TargetName>
+    <TargetExt>.exe</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>..\bin\Distribution\windows\x86_64\Orange\</OutDir>
+    <IntDir>..\bin\intermediate\Distribution\windows\x86_64\Orange\</IntDir>
+    <TargetName>Orange</TargetName>
+    <TargetExt>.exe</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>OG_WINDOWS;OG_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\ThirdParty\FreeType\inc;..\ThirdParty\FreeType\src;..\ThirdParty\DirectX11\inc;..\ThirdParty\DirectX11\src\x86_64\Debug;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>..\ThirdParty\FreeType\src\freetype.lib;..\ThirdParty\DirectX11\src\x86_64\Debug\DirectXTK.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>OG_WINDOWS;OG_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\ThirdParty\FreeType\inc;..\ThirdParty\FreeType\src;..\ThirdParty\DirectX11\inc;..\ThirdParty\DirectX11\src\x86_64\Release;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>Full</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <StringPooling>true</StringPooling>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>..\ThirdParty\FreeType\src\freetype.lib;..\ThirdParty\DirectX11\src\x86_64\Release\DirectXTK.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>OG_WINDOWS;OG_DISTRIBUTION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\ThirdParty\FreeType\inc;..\ThirdParty\FreeType\src;..\ThirdParty\DirectX11\inc;..\ThirdParty\DirectX11\src\x86_64\Distribution;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>Full</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <StringPooling>true</StringPooling>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>..\ThirdParty\FreeType\src\freetype.lib;..\ThirdParty\DirectX11\src\x86_64\Distribution\DirectXTK.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Source\Core\Application.h" />
+    <ClInclude Include="..\Source\Core\Block.h" />
+    <ClInclude Include="..\Source\Core\BlockSelectionIndicator.h" />
+    <ClInclude Include="..\Source\Core\BlockUVs.h" />
+    <ClInclude Include="..\Source\Core\Camera.h" />
+    <ClInclude Include="..\Source\Core\Chunk.h" />
+    <ClInclude Include="..\Source\Core\ChunkManager.h" />
+    <ClInclude Include="..\Source\Core\Crosshair.h" />
+    <ClInclude Include="..\Source\Core\D3D.h" />
+    <ClInclude Include="..\Source\Core\DayNightCycle.h" />
+    <ClInclude Include="..\Source\Core\DebugRendererShader.h" />
+    <ClInclude Include="..\Source\Core\DefaultBlockShader.h" />
+    <ClInclude Include="..\Source\Core\DirectionalLight.h" />
+    <ClInclude Include="..\Source\Core\EditorLayer.h" />
+    <ClInclude Include="..\Source\Core\Events\Event.h" />
+    <ClInclude Include="..\Source\Core\Events\IEvent.h" />
+    <ClInclude Include="..\Source\Core\Events\KeyCodes.h" />
+    <ClInclude Include="..\Source\Core\Events\KeyboardEvent.h" />
+    <ClInclude Include="..\Source\Core\Events\MouseEvent.h" />
+    <ClInclude Include="..\Source\Core\FrustumCamera.h" />
+    <ClInclude Include="..\Source\Core\FrustumCulling.h" />
+    <ClInclude Include="..\Source\Core\Game.h" />
+    <ClInclude Include="..\Source\Core\Graphics.h" />
+    <ClInclude Include="..\Source\Core\Layer.h" />
+    <ClInclude Include="..\Source\Core\MathTypes.h" />
+    <ClInclude Include="..\Source\Core\Panels\MainViewportPanel.h" />
+    <ClInclude Include="..\Source\Core\Panels\Panel.h" />
+    <ClInclude Include="..\Source\Core\Panels\PanelComponent.h" />
+    <ClInclude Include="..\Source\Core\Physics.h" />
+    <ClInclude Include="..\Source\Core\Player.h" />
+    <ClInclude Include="..\Source\Core\PlayerController.h" />
+    <ClInclude Include="..\Source\Core\QuadShader.h" />
+    <ClInclude Include="..\Source\Core\ShaderBufferManagers\ChunkBufferManager.h" />
+    <ClInclude Include="..\Source\Core\ShaderBufferManagers\QuadBufferManager.h" />
+    <ClInclude Include="..\Source\Core\ShaderBufferManagers\QuadNDCBufferManager.h" />
+    <ClInclude Include="..\Source\Core\ShadowShader.h" />
+    <ClInclude Include="..\Source\Core\Texture.h" />
+    <ClInclude Include="..\Source\Core\Texture2D.h" />
+    <ClInclude Include="..\Source\Core\TextureManager.h" />
+    <ClInclude Include="..\Source\Core\TextureViewer.h" />
+    <ClInclude Include="..\Source\Core\Window.h" />
+    <ClInclude Include="..\Source\Misc\pch.h" />
+    <ClInclude Include="..\Source\Utility\Clock.h" />
+    <ClInclude Include="..\Source\Utility\DDSTextureLoader.h" />
+    <ClInclude Include="..\Source\Utility\DebugRenderer.h" />
+    <ClInclude Include="..\Source\Utility\ImGuiDrawData.h" />
+    <ClInclude Include="..\Source\Utility\ImGuiLayer.h" />
+    <ClInclude Include="..\Source\Utility\Input.h" />
+    <ClInclude Include="..\Source\Utility\Log.h" />
+    <ClInclude Include="..\Source\Utility\Math.h" />
+    <ClInclude Include="..\Source\Utility\MathConstants.h" />
+    <ClInclude Include="..\Source\Utility\ScopeTimer.h" />
+    <ClInclude Include="..\Source\Utility\SimplexNoise.h" />
+    <ClInclude Include="..\Source\Utility\SortedPool.h" />
+    <ClInclude Include="..\Source\Utility\Utility.h" />
+    <ClInclude Include="..\Source\imgui\imconfig.h" />
+    <ClInclude Include="..\Source\imgui\imgui.h" />
+    <ClInclude Include="..\Source\imgui\imgui_impl_dx11.h" />
+    <ClInclude Include="..\Source\imgui\imgui_impl_win32.h" />
+    <ClInclude Include="..\Source\imgui\imgui_internal.h" />
+    <ClInclude Include="..\Source\imgui\imstb_rectpack.h" />
+    <ClInclude Include="..\Source\imgui\imstb_textedit.h" />
+    <ClInclude Include="..\Source\imgui\imstb_truetype.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Source\Core\Application.cpp" />
+    <ClCompile Include="..\Source\Core\Block.cpp" />
+    <ClCompile Include="..\Source\Core\BlockSelectionIndicator.cpp" />
+    <ClCompile Include="..\Source\Core\Camera.cpp" />
+    <ClCompile Include="..\Source\Core\Chunk.cpp" />
+    <ClCompile Include="..\Source\Core\ChunkManager.cpp" />
+    <ClCompile Include="..\Source\Core\Crosshair.cpp" />
+    <ClCompile Include="..\Source\Core\D3D.cpp" />
+    <ClCompile Include="..\Source\Core\DayNightCycle.cpp" />
+    <ClCompile Include="..\Source\Core\DebugRendererShader.cpp" />
+    <ClCompile Include="..\Source\Core\DefaultBlockShader.cpp" />
+    <ClCompile Include="..\Source\Core\DirectionalLight.cpp" />
+    <ClCompile Include="..\Source\Core\EditorLayer.cpp" />
+    <ClCompile Include="..\Source\Core\FrustumCamera.cpp" />
+    <ClCompile Include="..\Source\Core\FrustumCulling.cpp" />
+    <ClCompile Include="..\Source\Core\Game.cpp" />
+    <ClCompile Include="..\Source\Core\Graphics.cpp" />
+    <ClCompile Include="..\Source\Core\Panels\MainViewportPanel.cpp" />
+    <ClCompile Include="..\Source\Core\Panels\Panel.cpp" />
+    <ClCompile Include="..\Source\Core\Panels\PanelComponent.cpp" />
+    <ClCompile Include="..\Source\Core\Physics.cpp" />
+    <ClCompile Include="..\Source\Core\Player.cpp" />
+    <ClCompile Include="..\Source\Core\PlayerController.cpp" />
+    <ClCompile Include="..\Source\Core\QuadShader.cpp" />
+    <ClCompile Include="..\Source\Core\ShaderBufferManagers\ChunkBufferManager.cpp" />
+    <ClCompile Include="..\Source\Core\ShaderBufferManagers\QuadBufferManager.cpp" />
+    <ClCompile Include="..\Source\Core\ShaderBufferManagers\QuadNDCBufferManager.cpp" />
+    <ClCompile Include="..\Source\Core\ShadowShader.cpp" />
+    <ClCompile Include="..\Source\Core\Texture.cpp" />
+    <ClCompile Include="..\Source\Core\Texture2D.cpp" />
+    <ClCompile Include="..\Source\Core\TextureManager.cpp" />
+    <ClCompile Include="..\Source\Core\TextureViewer.cpp" />
+    <ClCompile Include="..\Source\Core\Window.cpp" />
+    <ClCompile Include="..\Source\Core\main.cpp" />
+    <ClCompile Include="..\Source\Misc\pch.cpp" />
+    <ClCompile Include="..\Source\Utility\Clock.cpp" />
+    <ClCompile Include="..\Source\Utility\DebugRenderer.cpp" />
+    <ClCompile Include="..\Source\Utility\ImGuiDrawData.cpp" />
+    <ClCompile Include="..\Source\Utility\ImGuiLayer.cpp" />
+    <ClCompile Include="..\Source\Utility\Input.cpp" />
+    <ClCompile Include="..\Source\Utility\Log.cpp" />
+    <ClCompile Include="..\Source\Utility\ScopeTimer.cpp" />
+    <ClCompile Include="..\Source\Utility\SimplexNoise.cpp" />
+    <ClCompile Include="..\Source\Utility\SortedPool.cpp" />
+    <ClCompile Include="..\Source\imgui\imgui.cpp" />
+    <ClCompile Include="..\Source\imgui\imgui_demo.cpp" />
+    <ClCompile Include="..\Source\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\Source\imgui\imgui_impl_dx11.cpp" />
+    <ClCompile Include="..\Source\imgui\imgui_impl_win32.cpp" />
+    <ClCompile Include="..\Source\imgui\imgui_tables.cpp" />
+    <ClCompile Include="..\Source\imgui\imgui_widgets.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
