@@ -1,6 +1,6 @@
 #include "../../Misc/pch.h"
 
-#include "../MathTypes.h"
+#include "../../Utility/MathTypes.h"
 #include "Panel.h"
 
 using namespace Orange;

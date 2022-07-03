@@ -9,15 +9,15 @@ void TextureManager::Init(ID3D11Device* device)
 {
 	// TODO: Initialize all textures and add them to the map
 	ID3D11ShaderResourceView* seafloorTex = nullptr;
-	CreateTextureAndAddToMap(device, L"../Data/Assets/Textures/OGTextureAtlas.dds", seafloorTex, std::string("TEXTUREATLAS_TEX"));
+	CreateTextureAndAddToMap(device, L"../Source/Data/Assets/Textures/OGTextureAtlas.dds", seafloorTex, std::string("TEXTUREATLAS_TEX"));
 	
 	// Block Selector UI
 	ID3D11ShaderResourceView* blockSelectorTex = nullptr;
-	CreateTextureAndAddToMap(device, L"../Data/Assets/Textures/BlockSelectorUI.dds", blockSelectorTex, std::string("BLOCKSELECTOR_TEX"));
+	CreateTextureAndAddToMap(device, L"../Source/Data/Assets/Textures/BlockSelectorUI.dds", blockSelectorTex, std::string("BLOCKSELECTOR_TEX"));
 
 	// Crosshair
 	ID3D11ShaderResourceView* crosshairTex = nullptr;
-	CreateTextureAndAddToMap(device, L"../Data/Assets/Textures/Crosshair.dds", crosshairTex, std::string("CROSSHAIR_TEX"));
+	CreateTextureAndAddToMap(device, L"../Source/Data/Assets/Textures/Crosshair.dds", crosshairTex, std::string("CROSSHAIR_TEX"));
 	
 }
 

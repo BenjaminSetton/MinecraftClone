@@ -1,6 +1,7 @@
 #include "../Misc/pch.h"
 
 #include "Application.h"
+#include "../Utility/MathTypes.h"
 #include "Window.h"
 
 using namespace Orange;

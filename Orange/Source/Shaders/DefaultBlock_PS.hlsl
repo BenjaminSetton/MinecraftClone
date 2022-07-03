@@ -6,6 +6,18 @@ SamplerState sampClamp;
 
 cbuffer LightBuffer
 {
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     float4 lightDir[2];
     float4 lightCol[2];
     float4 lightAmbient[2];

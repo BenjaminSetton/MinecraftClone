@@ -1,6 +1,10 @@
 
+#if defined(OG_WINDOWS)
+
 // Windows API
 #include <windows.h>
+
+#endif
 
 // Misc utility libraries
 #include <vector>

@@ -1,36 +1,72 @@
 #ifndef _TEXTURE_H
 #define _TEXTURE_H
 
-#include <cstdint>
-#include <cstring>
+#include "../Utility/MathTypes.h"
 
-enum class TextureFormat
+namespace Orange
 {
-	RGBA = 0,
+
 	// TODO: Possibly include other texture formats
-};
+	enum class TextureFormat : uint8_t
+	{
+		INVALID = 0,
+		RGBA_32,
+		R_8
+	};
 
-// This base texture class is a way of storing textures in a
-// renderer-agnostic way. A texture is really an array of pixels
-// of a specific format, which is exactly what this class follows
-class Texture
-{
-public:
+	enum class TextureDimensions : uint8_t
+	{
+		INVALID = 0,
+		ONE,
+		TWO,
+		THREE
+	};
 
-	Texture() = default;
-	Texture(const Texture& other) = default;
-	~Texture() = default;
+	struct TextureData
+	{
+		TextureFormat format = TextureFormat::INVALID;
+		TextureDimensions dimensions = TextureDimensions::INVALID;
+		Vec3 size = Vec3(0.0f);
+		void* data = nullptr;
+	};
 
-	const TextureFormat GetFormat();
-	void* GetData() const;
+	// This texture class is a way of storing textures in a
+	// renderer-agnostic way. A texture is really an array of data
+	// of a specific format and size, which is exactly what this class follows
+	class Texture
+	{
+	public:
 
-protected:
+		Texture() = default;
+		Texture(const TextureData& data);
+		Texture(const Texture& other);
+		~Texture();
 
-	virtual void OverridePlease() = 0;
+		const TextureData& GetTextureData() const;
 
-	TextureFormat m_format;
-	void* m_data;
+		// This call that sets texture data will copy the data over to
+		// an internal buffer. If copying is not intended and you just
+		// want to hold a reference to an existing texture, see SetReferenceDataToTexture()
+		void SetTextureData(const TextureData& data);
 
-};
+		// Sets texture data but does not copy to internal buffer (ie. does not call Create())
+		void SetReferenceDataToTexture(const TextureData& data);
+
+	private:
+
+		void Create();
+		void Destroy();
+
+		// Returns the size of each unit (pixel) of data, depending on
+		// the format, in BYTES
+		uint32_t GetUnitSize();
+
+		TextureData m_texData;
+
+		bool m_isReference;
+
+	};
+
+}
 
 #endif

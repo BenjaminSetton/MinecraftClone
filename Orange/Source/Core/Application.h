@@ -10,36 +10,40 @@
 #include "./Events/MouseEvent.h"
 #include "Window.h"
 
-class Application : public EventSubject
+namespace Orange
 {
-public:
+	class Application : public EventSubject
+	{
+	public:
 
-	static Application* Handle;
+		static Application* Handle;
 
-	Application();
-	Application(const Application&) = default;
-	~Application();
+		Application();
+		Application(const Application&) = default;
+		~Application();
 
-	bool Initialize();
+		bool Initialize();
 
-	void Run();
+		void Run();
 
-	void Shutdown();
+		void Shutdown();
 
-	LRESULT CALLBACK MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam);
+		LRESULT CALLBACK MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam);
 
-	const Window* GetMainWindow();
+		const Window* GetMainWindow();
 
-private:
+	private:
 
-	bool Update();
+		bool Update();
 
-	Window* m_mainWindow;
+		Window* m_mainWindow;
 
-	Input* m_Input;
-	Graphics* m_Graphics;
-	Clock* m_Clock;
+		Input* m_Input;
+		Graphics* m_Graphics;
+		Clock* m_Clock;
 
-};
+	};
+}
+
 
 #endif

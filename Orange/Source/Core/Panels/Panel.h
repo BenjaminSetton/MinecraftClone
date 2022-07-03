@@ -6,7 +6,7 @@
 
 #include "PanelComponent.h"
 #include "../../imgui/imgui.h"
-#include "../MathTypes.h"
+#include "../../Utility/MathTypes.h"
 #include "../../Utility/Utility.h"
 
 enum PanelPropertyFlags_

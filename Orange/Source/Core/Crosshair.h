@@ -1,24 +1,30 @@
 #ifndef _CROSSHAIR_H
 #define _CROSSHAIR_H
 
-class Crosshair
+namespace Orange
 {
-public:
 
-	Crosshair() = delete;
-	Crosshair(const Crosshair& other) = delete;
-	~Crosshair() = delete;
+	class Crosshair
+	{
+	public:
 
-	static void Update(const float dt);
+		Crosshair() = delete;
+		Crosshair(const Crosshair& other) = delete;
+		~Crosshair() = delete;
 
-	const float GetScale();
-	void SetScale(const float scale);
+		static void Update(const float dt);
 
-private:
+		const float GetScale();
+		void SetScale(const float scale);
 
-	static void PushQuadsToManager();
+	private:
 
-	static float m_scale;
-};
+		static void PushQuadsToManager();
+
+		static float m_scale;
+	};
+
+}
+
 
 #endif

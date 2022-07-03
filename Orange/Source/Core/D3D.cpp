@@ -2,7 +2,7 @@
 
 #include "Application.h"
 #include "D3D.h"
-#include "MathTypes.h"
+#include "../Utility/MathTypes.h"
 #include "../Utility/Utility.h"
 
 using namespace DirectX;

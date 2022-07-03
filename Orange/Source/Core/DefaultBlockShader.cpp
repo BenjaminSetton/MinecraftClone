@@ -9,7 +9,7 @@
 #include "EditorLayer.h"
 #include "Panels/MainViewportPanel.h"
 #include "../Utility/ImGuiLayer.h" // ImGui Debug
-#include "MathTypes.h"
+#include "../Utility/MathTypes.h"
 #include "../Utility/Utility.h"
 
 
@@ -88,7 +88,7 @@ void DefaultBlockShader::Render(ID3D11ShaderResourceView* const* srvs)
 
 	// Reset the RTV
 	context->ClearRenderTargetView(m_viewportTextureData.renderTargetView, colors);
-	context->ClearDepthStencilView(m_viewportTextureData.depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0.0f);
+	context->ClearDepthStencilView(m_viewportTextureData.depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	BindObjects(srvs);
 

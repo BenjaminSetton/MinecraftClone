@@ -8,20 +8,25 @@ workspace "Orange"
 		"Distribution"
 	}
 
+	startproject "Orange"
+
 outputdir = "%{cfg.buildcfg}/%{cfg.system}/%{cfg.architecture}"
 
 project "Orange"
 	location "Generated"
 	kind "WindowedApp"
 	language "C++"
+	cppdialect "C++20"
+	warnings "Extra"
 
-	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-	objdir ("bin/intermediate/" .. outputdir .. "/%{prj.name}")
+	targetdir ("Generated/bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("Generated/bin/intermediate/" .. outputdir .. "/%{prj.name}")
 
 	files
 	{
 		"./Source/**.h",
-		"./Source/**.cpp"
+		"./Source/**.cpp",
+		"./Source/Shaders/**.hlsl"
 	}
 
 	includedirs
@@ -38,8 +43,21 @@ project "Orange"
 		"./ThirdParty/DirectX11/src/%{cfg.architecture}/%{cfg.buildcfg}/DirectXTK.lib"
 	}
 
+	-- HLSL shader filters --
+	filter "files:**.hlsl"
+		shadermodel "5.0"
+	
+	filter "files:**_VS.hlsl"
+		shadertype "Vertex"
+	
+	filter "files:**_GS.hlsl"
+		shadertype "Geometry"
+	
+	filter "files:**_PS.hlsl"
+		shadertype "Pixel"
+
+	-- System filters --
 	filter "system:Windows"
-		cppdialect "C++20"
 		systemversion "latest"
 
 		defines
@@ -47,6 +65,12 @@ project "Orange"
 			"OG_WINDOWS"
 		}
 
+		postbuildcommands
+		{
+			("{COPY} ../ThirdParty/FreeType/freetype.dll ./bin/" .. outputdir .. "/%{prj.name}")
+		}
+
+	-- Configuration filters --
 	filter "configurations:Debug"
 		defines "OG_DEBUG"
 		symbols "On"

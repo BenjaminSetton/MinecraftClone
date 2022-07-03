@@ -3,7 +3,7 @@
 #include "Application.h"
 #include "DefaultBlockShader.h"
 #include "EditorLayer.h"
-#include "MathTypes.h"
+#include "../Utility/MathTypes.h"
 #include "Panels/MainViewportPanel.h"
 #include "../Utility/Utility.h"
 
@@ -82,7 +82,7 @@ void EditorLayer::Draw()
 {
 	// Create a dock space over the entire viewport so we can dock all the panels. This means that
 	// resizing any panel will be taken care of by ImGui
-	ImGuiID mainViewportID = ImGui::DockSpaceOverViewport(nullptr, ImGuiDockNodeFlags_PassthruCentralNode);
+	//ImGuiID mainViewportID = ImGui::DockSpaceOverViewport(nullptr, ImGuiDockNodeFlags_PassthruCentralNode);
 	//ImGui::DockBuilderAddNode(m_panels[static_cast<int>(PanelLocation::LEFT)]->GetID(), ImGuiDockNodeFlags_None);
 
 	for (auto panel : m_panels)

@@ -55,29 +55,29 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\bin\Debug\windows\x86_64\Orange\</OutDir>
-    <IntDir>..\bin\intermediate\Debug\windows\x86_64\Orange\</IntDir>
+    <OutDir>bin\Debug\windows\x86_64\Orange\</OutDir>
+    <IntDir>bin\intermediate\Debug\windows\x86_64\Orange\</IntDir>
     <TargetName>Orange</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\bin\Release\windows\x86_64\Orange\</OutDir>
-    <IntDir>..\bin\intermediate\Release\windows\x86_64\Orange\</IntDir>
+    <OutDir>bin\Release\windows\x86_64\Orange\</OutDir>
+    <IntDir>bin\intermediate\Release\windows\x86_64\Orange\</IntDir>
     <TargetName>Orange</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\bin\Distribution\windows\x86_64\Orange\</OutDir>
-    <IntDir>..\bin\intermediate\Distribution\windows\x86_64\Orange\</IntDir>
+    <OutDir>bin\Distribution\windows\x86_64\Orange\</OutDir>
+    <IntDir>bin\intermediate\Distribution\windows\x86_64\Orange\</IntDir>
     <TargetName>Orange</TargetName>
     <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <PreprocessorDefinitions>OG_WINDOWS;OG_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\ThirdParty\FreeType\inc;..\ThirdParty\FreeType\src;..\ThirdParty\DirectX11\inc;..\ThirdParty\DirectX11\src\x86_64\Debug;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -89,11 +89,14 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>..\ThirdParty\FreeType\src\freetype.lib;..\ThirdParty\DirectX11\src\x86_64\Debug\DirectXTK.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>IF EXIST ..\ThirdParty\FreeType\freetype.dll\ (xcopy /Q /E /Y /I ..\ThirdParty\FreeType\freetype.dll bin\Debug\windows\x86_64\$(ProjectName) &gt; nul) ELSE (xcopy /Q /Y /I ..\ThirdParty\FreeType\freetype.dll bin\Debug\windows\x86_64\$(ProjectName) &gt; nul)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <PreprocessorDefinitions>OG_WINDOWS;OG_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\ThirdParty\FreeType\inc;..\ThirdParty\FreeType\src;..\ThirdParty\DirectX11\inc;..\ThirdParty\DirectX11\src\x86_64\Release;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
@@ -109,11 +112,14 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>..\ThirdParty\FreeType\src\freetype.lib;..\ThirdParty\DirectX11\src\x86_64\Release\DirectXTK.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>IF EXIST ..\ThirdParty\FreeType\freetype.dll\ (xcopy /Q /E /Y /I ..\ThirdParty\FreeType\freetype.dll bin\Release\windows\x86_64\$(ProjectName) &gt; nul) ELSE (xcopy /Q /Y /I ..\ThirdParty\FreeType\freetype.dll bin\Release\windows\x86_64\$(ProjectName) &gt; nul)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Distribution|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <PreprocessorDefinitions>OG_WINDOWS;OG_DISTRIBUTION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\ThirdParty\FreeType\inc;..\ThirdParty\FreeType\src;..\ThirdParty\DirectX11\inc;..\ThirdParty\DirectX11\src\x86_64\Distribution;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
@@ -129,6 +135,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>..\ThirdParty\FreeType\src\freetype.lib;..\ThirdParty\DirectX11\src\x86_64\Distribution\DirectXTK.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>IF EXIST ..\ThirdParty\FreeType\freetype.dll\ (xcopy /Q /E /Y /I ..\ThirdParty\FreeType\freetype.dll bin\Distribution\windows\x86_64\$(ProjectName) &gt; nul) ELSE (xcopy /Q /Y /I ..\ThirdParty\FreeType\freetype.dll bin\Distribution\windows\x86_64\$(ProjectName) &gt; nul)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Core\Application.h" />
@@ -155,7 +164,6 @@
     <ClInclude Include="..\Source\Core\Game.h" />
     <ClInclude Include="..\Source\Core\Graphics.h" />
     <ClInclude Include="..\Source\Core\Layer.h" />
-    <ClInclude Include="..\Source\Core\MathTypes.h" />
     <ClInclude Include="..\Source\Core\Panels\MainViewportPanel.h" />
     <ClInclude Include="..\Source\Core\Panels\Panel.h" />
     <ClInclude Include="..\Source\Core\Panels\PanelComponent.h" />
@@ -168,7 +176,6 @@
     <ClInclude Include="..\Source\Core\ShaderBufferManagers\QuadNDCBufferManager.h" />
     <ClInclude Include="..\Source\Core\ShadowShader.h" />
     <ClInclude Include="..\Source\Core\Texture.h" />
-    <ClInclude Include="..\Source\Core\Texture2D.h" />
     <ClInclude Include="..\Source\Core\TextureManager.h" />
     <ClInclude Include="..\Source\Core\TextureViewer.h" />
     <ClInclude Include="..\Source\Core\Window.h" />
@@ -176,12 +183,17 @@
     <ClInclude Include="..\Source\Utility\Clock.h" />
     <ClInclude Include="..\Source\Utility\DDSTextureLoader.h" />
     <ClInclude Include="..\Source\Utility\DebugRenderer.h" />
+    <ClInclude Include="..\Source\Utility\FileSystem\FileSystem.h" />
+    <ClInclude Include="..\Source\Utility\FileSystem\FileSystem_Base.h" />
+    <ClInclude Include="..\Source\Utility\FileSystem\FileSystem_Windows.h" />
+    <ClInclude Include="..\Source\Utility\FontManager.h" />
     <ClInclude Include="..\Source\Utility\ImGuiDrawData.h" />
     <ClInclude Include="..\Source\Utility\ImGuiLayer.h" />
     <ClInclude Include="..\Source\Utility\Input.h" />
     <ClInclude Include="..\Source\Utility\Log.h" />
     <ClInclude Include="..\Source\Utility\Math.h" />
     <ClInclude Include="..\Source\Utility\MathConstants.h" />
+    <ClInclude Include="..\Source\Utility\MathTypes.h" />
     <ClInclude Include="..\Source\Utility\ScopeTimer.h" />
     <ClInclude Include="..\Source\Utility\SimplexNoise.h" />
     <ClInclude Include="..\Source\Utility\SortedPool.h" />
@@ -225,7 +237,6 @@
     <ClCompile Include="..\Source\Core\ShaderBufferManagers\QuadNDCBufferManager.cpp" />
     <ClCompile Include="..\Source\Core\ShadowShader.cpp" />
     <ClCompile Include="..\Source\Core\Texture.cpp" />
-    <ClCompile Include="..\Source\Core\Texture2D.cpp" />
     <ClCompile Include="..\Source\Core\TextureManager.cpp" />
     <ClCompile Include="..\Source\Core\TextureViewer.cpp" />
     <ClCompile Include="..\Source\Core\Window.cpp" />
@@ -233,6 +244,9 @@
     <ClCompile Include="..\Source\Misc\pch.cpp" />
     <ClCompile Include="..\Source\Utility\Clock.cpp" />
     <ClCompile Include="..\Source\Utility\DebugRenderer.cpp" />
+    <ClCompile Include="..\Source\Utility\FileSystem\FileSystem.cpp" />
+    <ClCompile Include="..\Source\Utility\FileSystem\FileSystem_Windows.cpp" />
+    <ClCompile Include="..\Source\Utility\FontManager.cpp" />
     <ClCompile Include="..\Source\Utility\ImGuiDrawData.cpp" />
     <ClCompile Include="..\Source\Utility\ImGuiLayer.cpp" />
     <ClCompile Include="..\Source\Utility\Input.cpp" />
@@ -247,6 +261,56 @@
     <ClCompile Include="..\Source\imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="..\Source\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\Source\imgui\imgui_widgets.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\Source\Shaders\DebugRenderer_PS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\DebugRenderer_VS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\DefaultBlock_GS.hlsl">
+      <ShaderType>Geometry</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\DefaultBlock_PS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\DefaultBlock_VS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\NDCQuad_VS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\Quad_PS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\Quad_VS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\ShadowMap_PS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\ShadowMap_VS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\TextureViewer_PS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\TextureViewer_VS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

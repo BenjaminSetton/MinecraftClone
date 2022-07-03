@@ -3,23 +3,29 @@
 
 #include "Panel.h"
 #include "PanelComponent.h"
-#include "../Texture2D.h"
+#include "../Texture.h"
 
-class MainViewportPanel : public PanelComponent
+namespace Orange
 {
-public:
 
-	MainViewportPanel(Panel* parent);
-	MainViewportPanel(const MainViewportPanel& other) = delete;
-	~MainViewportPanel() = default;
+	class MainViewportPanel : public PanelComponent
+	{
+	public:
 
-	void SetTexture(void* data, const Orange::Vec2& dimensions);
-	void Draw() override;
+		MainViewportPanel(Panel* parent);
+		MainViewportPanel(const MainViewportPanel& other) = delete;
+		~MainViewportPanel() = default;
 
-private:
+		void SetTexture(void* data, const Vec2& size);
+		void Draw() override;
 
-	Texture2D m_texture;
+	private:
 
-};
+		Texture m_texture;
+
+	};
+
+}
+
 
 #endif

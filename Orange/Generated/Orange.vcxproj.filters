@@ -16,8 +16,14 @@
     <Filter Include="Misc">
       <UniqueIdentifier>{9116897C-7D4D-8A0D-263A-70101250060F}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{EFAC8DF2-5B8C-0C8E-64A4-9764D00273EF}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Utility">
       <UniqueIdentifier>{594615A9-C525-9444-CE3D-1F1B3A9CFAA5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\FileSystem">
+      <UniqueIdentifier>{CDDEF674-B9C2-B7CA-2223-B21D0E26A24C}</UniqueIdentifier>
     </Filter>
     <Filter Include="imgui">
       <UniqueIdentifier>{0098A80F-6CAC-D0C0-352E-7420A101CDF1}</UniqueIdentifier>
@@ -96,9 +102,6 @@
     <ClInclude Include="..\Source\Core\Layer.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\Core\MathTypes.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="..\Source\Core\Panels\MainViewportPanel.h">
       <Filter>Core\Panels</Filter>
     </ClInclude>
@@ -135,9 +138,6 @@
     <ClInclude Include="..\Source\Core\Texture.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\Core\Texture2D.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="..\Source\Core\TextureManager.h">
       <Filter>Core</Filter>
     </ClInclude>
@@ -159,6 +159,18 @@
     <ClInclude Include="..\Source\Utility\DebugRenderer.h">
       <Filter>Utility</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\Utility\FileSystem\FileSystem.h">
+      <Filter>Utility\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Utility\FileSystem\FileSystem_Base.h">
+      <Filter>Utility\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Utility\FileSystem\FileSystem_Windows.h">
+      <Filter>Utility\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Utility\FontManager.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
     <ClInclude Include="..\Source\Utility\ImGuiDrawData.h">
       <Filter>Utility</Filter>
     </ClInclude>
@@ -175,6 +187,9 @@
       <Filter>Utility</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\Utility\MathConstants.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Utility\MathTypes.h">
       <Filter>Utility</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\Utility\ScopeTimer.h">
@@ -302,9 +317,6 @@
     <ClCompile Include="..\Source\Core\Texture.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\Source\Core\Texture2D.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="..\Source\Core\TextureManager.cpp">
       <Filter>Core</Filter>
     </ClCompile>
@@ -324,6 +336,15 @@
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\Utility\DebugRenderer.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Utility\FileSystem\FileSystem.cpp">
+      <Filter>Utility\FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Utility\FileSystem\FileSystem_Windows.cpp">
+      <Filter>Utility\FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Utility\FontManager.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\Utility\ImGuiDrawData.cpp">
@@ -368,5 +389,43 @@
     <ClCompile Include="..\Source\imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\Source\Shaders\DebugRenderer_PS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\DebugRenderer_VS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\DefaultBlock_GS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\DefaultBlock_PS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\DefaultBlock_VS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\NDCQuad_VS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\Quad_PS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\Quad_VS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\ShadowMap_PS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\ShadowMap_VS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\TextureViewer_PS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\TextureViewer_VS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

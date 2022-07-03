@@ -8,7 +8,7 @@
 #include "../Core/TextureManager.h"
 #include "../Utility/ImGuiLayer.h"
 #include "TextureViewer.h"
-#include "Texture2D.h"
+//#include "Texture.h"
 
 #include "DayNightCycle.h"
 
