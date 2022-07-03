@@ -29,7 +29,7 @@ constexpr auto TEX_HEIGHT = 512;
 // They have to be float4's to abide by HLSL's packing optimization
 // This is a design decision. Instead of forcing HLSL to pack an array
 // into 8-byte vectors, we trade off memory for speed
-static DirectX::XMFLOAT4 uvs[NUM_BLOCKS][36]
+static constexpr DirectX::XMFLOAT4 uvs[NUM_BLOCKS][36]
 {
     // AIR
     { 

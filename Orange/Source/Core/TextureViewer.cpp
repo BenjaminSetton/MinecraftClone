@@ -4,6 +4,7 @@
 
 #include "Application.h"
 #include "D3D.h"
+#include "../Utility/FileSystem/FileSystem.h"
 #include "../Utility/MathTypes.h"
 #include "TextureViewer.h"
 #include "../Utility/Utility.h"
@@ -99,12 +100,16 @@ void TextureViewer::CreateShaders()
 	ID3D10Blob* PSBlob;
 
 	// Compile the vertex shader
-	hr = D3DCompileFromFile(L"../Source/Shaders/TextureViewer_VS.hlsl", nullptr, nullptr, "main", "vs_5_0",
+	hr = D3DCompileFromFile(
+		FileSystem::GetFileNameRelativeToGeneratedDirectory(L"TextureViewer_VS.hlsl").c_str(), 
+		nullptr, nullptr, "main", "vs_5_0",
 		D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG, 0, &VSBlob, nullptr);
 	OG_ASSERT(!FAILED(hr));
 
 	// Compile the pixel shader
-	hr = D3DCompileFromFile(L"../Source/Shaders/TextureViewer_PS.hlsl", nullptr, nullptr, "main", "ps_5_0",
+	hr = D3DCompileFromFile(
+		FileSystem::GetFileNameRelativeToGeneratedDirectory(L"TextureViewer_PS.hlsl").c_str(),
+			nullptr, nullptr, "main", "ps_5_0",
 		D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_DEBUG, 0, &PSBlob, nullptr);
 	OG_ASSERT(!FAILED(hr));
 

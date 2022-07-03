@@ -78,7 +78,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
-      <PreprocessorDefinitions>OG_WINDOWS;OG_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OG_WINDOWS;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;OG_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\ThirdParty\FreeType\inc;..\ThirdParty\FreeType\src;..\ThirdParty\DirectX11\inc;..\ThirdParty\DirectX11\src\x86_64\Debug;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
@@ -97,7 +97,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
-      <PreprocessorDefinitions>OG_WINDOWS;OG_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OG_WINDOWS;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;OG_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\ThirdParty\FreeType\inc;..\ThirdParty\FreeType\src;..\ThirdParty\DirectX11\inc;..\ThirdParty\DirectX11\src\x86_64\Release;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -120,7 +120,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
-      <PreprocessorDefinitions>OG_WINDOWS;OG_DISTRIBUTION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OG_WINDOWS;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;OG_DISTRIBUTION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\ThirdParty\FreeType\inc;..\ThirdParty\FreeType\src;..\ThirdParty\DirectX11\inc;..\ThirdParty\DirectX11\src\x86_64\Distribution;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -178,6 +178,8 @@
     <ClInclude Include="..\Source\Core\Texture.h" />
     <ClInclude Include="..\Source\Core\TextureManager.h" />
     <ClInclude Include="..\Source\Core\TextureViewer.h" />
+    <ClInclude Include="..\Source\Core\UI\TextBox.h" />
+    <ClInclude Include="..\Source\Core\UI\UIComponent.h" />
     <ClInclude Include="..\Source\Core\Window.h" />
     <ClInclude Include="..\Source\Misc\pch.h" />
     <ClInclude Include="..\Source\Utility\Clock.h" />
@@ -239,6 +241,7 @@
     <ClCompile Include="..\Source\Core\Texture.cpp" />
     <ClCompile Include="..\Source\Core\TextureManager.cpp" />
     <ClCompile Include="..\Source\Core\TextureViewer.cpp" />
+    <ClCompile Include="..\Source\Core\UI\TextBox.cpp" />
     <ClCompile Include="..\Source\Core\Window.cpp" />
     <ClCompile Include="..\Source\Core\main.cpp" />
     <ClCompile Include="..\Source\Misc\pch.cpp" />

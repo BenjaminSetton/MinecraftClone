@@ -1,6 +1,7 @@
 #include "../Misc/pch.h"
 
 #include "Application.h"
+#include "../Utility/FileSystem/FileSystem.h"
 #include "Game.h"
 #include "Graphics.h"
 #include "../Utility/Utility.h"
@@ -58,17 +59,35 @@ bool Graphics::Initialize()
 
 	// Create the chunk shader class object
 	m_chunkShader = new DefaultBlockShader();
-	m_chunkShader->CreateObjects(L"../Source/Shaders/DefaultBlock_VS.hlsl", L"../Source/Shaders/DefaultBlock_GS.hlsl", L"../Source/Shaders/DefaultBlock_PS.hlsl");
+
+	// PLEASE REMOVE
+	auto test = FileSystem::GetFileNameRelativeToGeneratedDirectory(L"DefaultBlock_VS.hlsl");
+
+
+	m_chunkShader->CreateObjects
+	(
+		FileSystem::GetFileNameRelativeToGeneratedDirectory(L"DefaultBlock_VS.hlsl").c_str(),
+		FileSystem::GetFileNameRelativeToGeneratedDirectory(L"DefaultBlock_GS.hlsl").c_str(),
+		FileSystem::GetFileNameRelativeToGeneratedDirectory(L"DefaultBlock_PS.hlsl").c_str()
+	);
 	m_chunkShader->Initialize(player->GetCamera(CameraType::FirstPerson)->GetViewMatrix());
 
 	// Create the debug renderer class object
 	m_debugShader = new DebugRendererShader();
-	m_debugShader->CreateObjects(L"../Source/Shaders/DebugRenderer_VS.hlsl", L"../Source/Shaders/DebugRenderer_PS.hlsl");
+	m_debugShader->CreateObjects
+	(
+		FileSystem::GetFileNameRelativeToGeneratedDirectory(L"DebugRenderer_VS.hlsl").c_str(),
+		FileSystem::GetFileNameRelativeToGeneratedDirectory(L"DebugRenderer_PS.hlsl").c_str()
+	);
 	m_debugShader->Initialize(player->GetCamera(CameraType::FirstPerson)->GetViewMatrix());
 
 	// Create the quad shader class object
 	m_quadShader = new QuadShader();
-	m_quadShader->CreateObjects(L"../Source/Shaders/Quad_VS.hlsl", L"../Source/Shaders/NDCQuad_VS.hlsl", L"../Source/Shaders/Quad_PS.hlsl");
+	m_quadShader->CreateObjects
+	(
+		FileSystem::GetFileNameRelativeToGeneratedDirectory(L"Quad_VS.hlsl").c_str(),
+		FileSystem::GetFileNameRelativeToGeneratedDirectory(L"NDCQuad_VS.hlsl").c_str(),
+		FileSystem::GetFileNameRelativeToGeneratedDirectory(L"Quad_PS.hlsl").c_str());
 	m_quadShader->Initialize();
 	
 	// Initialize the ImGuiLayer

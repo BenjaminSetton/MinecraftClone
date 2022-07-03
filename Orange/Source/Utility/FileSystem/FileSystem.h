@@ -3,32 +3,39 @@
 
 #include <string>
 
-// Forward declaration
-class FileSystem_Base;
 
-class FileSystem
+namespace Orange
 {
-public:
 
-	static void Initialize();
+	// Forward declaration
+	class FileSystem_Base;
 
-	static const bool DoesFileExist(const std::string fileName, bool considerExtension = false);
-	static const bool DoesDirectoryExist(const std::string directory);
+	class FileSystem
+	{
+	public:
 
-	// Returns the root directory that all paths are relative to. 
-	// This is the PROJECT directory, and this is the ONLY ABSOLUTE path
-	static const std::string GetRootDirectory();
+		static void Initialize();
 
-	// Returns the relative path of the filename to the root directory
-	static const std::string GetFileNameRelativeToGeneratedDirectory(const std::string& fileName);
+		static const bool DoesFileExist(const std::string fileName, bool considerExtension = false);
+		static const bool DoesDirectoryExist(const std::string directory);
 
-private:
+		// Returns the root directory that all paths are relative to. 
+		// This is the PROJECT directory, and this is the ONLY ABSOLUTE path
+		static const std::string GetRootDirectory();
 
-	static FileSystem_Base* m_instance;
+		// Returns the relative path of the filename to the root directory
+		static const std::string GetFileNameRelativeToGeneratedDirectory(const std::string& fileName);
+		static const std::wstring GetFileNameRelativeToGeneratedDirectory(const std::wstring& fileName);
 
-	static bool m_isInitialized;
+	private:
 
-};
+		static FileSystem_Base* m_instance;
+
+		static bool m_isInitialized;
+
+	};
+}
+
 
 
 #endif

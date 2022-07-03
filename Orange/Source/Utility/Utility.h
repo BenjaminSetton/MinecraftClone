@@ -1,12 +1,17 @@
 #ifndef UTILITY_H
 #define UTILITY_H
 
+#include <assert.h>
+
 #include "ScopeTimer.h"
 #include "Log.h"
 
-#include <assert.h>
-
-#ifdef _DEBUG
+//////////////////////////////////////////////////////////////////////////////
+// 
+// Configuration-specific macro definitions.
+//
+//////////////////////////////////////////////////////////////////////////////
+#ifdef OG_DEBUG
 
 // Misc defines
 #define OG_CONCAT_(a, b) a ## b

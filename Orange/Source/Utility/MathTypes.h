@@ -77,6 +77,47 @@ namespace Orange
 
 		float x, y, z;
 	};
+
+	class Vec4
+	{
+	public:
+
+		Vec4() = default;
+		Vec4(const float _x) { Vec4(_x, _x, _x, _x); }
+		Vec4(const float _x, const float _y, const float _z, const float _w) { x = _x; y = _y; z = _z; w = _w; }
+		Vec4(const int32_t _x, const int32_t _y, const int32_t _z, const int32_t _w) {
+			x = static_cast<float>(_x), y = static_cast<float>(_y); z = static_cast<float>(_z); w = static_cast<float>(_w); }
+		Vec4(const Vec4& other) { x = other.x; y = other.y; z = other.z; w = other.w; }
+		~Vec4() = default;
+
+		Vec4 operator+(const Vec4& other)
+		{
+			return Vec4(x + other.x, y + other.y, z + other.z, w + other.w);
+		}
+
+		Vec4 operator-(const Vec4& other)
+		{
+			return Vec4(other.x - x, other.y - y, other.z - z, other.w - w);
+		}
+
+		void operator+=(const Vec4& other)
+		{
+			x += other.x;
+			y += other.y;
+			z += other.z;
+			w += other.w;
+		}
+
+		void operator-=(const Vec4& other)
+		{
+			x -= other.x;
+			y -= other.y;
+			z -= other.z;
+			w -= other.w;
+		}
+
+		float x, y, z, w;
+	};
 }
 
 

@@ -85,9 +85,10 @@ void EditorLayer::Draw()
 	//ImGuiID mainViewportID = ImGui::DockSpaceOverViewport(nullptr, ImGuiDockNodeFlags_PassthruCentralNode);
 	//ImGui::DockBuilderAddNode(m_panels[static_cast<int>(PanelLocation::LEFT)]->GetID(), ImGuiDockNodeFlags_None);
 
-	for (auto panel : m_panels)
-	{
-		panel->Draw();
-	}
+	// Comment out for now, so I can test my font renderer
+	//for (auto panel : m_panels)
+	//{
+	//	panel->Draw();
+	//}
 }
 

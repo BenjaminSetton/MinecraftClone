@@ -62,7 +62,11 @@ project "Orange"
 
 		defines
 		{
-			"OG_WINDOWS"
+			"OG_WINDOWS",
+
+			-- Silence the warning that including codecvt gives. This is not an issue for now, but in case --
+			-- there's an issue in the future regarding wchar <=> char conversion, this could be it        --
+			"_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING"
 		}
 
 		postbuildcommands

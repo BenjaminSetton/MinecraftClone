@@ -13,6 +13,9 @@
     <Filter Include="Core\ShaderBufferManagers">
       <UniqueIdentifier>{3C6EADDB-A830-E165-F1E0-6FF25DE2B943}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\UI">
+      <UniqueIdentifier>{9B407134-0720-F0CF-1038-7BA67C965631}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Misc">
       <UniqueIdentifier>{9116897C-7D4D-8A0D-263A-70101250060F}</UniqueIdentifier>
     </Filter>
@@ -143,6 +146,12 @@
     </ClInclude>
     <ClInclude Include="..\Source\Core\TextureViewer.h">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Core\UI\TextBox.h">
+      <Filter>Core\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Core\UI\UIComponent.h">
+      <Filter>Core\UI</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\Core\Window.h">
       <Filter>Core</Filter>
@@ -322,6 +331,9 @@
     </ClCompile>
     <ClCompile Include="..\Source\Core\TextureViewer.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Core\UI\TextBox.cpp">
+      <Filter>Core\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\Core\Window.cpp">
       <Filter>Core</Filter>
