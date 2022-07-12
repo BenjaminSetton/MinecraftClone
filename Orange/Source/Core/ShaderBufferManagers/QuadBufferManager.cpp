@@ -92,9 +92,9 @@ void QuadBufferManager::UpdateBuffers()
 		D3D::GetDeviceContext()->Map(m_instanceBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 		{
 			int64_t numBytes = (int64_t)sizeof(decltype(m_instanceData[0])) * m_instanceData.size();
-			ImGui::Begin("Timing Panel");
-			ImGui::Text("Number of bytes copied: %i", numBytes);
-			ImGui::End();
+			//ImGui::Begin("Timing Panel");
+			//ImGui::Text("Number of bytes copied: %i", numBytes);
+			//ImGui::End();
 			memcpy(mappedResource.pData, &m_instanceData[0], numBytes);
 		}
 		D3D::GetDeviceContext()->Unmap(m_instanceBuffer, 0);

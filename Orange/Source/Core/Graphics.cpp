@@ -15,11 +15,13 @@
 #include "QuadShader.h"
 
 #include "ChunkManager.h"
-#include "../Core/ShaderBufferManagers/ChunkBufferManager.h"
-#include "../Core/ShaderBufferManagers/QuadBufferManager.h"
-#include "../Core/ShaderBufferManagers/QuadNDCBufferManager.h"
+#include "ShaderBufferManagers/ChunkBufferManager.h"
+#include "ShaderBufferManagers/QuadBufferManager.h"
+#include "ShaderBufferManagers/QuadNDCBufferManager.h"
+#include "UI/TextBox.h"
 #include "FrustumCulling.h"
 #include "Crosshair.h"
+#include "UI/UIManager.h"
 
 #include "../Utility/Math.h"
 
@@ -34,7 +36,7 @@ bool Graphics::Initialize()
 	initResult = D3D::Initialize(VSYNC_ENABLED, SCREEN_FAR, SCREEN_NEAR);
 	if (!initResult) return false;
 
-	Vec2 screenDimensions = Application::Handle->GetMainWindow()->GetDimensions();
+	Vec2 screenDimensions = Application::Handle->GetMainWindow()->GetSize();
 	m_screenWidth = static_cast<int>(screenDimensions.x);
 	m_screenHeight = static_cast<int>(screenDimensions.y);
 
@@ -57,12 +59,10 @@ bool Graphics::Initialize()
 	QuadBufferManager::Initialize();
 	QuadNDCBufferManager::Initialize();
 
+	TextBoxRenderer::Initialize();
+
 	// Create the chunk shader class object
 	m_chunkShader = new DefaultBlockShader();
-
-	// PLEASE REMOVE
-	auto test = FileSystem::GetFileNameRelativeToGeneratedDirectory(L"DefaultBlock_VS.hlsl");
-
 
 	m_chunkShader->CreateObjects
 	(
@@ -91,7 +91,7 @@ bool Graphics::Initialize()
 	m_quadShader->Initialize();
 	
 	// Initialize the ImGuiLayer
-	ImGuiLayer::Initialize(Application::Handle->GetMainWindow()->GetHWND(), D3D::GetDevice(), D3D::GetDeviceContext());
+	//ImGuiLayer::Initialize(Application::Handle->GetMainWindow()->GetHWND(), D3D::GetDevice(), D3D::GetDeviceContext());
 
 	m_texViewer = new TextureViewer(nullptr, 5, 5, 0.15f);
 
@@ -104,6 +104,7 @@ void Graphics::Shutdown()
 	ChunkBufferManager::Shutdown();
 	QuadBufferManager::Shutdown();
 	QuadNDCBufferManager::Shutdown();
+	TextBoxRenderer::Deinitialize();
 
 	if (m_quadShader)
 	{
@@ -154,9 +155,9 @@ bool Graphics::Frame(const float dt)
 
 	Player* player = Game::GetPrimaryPlayer();
 
-	ImGui::Begin("Timing Panel");
+	/*ImGui::Begin("Timing Panel");
 	ImGui::Text("FRAMERATE: %2.2f FPS", 1.0f / dt);
-	ImGui::End();
+	ImGui::End();*/
 
 	// Check to toggle wireframe state
 	if (Input::IsKeyDown(KeyCode::E)) D3D::SetWireframeRasterState(true);
@@ -235,6 +236,8 @@ bool Graphics::Frame(const float dt)
 			m_quadShader->SetQuadTexture(m_textureManager->GetTexture(std::string("CROSSHAIR_TEX")));
 			m_quadShader->SetRenderInNDC(true);
 			m_quadShader->Render();
+
+			UIManager::Draw();
 		}
 
 		{
@@ -242,6 +245,7 @@ bool Graphics::Frame(const float dt)
 			//// Render the texture viewer quad
 			//m_texViewer->Render();
 		}
+
 	}
 
 	Renderer_Data::playerPos = player->GetPosition();

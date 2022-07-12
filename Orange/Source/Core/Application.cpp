@@ -130,7 +130,7 @@ namespace Orange
 
 	bool Application::Update()
 	{
-		ImGuiLayer::BeginFrame();
+		//ImGuiLayer::BeginFrame();
 
 		// Quit running if ESC is pressed
 		if (m_Input->IsKeyDown(VK_ESCAPE)) return false;
@@ -156,8 +156,8 @@ namespace Orange
 		// TODO: Move this to a separate Draw function
 		EditorLayer::Draw();
 
-		ImGuiLayer::Draw();
-		ImGuiLayer::EndFrame();
+		//ImGuiLayer::Draw();
+		//ImGuiLayer::EndFrame();
 
 		m_Graphics->Present();
 
@@ -234,7 +234,10 @@ namespace Orange
 
 	}
 
-	const Window* Application::GetMainWindow() { return m_mainWindow; }
+	const Window* Application::GetMainWindow()
+	{
+		return m_mainWindow;
+	}
 
 }
 

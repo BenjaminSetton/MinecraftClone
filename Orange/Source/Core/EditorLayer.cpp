@@ -5,6 +5,7 @@
 #include "EditorLayer.h"
 #include "../Utility/MathTypes.h"
 #include "Panels/MainViewportPanel.h"
+#include "UI/UIManager.h"
 #include "../Utility/Utility.h"
 
 using namespace Orange;
@@ -13,7 +14,7 @@ Panel* EditorLayer::m_panels[EditorLayer_NumberOfPanels] = { nullptr, };
 
 void EditorLayer::Initialize()
 {
-	Vec2 windowSize = Application::Handle->GetMainWindow()->GetDimensions();
+	Vec2 windowSize = Application::Handle->GetMainWindow()->GetSize();
 	Vec2 windowPos = Application::Handle->GetMainWindow()->GetPosition();
 
 	// Initialize all the panels
@@ -76,6 +77,15 @@ Panel* EditorLayer::GetPanel(const PanelLocation whichPanel)
 void EditorLayer::Update(const float& dt)
 {
 	UNUSED(dt);
+
+	UIManager::PushData({ { 200.0f, 75.0f }, { 35.0f, 60.0f } });
+	UIManager::Text("Another test: lorem ipsum");
+	UIManager::PopData();
+
+	UIManager::PushData({ { -100.0f, 500.0f }, { 200.0f, 20.0f } });
+	UIManager::Text("Testing another thing. The quick brown fox jumped over the lazy dog");
+	UIManager::PopData();
+
 }
 
 void EditorLayer::Draw()

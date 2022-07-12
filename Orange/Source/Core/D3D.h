@@ -34,6 +34,9 @@ public:
 	static DirectX::XMMATRIX GetProjectionMatrix();
 	static DirectX::XMMATRIX GetOrthoMatrix();
 
+	static const float GetNearPlane();
+	static const float GetFarPlane();
+
 	static void GetVideoCardInfo(char*, int&);
 
 	static ID3D11RenderTargetView* GetBackBuffer();
@@ -43,7 +46,7 @@ public:
 	static void TurnZBufferOn();
 	static void TurnZBufferOff();
 
-	static void ClearDepthBuffer(float value);
+	static void ClearDepthBuffer(float value = 1.0f);
 
 	static bool WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 

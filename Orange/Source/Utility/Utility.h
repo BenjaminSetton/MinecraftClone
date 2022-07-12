@@ -22,7 +22,7 @@
 
 // Asserting
 #define OG_ASSERT(cond) assert(cond)
-#define OG_ASSERT_MSG(cond, ...) assert(cond && printf(__VA_ARGS__))
+#define OG_ASSERT_MSG(cond, ...) assert(cond || printf(__VA_ARGS__))
 
 // Profiling
 #define OG_PROFILE_FUNC() auto OG_VARNAME(var) = ScopeTimer(std::string(__FUNCTION__))

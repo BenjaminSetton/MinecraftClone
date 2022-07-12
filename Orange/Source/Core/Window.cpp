@@ -118,7 +118,7 @@ void Window::Destroy()
 	return;
 }
 
-Vec2 Window::GetDimensions() const
+Vec2 Window::GetSize() const
 {
 	WINDOWINFO wi;
 	wi.cbSize = sizeof(WINDOWINFO);
@@ -136,7 +136,7 @@ Vec2 Window::GetPosition() const
 
 float Window::GetAspectRatio() const
 {
-	Vec2 dimensions = GetDimensions();
+	Vec2 dimensions = GetSize();
 	return static_cast<float>(dimensions.x) / dimensions.y;
 }
 

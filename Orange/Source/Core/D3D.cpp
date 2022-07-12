@@ -129,8 +129,8 @@ bool D3D::Initialize(const bool& vsync, const float& screenFar, const float& scr
 	swapChainDesc.BufferCount = 2;
 
 	// Set the width and height of the back buffer.
-	swapChainDesc.BufferDesc.Width = static_cast<UINT>(Application::Handle->GetMainWindow()->GetDimensions().x);
-	swapChainDesc.BufferDesc.Height = static_cast<UINT>(Application::Handle->GetMainWindow()->GetDimensions().y);
+	swapChainDesc.BufferDesc.Width = static_cast<UINT>(Application::Handle->GetMainWindow()->GetSize().x);
+	swapChainDesc.BufferDesc.Height = static_cast<UINT>(Application::Handle->GetMainWindow()->GetSize().y);
 
 	swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // Set regular 32-bit surface for the back buffer.
 
@@ -182,7 +182,7 @@ bool D3D::Initialize(const bool& vsync, const float& screenFar, const float& scr
 	// These should be considered to be the "real" width/height values
 	HRESULT hr = m_swapChain->GetDesc(&swapChainDesc);
 	OG_ASSERT(!FAILED(hr));
-	Vec2 dimensions = Application::Handle->GetMainWindow()->GetDimensions();
+	Vec2 dimensions = Application::Handle->GetMainWindow()->GetSize();
 
 
 	// Create the depth/stencil view and all of it's related objects
@@ -230,8 +230,8 @@ bool D3D::Initialize(const bool& vsync, const float& screenFar, const float& scr
 
 	// Setup the viewport for rendering.
 	D3D11_VIEWPORT viewport;
-	viewport.Width = static_cast<FLOAT>(viewportDimensions.x);
-	viewport.Height = static_cast<FLOAT>(viewportDimensions.y);
+	viewport.Width = static_cast<FLOAT>(Application::Handle->GetMainWindow()->GetSize().x);
+	viewport.Height = static_cast<FLOAT>(Application::Handle->GetMainWindow()->GetSize().y);
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
 	viewport.TopLeftX = 0;
@@ -366,6 +366,16 @@ XMMATRIX D3D::GetWorldMatrix() { return m_worldMatrix; }
 XMMATRIX D3D::GetProjectionMatrix() { return m_projectionMatrix; }
 XMMATRIX D3D::GetOrthoMatrix() { return m_orthoMatrix; }
 
+const float D3D::GetNearPlane()
+{
+	return m_screenNear;
+}
+
+const float D3D::GetFarPlane()
+{
+	return m_screenFar;
+}
+
 void D3D::GetVideoCardInfo(char* videoCardDescription, int& videoCardMemory)
 {
 	videoCardDescription = m_videoCardDescription;
@@ -393,7 +403,7 @@ void D3D::TurnZBufferOff()
 	m_depthDisabled = true;
 }
 
-void D3D::ClearDepthBuffer(float value)
+void D3D::ClearDepthBuffer(float value /*= 1.0f*/)
 {
 	m_deviceContext->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, value, static_cast<UINT8>(0));
 }
@@ -430,7 +440,7 @@ void D3D::CreateRenderTargetView()
 {
 	HRESULT hr;
 	ID3D11Texture2D* texture2D;
-	Vec2 dimensions = Application::Handle->GetMainWindow()->GetDimensions();
+	Vec2 dimensions = Application::Handle->GetMainWindow()->GetSize();
 
 	// Clear the render targets
 	m_deviceContext->OMSetRenderTargets(0, 0, 0);
@@ -463,7 +473,7 @@ void D3D::CreateDepthStencilView()
 	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
 	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
 	D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc;
-	Vec2 dimensions = Application::Handle->GetMainWindow()->GetDimensions();
+	Vec2 dimensions = Application::Handle->GetMainWindow()->GetSize();
 
 	// Release the previous objects, if necessary
 	if (m_depthDisabledStencilState){ m_depthDisabledStencilState->Release(); m_depthDisabledStencilState = nullptr; }

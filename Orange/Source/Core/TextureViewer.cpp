@@ -219,7 +219,7 @@ void TextureViewer::CreateVertexBuffer()
 		resource->QueryInterface<ID3D11Texture2D>(&tex);
 		tex->GetDesc(&texDesc);
 
-		Vec2 windowDimensions = Application::Handle->GetMainWindow()->GetDimensions();
+		Vec2 windowDimensions = Application::Handle->GetMainWindow()->GetSize();
 
 		// Positions and width/height mapped from [-1, 1], instead of [0, 1]
 		float texWidthNorm = texDesc.Width / windowDimensions.x * m_scale;

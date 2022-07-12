@@ -6,18 +6,6 @@ SamplerState sampClamp;
 
 cbuffer LightBuffer
 {
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     float4 lightDir[2];
     float4 lightCol[2];
     float4 lightAmbient[2];
@@ -53,7 +41,6 @@ float4 main(PixelIn input) : SV_TARGET
         float mapDepth = shadowMapTexture.Sample(sampClamp, shadowUV).x;
         float pointDepth = input.lightPos.z - bias;
         
-        
         if (mapDepth < pointDepth) return finalColor; // Pixel is shadowed
         // else pixel is not shadowed and we calculate the pixel color
     }
@@ -68,7 +55,6 @@ float4 main(PixelIn input) : SV_TARGET
         // Calculate the final color
         float4 lightContribution = lightCol[i] * lightIntensity + lightAmbient[i].x;
         finalColor += lightContribution;
-        
     }
     
     finalColor *= diffuse;

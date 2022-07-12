@@ -21,9 +21,11 @@ namespace Orange
 	{
 	public:
 
-		static void Initialize(const std::string fontName = "verdana.ttf", const uint32_t fontSize = 25);
+		static void Initialize(const std::string fontName = "verdana.ttf", const uint32_t fontSize = 75);
 
 		static void Deinitialize();
+
+		static const FontManager_CharacterData GetDataForChar(const char c);
 
 	private:
 

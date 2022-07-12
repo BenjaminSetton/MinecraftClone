@@ -71,6 +71,11 @@ namespace Orange
 		Reset();
 	}
 
+	const Orange::FontManager_CharacterData FontManager::GetDataForChar(const char c)
+	{
+		return m_charData.at(c);
+	}
+
 	void FontManager::Reset()
 	{
 		// Delete the dynamically-allocated textures

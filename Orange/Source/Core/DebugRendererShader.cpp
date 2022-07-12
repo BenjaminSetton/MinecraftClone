@@ -193,9 +193,9 @@ void DebugRendererShader::BindObjects()
 	ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
 	// Set the back buffer and the depth buffer
-	ID3D11RenderTargetView* rttRTV = DefaultBlockShader::GetRenderToTextureRTV();
-	ID3D11DepthStencilView* rttDSV = DefaultBlockShader::GetDepthStencilView();
-	ID3D11DepthStencilState* rttDSS = DefaultBlockShader::GetDepthStencilState();
+	ID3D11RenderTargetView* rttRTV = D3D::GetBackBuffer();
+	ID3D11DepthStencilView* rttDSV = D3D::GetDepthStencilView();
+	ID3D11DepthStencilState* rttDSS = D3D::GetDepthStencilState();
 	context->OMSetDepthStencilState(rttDSS, 1);
 	context->OMSetRenderTargets(1, &rttRTV, rttDSV);
 

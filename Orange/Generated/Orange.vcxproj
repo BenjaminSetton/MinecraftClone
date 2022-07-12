@@ -180,6 +180,7 @@
     <ClInclude Include="..\Source\Core\TextureViewer.h" />
     <ClInclude Include="..\Source\Core\UI\TextBox.h" />
     <ClInclude Include="..\Source\Core\UI\UIComponent.h" />
+    <ClInclude Include="..\Source\Core\UI\UIManager.h" />
     <ClInclude Include="..\Source\Core\Window.h" />
     <ClInclude Include="..\Source\Misc\pch.h" />
     <ClInclude Include="..\Source\Utility\Clock.h" />
@@ -242,6 +243,7 @@
     <ClCompile Include="..\Source\Core\TextureManager.cpp" />
     <ClCompile Include="..\Source\Core\TextureViewer.cpp" />
     <ClCompile Include="..\Source\Core\UI\TextBox.cpp" />
+    <ClCompile Include="..\Source\Core\UI\UIManager.cpp" />
     <ClCompile Include="..\Source\Core\Window.cpp" />
     <ClCompile Include="..\Source\Core\main.cpp" />
     <ClCompile Include="..\Source\Misc\pch.cpp" />
@@ -283,6 +285,14 @@
       <ShaderModel>5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="..\Source\Shaders\DefaultBlock_VS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\DefaultUI_PS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\DefaultUI_VS.hlsl">
       <ShaderType>Vertex</ShaderType>
       <ShaderModel>5.0</ShaderModel>
     </FxCompile>

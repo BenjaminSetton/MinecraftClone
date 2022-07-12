@@ -4,6 +4,17 @@
 
 #include <windows.h>
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	TODO:
+// 
+//		This Window class uses Windows API, but there is no differentiation between a generic, platform-agnostic Window class
+//		and a platform-specific Window class. FileSystem is platform-agnostic, so refer to that when it comes time to refactor
+//		this class. PLEASE REWORK!
+// 
+//
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 class Orange::Vec2;
 
 enum WindowAlignment
@@ -23,7 +34,6 @@ struct WindowParameters
 };
 
 // TODO: Switch over all window logic from Application.h to this class
-// TODO: Think about having derived classes for different implementations (eg Windows, Mac, etc)
 class Window
 {
 public:
@@ -35,7 +45,7 @@ public:
 	void Create(const WindowParameters& parameters);
 	void Destroy();
 
-	Orange::Vec2 GetDimensions() const;
+	Orange::Vec2 GetSize() const;
 	Orange::Vec2 GetPosition() const;
 	float GetAspectRatio() const;
 	LPCWSTR GetName() const;

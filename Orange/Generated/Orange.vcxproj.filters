@@ -153,6 +153,9 @@
     <ClInclude Include="..\Source\Core\UI\UIComponent.h">
       <Filter>Core\UI</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\Core\UI\UIManager.h">
+      <Filter>Core\UI</Filter>
+    </ClInclude>
     <ClInclude Include="..\Source\Core\Window.h">
       <Filter>Core</Filter>
     </ClInclude>
@@ -335,6 +338,9 @@
     <ClCompile Include="..\Source\Core\UI\TextBox.cpp">
       <Filter>Core\UI</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\Core\UI\UIManager.cpp">
+      <Filter>Core\UI</Filter>
+    </ClCompile>
     <ClCompile Include="..\Source\Core\Window.cpp">
       <Filter>Core</Filter>
     </ClCompile>
@@ -416,6 +422,12 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="..\Source\Shaders\DefaultBlock_VS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\DefaultUI_PS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Source\Shaders\DefaultUI_VS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="..\Source\Shaders\NDCQuad_VS.hlsl">

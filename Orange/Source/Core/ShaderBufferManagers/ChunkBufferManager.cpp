@@ -83,9 +83,9 @@ void ChunkBufferManager::UpdateBuffers()
 		{
 			OG_PROFILE_SCOPE("[UPDATE] Updating mapped resource");
 			int64_t numBytes = (int64_t)sizeof(decltype(m_vertices[0])) * m_vertices.size();
-			ImGui::Begin("Timing Panel");
-			ImGui::Text("Number of bytes copied: %i", numBytes);
-			ImGui::End();
+			//ImGui::Begin("Timing Panel");
+			//ImGui::Text("Number of bytes copied: %i", numBytes);
+			//ImGui::End();
 			memcpy(mappedResource.pData, &m_vertices[0], numBytes);
 		}
 		D3D::GetDeviceContext()->Unmap(m_blockInstanceBuffer, 0);
