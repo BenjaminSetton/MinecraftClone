@@ -21,7 +21,7 @@
 #include "UI/TextBox.h"
 #include "FrustumCulling.h"
 #include "Crosshair.h"
-#include "UI/UIManager.h"
+#include "UI/UIRenderer.h"
 
 #include "../Utility/Math.h"
 
@@ -59,7 +59,7 @@ bool Graphics::Initialize()
 	QuadBufferManager::Initialize();
 	QuadNDCBufferManager::Initialize();
 
-	TextBoxRenderer::Initialize();
+	UIRenderer::Initialize();
 
 	// Create the chunk shader class object
 	m_chunkShader = new DefaultBlockShader();
@@ -104,7 +104,7 @@ void Graphics::Shutdown()
 	ChunkBufferManager::Shutdown();
 	QuadBufferManager::Shutdown();
 	QuadNDCBufferManager::Shutdown();
-	TextBoxRenderer::Deinitialize();
+	UIRenderer::Deinitialize();
 
 	if (m_quadShader)
 	{
@@ -237,7 +237,7 @@ bool Graphics::Frame(const float dt)
 			m_quadShader->SetRenderInNDC(true);
 			m_quadShader->Render();
 
-			UIManager::Draw();
+			UIRenderer::Draw();
 		}
 
 		{

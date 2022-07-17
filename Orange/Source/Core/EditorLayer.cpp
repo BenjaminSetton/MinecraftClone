@@ -5,7 +5,7 @@
 #include "EditorLayer.h"
 #include "../Utility/MathTypes.h"
 #include "Panels/MainViewportPanel.h"
-#include "UI/UIManager.h"
+#include "UI/UIHelper.h"
 #include "../Utility/Utility.h"
 
 using namespace Orange;
@@ -78,14 +78,12 @@ void EditorLayer::Update(const float& dt)
 {
 	UNUSED(dt);
 
-	UIManager::PushData({ { 200.0f, 75.0f }, { 35.0f, 60.0f } });
-	UIManager::Text("Another test: lorem ipsum");
-	UIManager::PopData();
+	// TEMP - PLEASE REMOVE
+	static float totalTime = 0.0f;
+	totalTime += dt;
 
-	UIManager::PushData({ { -100.0f, 500.0f }, { 200.0f, 20.0f } });
-	UIManager::Text("Testing another thing. The quick brown fox jumped over the lazy dog");
-	UIManager::PopData();
-
+	UI::GetContextDescription()->colorMultiplier = { sin(totalTime) * 0.5f + 0.5f, cos(totalTime) * 0.5f + 0.5f, -sin(totalTime - 10.0f) * 0.5f + 0.5f };
+	UI::Text("Hola novia, te amo nalgona");
 }
 
 void EditorLayer::Draw()

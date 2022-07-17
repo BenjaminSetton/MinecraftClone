@@ -1,12 +1,12 @@
 #ifndef _MATH_TYPES_H
 #define _MATH_TYPES_H
 
+#include <cstdint>
+
 namespace Orange
 {
-	class Vec2
+	struct Vec2
 	{
-	public:
-
 		Vec2() = default;
 		Vec2(const float _x) { Vec2(_x, _x); }
 		Vec2(const float _x, const float _y) { x = _x; y = _y; }
@@ -37,13 +37,22 @@ namespace Orange
 			y -= other.y;
 		}
 
+		bool operator==(const Vec2& other)
+		{
+			if
+			(
+				x == other.x &&
+				y == other.y
+			) return true;
+
+			return false;
+		}
+
 		float x, y;
 	};
 
-	class Vec3
+	struct Vec3
 	{
-	public:
-
 		Vec3() = default;
 		Vec3(const float _x) { Vec3(_x, _x, _x); }
 		Vec3(const float _x, const float _y, const float _z) { x = _x; y = _y; z = _z; }
@@ -75,13 +84,23 @@ namespace Orange
 			z -= other.z;
 		}
 
+		bool operator==(const Vec3& other)
+		{
+			if
+			(
+				x == other.x &&
+				y == other.y &&
+				z == other.z
+			) return true;
+
+			return false;
+		}
+
 		float x, y, z;
 	};
 
-	class Vec4
+	struct Vec4
 	{
-	public:
-
 		Vec4() = default;
 		Vec4(const float _x) { Vec4(_x, _x, _x, _x); }
 		Vec4(const float _x, const float _y, const float _z, const float _w) { x = _x; y = _y; z = _z; w = _w; }
@@ -114,6 +133,19 @@ namespace Orange
 			y -= other.y;
 			z -= other.z;
 			w -= other.w;
+		}
+
+		bool operator==(const Vec4& other)
+		{
+			if
+			(
+				x == other.x &&
+				y == other.y &&
+				z == other.z &&
+				w == other.w
+			) return true;
+
+			return false;
 		}
 
 		float x, y, z, w;

@@ -8,17 +8,33 @@
 #include <unordered_map>
 
 #include "../../Utility/MathTypes.h"
-#include "UIComponent.h"
+#include "UIElement.h"
 
 namespace Orange
 {
 
-	class TextBox : public UIComponent
+	class TextBox : public UIElement
 	{
 	public:
 
+		const bool operator==(const TextBox& other)
+		{
+			if
+			(
+				m_text == other.m_text &&
+				m_position == other.m_position &&
+				m_size == other.m_size &&
+				m_color == other.m_color
+			)
+			{
+				return true;
+			}
+
+			return false;
+		}
+
 		TextBox();
-		TextBox(const std::string text, const Vec2 position = Vec2(50,50), const Vec2 size = Vec2(200, 200), const Vec2 padding = Vec2(10, 10));
+		TextBox(const std::string text, const Vec2 position = Vec2(50,50), const Vec2 size = Vec2(200, 200), const Vec2 padding = Vec2(10, 10), const Vec3 color = Vec3(1, 1, 1));
 		TextBox(const TextBox& other);
 		~TextBox();
 
@@ -28,13 +44,10 @@ namespace Orange
 		void ClearText();
 		void SetDrawOutline(const bool drawOutline);
 
-		const UIComponentType GetType() const override;
-		const uint64_t CalculateHash() override;
+		const UIElementType GetType() const override;
 		void Draw() const override;
 
-		static const uint64_t CalculateHashFromText(const std::string text);
-
-		friend class TextBoxRenderer;
+		//friend class TextBoxRenderer;
 
 	private:
 
@@ -43,58 +56,56 @@ namespace Orange
 
 	};
 
-	class TextBoxRenderer
-	{
-	public:
+	//class TextBoxRenderer
+	//{
+	//public:
 
-		static void Initialize();
-		static void Deinitialize();
+	//	static void Initialize();
+	//	static void Deinitialize();
 
-		static void Draw(const TextBox* textBox);
+	//	static void Draw(const TextBox* textBox);
 
-	private:
+	//private:
 
-		static void CreateObjects();
-		static void CreateShaders();
+	//	static void CreateObjects();
+	//	static void CreateShaders();
 
-		// Bind once per frame
-		static void BindVertexBuffer();
-		static void BindObjects();
+	//	// Bind once per frame
+	//	static void BindVertexBuffer();
+	//	static void BindObjects();
 
-		// Update multiple times per frame for every character
-		static void BindCharTexture(const char c);
+	//	// Update multiple times per frame for every character
+	//	static void BindCharTexture(const char c);
 
-		static void DeleteObjects();
-		static void DeleteShaders();
+	//	static void DeleteObjects();
+	//	static void DeleteShaders();
 
-	private:
+	//	static void CreateCharSRVAndAddToMap(const char c);
 
-		static void CreateCharSRVAndAddToMap(const char c);
+	//private:
 
-	private:
+	//	static UIVertex m_UIVertices[4];
+	//	static std::unordered_map<char, ID3D11ShaderResourceView*> m_charToSRVMap;
 
-		static UIVertex m_UIVertices[4];
-		static std::unordered_map<char, ID3D11ShaderResourceView*> m_charToSRVMap;
+	//	// Stores a transposed orthographic projection matrix, which basically maps any vertex position from
+	//	// ( [0, screenWidth], [0, screenHeight] ) -> ( [0, 1], [0, 1] )
+	//	static DirectX::XMMATRIX m_orthographicProjection;
 
-		// Stores a transposed orthographics projection matrix, which basically maps any vertex position from
-		// ( [0, screenWidth], [0, screenHeight] ) -> ( [0, 1], [0, 1] )
-		static DirectX::XMMATRIX m_orthographicProjection;
+	//	/////////////////////////////////////////
+	//	// 
+	//	// RENDERER API OBJECTS
+	//	//
+	//	/////////////////////////////////////////
 
-		/////////////////////////////////////////
-		// 
-		// RENDERER API OBJECTS
-		//
-		/////////////////////////////////////////
+	//	static ID3D11VertexShader* m_vertexShader;
+	//	static ID3D11PixelShader* m_pixelShader;
+	//	static ID3D11Buffer* m_constantBuffer;
+	//	static ID3D11Buffer* m_vertexBuffer;
+	//	static ID3D11InputLayout* m_inputLayout;
+	//	static ID3D11SamplerState* m_samplerClamp;
+	//	static ID3D11BlendState* m_blendState;
 
-		static ID3D11VertexShader* m_vertexShader;
-		static ID3D11PixelShader* m_pixelShader;
-		static ID3D11Buffer* m_constantBuffer;
-		static ID3D11Buffer* m_vertexBuffer;
-		static ID3D11InputLayout* m_inputLayout;
-		static ID3D11SamplerState* m_samplerClamp;
-		static ID3D11BlendState* m_blendState;
-
-	};
+	//};
 }
 
 

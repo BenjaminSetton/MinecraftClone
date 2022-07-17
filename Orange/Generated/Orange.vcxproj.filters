@@ -150,10 +150,19 @@
     <ClInclude Include="..\Source\Core\UI\TextBox.h">
       <Filter>Core\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\Core\UI\UIComponent.h">
+    <ClInclude Include="..\Source\Core\UI\UIBuffer.h">
       <Filter>Core\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\Core\UI\UIManager.h">
+    <ClInclude Include="..\Source\Core\UI\UIElement.h">
+      <Filter>Core\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Core\UI\UIHelper.h">
+      <Filter>Core\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Core\UI\UIRenderer.h">
+      <Filter>Core\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Core\UI\UITypes.h">
       <Filter>Core\UI</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\Core\Window.h">
@@ -338,7 +347,13 @@
     <ClCompile Include="..\Source\Core\UI\TextBox.cpp">
       <Filter>Core\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\Source\Core\UI\UIManager.cpp">
+    <ClCompile Include="..\Source\Core\UI\UIBuffer.cpp">
+      <Filter>Core\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Core\UI\UIHelper.cpp">
+      <Filter>Core\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Core\UI\UIRenderer.cpp">
       <Filter>Core\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\Core\Window.cpp">
