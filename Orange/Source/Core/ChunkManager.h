@@ -34,7 +34,7 @@ public:
 	// Returns chunk at "pos" CHUNK SPACE
 	static Chunk* GetChunkAtPos(const DirectX::XMFLOAT3 pos);
 
-	static SortedPool<Chunk>& GetChunkPool();
+	static Orange::SortedPool<Chunk>& GetChunkPool();
 
 	static void UpdaterEntryPoint();
 
@@ -66,7 +66,7 @@ private:
 private:
 	
 	// Stores active chunks in CHUNK SPACE
-	static SortedPool<Chunk> m_activeChunks;
+	static Orange::SortedPool<Chunk> m_activeChunks;
 
 	// Dictates whether the updater thread is free to run Update()
 	static std::mutex m_canAccessVec;

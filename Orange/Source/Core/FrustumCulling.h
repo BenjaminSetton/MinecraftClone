@@ -8,83 +8,87 @@
 // Includes the physics types (plane, aabb, and sphere)
 #include "Physics.h"
 
-#define PASS_STRADDLING_CHUNKS 1
-
-struct Frustum_Planes
+namespace Orange
 {
-	enum
+	#define PASS_STRADDLING_CHUNKS 1
+
+	struct Frustum_Planes
 	{
-		LEFT,
-		RIGHT,
-		TOP,
-		BOTTOM,
-		FRONT,
-		BACK,
-		COUNT
+		enum
+		{
+			LEFT,
+			RIGHT,
+			TOP,
+			BOTTOM,
+			FRONT,
+			BACK,
+			COUNT
+		};
 	};
-};
 
-struct Frustum_Vertices 
-{
-	enum
+	struct Frustum_Vertices 
 	{
-		TLN = 0,
-		TRN,
-		BLN,
-		BRN,
+		enum
+		{
+			TLN = 0,
+			TRN,
+			BLN,
+			BRN,
 
-		TLF,
-		TRF,
-		BLF,
-		BRF,
+			TLF,
+			TRF,
+			BLF,
+			BRF,
 
-		COUNT
+			COUNT
+		};
 	};
-};
 
-struct Frustum
-{
-	// Stores 6 planes that define a frustum
-	std::array<Plane, Frustum_Planes::COUNT> planes;
+	struct Frustum
+	{
+		// Stores 6 planes that define a frustum
+		std::array<Plane, Frustum_Planes::COUNT> planes;
 
-	// Stores 8 points that define a frustum
-	std::array<DirectX::XMVECTOR, Frustum_Vertices::COUNT> vertices;
-};
+		// Stores 8 points that define a frustum
+		std::array<DirectX::XMVECTOR, Frustum_Vertices::COUNT> vertices;
+	};
 
-class FrustumCulling
-{
+	class FrustumCulling
+	{
 
-public:
+	public:
 
-	FrustumCulling() = default;
-	FrustumCulling(const FrustumCulling& other) = delete;
-	~FrustumCulling() = default;
+		FrustumCulling() = default;
+		FrustumCulling(const FrustumCulling& other) = delete;
+		~FrustumCulling() = default;
 
-	static void SetFrustum(const Frustum& frustum);
-	static const Frustum GetFrustum();
+		static void SetFrustum(const Frustum& frustum);
+		static const Frustum GetFrustum();
 
-	// Returns TRUE is visible
-	// Returns FALSE is not visible
-	static bool CalculateChunkPosAgainstFrustum(const DirectX::XMFLOAT3 chunkPosWS);
+		// Returns TRUE is visible
+		// Returns FALSE is not visible
+		static bool CalculateChunkPosAgainstFrustum(const DirectX::XMFLOAT3 chunkPosWS);
 
-	static void CalculateFrustum(float FOV, float aspectRatio, float nearPlane, float farPlane, const DirectX::XMMATRIX& viewMatrix, const DirectX::XMFLOAT3& camPos);
+		static void CalculateFrustum(float FOV, float aspectRatio, float nearPlane, float farPlane, const DirectX::XMMATRIX& viewMatrix, const DirectX::XMFLOAT3& camPos);
 
-	static void Debug_DrawFrustum();
+		static void Debug_DrawFrustum();
 
-	static void Debug_DrawAABB(const AABB& aabb);
+		static void Debug_DrawAABB(const AABB& aabb);
 
-	static const AABB ConvertChunkPosToAABB(const DirectX::XMFLOAT3 chunkPosWS);
-private:
+		static const AABB ConvertChunkPosToAABB(const DirectX::XMFLOAT3 chunkPosWS);
+	private:
 
 
-	static int TestAABBAgainstPlane(const AABB& aabb, const Plane& plane);
+		static int TestAABBAgainstPlane(const AABB& aabb, const Plane& plane);
 
-	static int TestSphereAgainstPlane(const Sphere& sphere, const Plane& plane);
+		static int TestSphereAgainstPlane(const Sphere& sphere, const Plane& plane);
 
-	static Plane CalculatePlaneFromPoints(const DirectX::XMVECTOR& a, const DirectX::XMVECTOR& b, const DirectX::XMVECTOR& c);
+		static Plane CalculatePlaneFromPoints(const DirectX::XMVECTOR& a, const DirectX::XMVECTOR& b, const DirectX::XMVECTOR& c);
 
-private:
+	private:
 
-	static Frustum m_frustum;
-};
+		static Frustum m_frustum;
+	};
+}
+
 

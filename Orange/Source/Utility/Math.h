@@ -7,11 +7,15 @@
 
 #include "../Core/ChunkManager.h"
 #include "../Utility/MathConstants.h"
+#include "../Utility/MathTypes.h"
 
-// DEBUG INCLUDE
-#include "Input.h"
-
-
+///////////////////////////////////////////////////////////////////////////////////////////
+//
+//		THIS HAS TO BE REWORKED FROM A HEADER-ONLY IMPLEMENTATION TO A
+//		REGULAR .H / .CPP IMPLEMENTATION. IT DOESN'T MAKE SENSE TO DECLARE
+//		ALL FUNCTIONS INLINE, FOR EXAMPLE RAYCAST()...
+//
+///////////////////////////////////////////////////////////////////////////////////////////
 namespace Orange {
 
 	namespace Math {
@@ -28,10 +32,19 @@ namespace Orange {
 	(XMFLOAT3_BRACKET_OP_32(vecOne, 2) == XMFLOAT3_BRACKET_OP_32(vecTwo, 2)))
 
 		template<typename T>
-		inline void Clamp(T& value, const T min, const T max)
+		inline void Clamp(T& value, const T minVal, const T maxVal)
 		{
-			if (value < min) value = min;
-			else if (value > max) value = max;
+			value = min(value, maxVal);
+			value = max(value, minVal);
+		}
+
+		template<typename T>
+		inline T Clamp(const T& value, const T minVal, const T maxVal)
+		{
+			T res = value;
+			res = min(value, maxVal);
+			res = max(value, minVal);
+			return res;
 		}
 
 		template<typename T>
@@ -51,9 +64,11 @@ namespace Orange {
 
 		inline float Decimal(const float value) { return abs(value - static_cast<int>(value)); }
 
-		inline float DegreesToRadians(const float& degrees) { return (degrees * (PI / 180.0f)); }
+		inline float DegreesToRadians(const float& degrees) { return (degrees * (PI<float> / 180.0f)); }
+		inline double DegreesToRadians(const double& degrees) { return (degrees * (PI<double> / 180.0)); }
 
-		inline float RadiansToDegrees(const float& radians) { return (radians * (180.0f / PI)); }
+		inline float RadiansToDegrees(const float& radians) { return (radians * (180.0f / PI<float>)); }
+		inline double RadiansToDegrees(const double& radians) { return (radians * (180.0 / PI<double>)); }
 
 		// This function returns a unique identifier for all chunks within a range of
 		// 65,536 in any dimension of chunkPos
@@ -61,13 +76,13 @@ namespace Orange {
 		{
 			uint64_t result = 0;
 			// FOR DEBUG PURPOSE, CHECK IF WE EXCEEDED 16 BITS
-#ifdef _DEBUG
+#ifdef OG_DEBUG
 			if (
 				static_cast<int32_t>(chunkPos.x) != static_cast<int16_t>(chunkPos.x) ||
 				static_cast<int32_t>(chunkPos.y) != static_cast<int16_t>(chunkPos.y) ||
 				static_cast<int32_t>(chunkPos.z) != static_cast<int16_t>(chunkPos.z)
 				)
-				OG_ASSERT_MSG(false, "Underflow or overflow detected in %s", __FUNCTION__);
+				OG_ASSERT_MSG(false, "Underflow or overflow detected");
 #endif
 			int64_t x, y, z;
 			x = y = z = 0;
@@ -124,21 +139,21 @@ namespace Orange {
 		{
 			using namespace DirectX;
 
-			XMFLOAT3 rayUnitStepSize =
+			DirectX::XMFLOAT3 rayUnitStepSize =
 			{
 				rayDir.x == 0.0f ? maxDist : sqrt(1 + ((rayDir.y / rayDir.x) * (rayDir.y / rayDir.x)) + ((rayDir.z / rayDir.x) * (rayDir.z / rayDir.x))),
 				rayDir.y == 0.0f ? maxDist : sqrt(((rayDir.x / rayDir.y) * (rayDir.x / rayDir.y)) + 1 + ((rayDir.z / rayDir.y) * (rayDir.z / rayDir.y))),
 				rayDir.z == 0.0f ? maxDist : sqrt(((rayDir.x / rayDir.z) * (rayDir.x / rayDir.z)) + ((rayDir.y / rayDir.z) * (rayDir.y / rayDir.z)) + 1)
 			};
 
-			XMFLOAT3 mapCheck =
+			DirectX::XMFLOAT3 mapCheck =
 			{
 				static_cast<float>(static_cast<int>(rayPos.x)),
 				static_cast<float>(static_cast<int>(rayPos.y)),
 				static_cast<float>(static_cast<int>(rayPos.z))
 			};
 			// Step is an integer vector
-			XMFLOAT3 rayLength1D, step = { 0, 0, 0 };
+			DirectX::XMFLOAT3 rayLength1D, step = { 0, 0, 0 };
 
 			if (rayDir.x < 0.0f)
 			{
@@ -195,7 +210,7 @@ namespace Orange {
 				accDistance = shortestAxisDistance;
 				XMFLOAT3_BRACKET_OP_32(rayLength1D, shortestAxisIndex) += XMFLOAT3_BRACKET_OP_32(rayUnitStepSize, shortestAxisIndex);
 
-				XMFLOAT3 intermediateRayHit =
+				DirectX::XMFLOAT3 intermediateRayHit =
 				{
 					rayPos.x + (rayDir.x * accDistance),
 					rayPos.y + (rayDir.y * accDistance),
@@ -207,7 +222,7 @@ namespace Orange {
 				// or a number further right on the number line. On the other hand, truncating a positive number results in
 				// a smaller number, further left on the number line. Since we always want the truncated number to be smaller,
 				// we will check if it's negative and subtract 1.0f if it is. We also consider exact
-				XMFLOAT3 voxelPos =
+				DirectX::XMFLOAT3 voxelPos =
 				{ static_cast<float>(static_cast<int>((static_cast<int>(intermediateRayHit.x) != intermediateRayHit.x) && intermediateRayHit.x < 0.0f ? intermediateRayHit.x - 1.0f : intermediateRayHit.x)),
 					static_cast<float>(static_cast<int>((static_cast<int>(intermediateRayHit.y) != intermediateRayHit.y) && intermediateRayHit.y < 0.0f ? intermediateRayHit.y - 1.0f : intermediateRayHit.y)),
 					static_cast<float>(static_cast<int>((static_cast<int>(intermediateRayHit.z) != intermediateRayHit.z) && intermediateRayHit.z < 0.0f ? intermediateRayHit.z - 1.0f : intermediateRayHit.z))

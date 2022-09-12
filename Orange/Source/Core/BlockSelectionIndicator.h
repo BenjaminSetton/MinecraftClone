@@ -6,31 +6,35 @@
 
 struct QuadInstanceData;
 
-class BlockSelectionIndicator
+namespace Orange
 {
-public:
+	class BlockSelectionIndicator
+	{
+	public:
 
-	BlockSelectionIndicator() = delete;
-	BlockSelectionIndicator(const BlockSelectionIndicator& other) = delete;
-	~BlockSelectionIndicator() = delete;
+		BlockSelectionIndicator() = delete;
+		BlockSelectionIndicator(const BlockSelectionIndicator& other) = delete;
+		~BlockSelectionIndicator() = delete;
 
-	static void Update(const float dt);
+		static void Update(const float dt);
 
-private:
+	private:
 
-	static void GenerateQuadsInPos(const DirectX::XMFLOAT3& pos, QuadInstanceData* out_quadData);
+		static void GenerateQuadsInPos(const DirectX::XMFLOAT3& pos, QuadInstanceData* out_quadData);
 
-private:
+	private:
 
-	static float m_transitionDamping;
+		static float m_transitionDamping;
 
-	// Always points to block midpoints
-	static DirectX::XMFLOAT3 m_currentIndicatorPos;
-	static DirectX::XMFLOAT3 m_targetIndicatorPos;
+		// Always points to block midpoints
+		static DirectX::XMFLOAT3 m_currentIndicatorPos;
+		static DirectX::XMFLOAT3 m_targetIndicatorPos;
 
-	// Points to integer position only
-	static DirectX::XMFLOAT3 m_selectedBlockPos;
+		// Points to integer position only
+		static DirectX::XMFLOAT3 m_selectedBlockPos;
 
-};
+	};
+}
+
 
 #endif

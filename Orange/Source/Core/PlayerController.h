@@ -3,25 +3,30 @@
 
 #include <DirectXMath.h>
 
-class Player;
-struct AABB;
 
-class PlayerController
+namespace Orange
 {
-public:
+	class Player;
+	struct AABB;
 
-	PlayerController() = default;
-	PlayerController(const PlayerController& other) = default;
-	~PlayerController() = default;
+	class PlayerController
+	{
+	public:
 
-	static void Update(const float& dt, Player* player);
+		PlayerController() = default;
+		PlayerController(const PlayerController& other) = default;
+		~PlayerController() = default;
 
-private:
+		static void Update(const float& dt, Orange::Player* player);
 
-	static DirectX::XMFLOAT3 CheckForHorizontalCollision(AABB& newPos, const AABB& prevPos);
-	static DirectX::XMFLOAT3 CheckForVerticalCollision(AABB& newPos, const AABB& prevPos);
+	private:
 
-};
+		static DirectX::XMFLOAT3 CheckForHorizontalCollision(AABB& newPos, const AABB& prevPos);
+		static DirectX::XMFLOAT3 CheckForVerticalCollision(AABB& newPos, const AABB& prevPos);
+
+	};
+}
+
 
 
 #endif // _PLAYERCONTROLLER_H

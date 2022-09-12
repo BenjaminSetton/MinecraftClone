@@ -1,7 +1,8 @@
 #ifndef UICOMPONENT_H
 #define UICOMPONENT_H
 
-#include "UITypes.h"
+#include "../../Utility/MathTypes.h"
+#include "UIDataTypes.h"
 
 namespace Orange
 {
@@ -13,36 +14,25 @@ namespace Orange
 	{
 	public:
 
-		virtual const UIElementType GetType() const { return UIElementType::INVALID; }
-		virtual void Draw() const { return; }
-
-		const Vec2 GetPosition() const { return m_position; };
-		const Vec2 GetSize() const { return m_size; };
-		const Vec2 GetPadding() const { return m_padding; };
-		const Vec3 GetColor() const { return m_color; }
+		virtual Orange::UIElementType GetType() const;
 
 		// Public non-virtual functions
-		const uint32_t GetLayerNumber() const { return m_layerNumber; }
-		void SetLayerNumber(const uint32_t layerNumber) { m_layerNumber = layerNumber; }
+		const Vec2 GetPosition() const;
+		const Vec2 GetSize() const;
+		const Vec4 GetColor() const;
 
-		// This function is overridden so that the UIManager can use a priority queue to sort
-		// the elements by layer and draw them!
-		bool operator<=(const UIElement& other)
-		{
-			return GetLayerNumber() <= other.GetLayerNumber();
-		}
+		const uint32_t GetLayerNumber() const;
+		void SetLayerNumber(const uint32_t layerNumber);
 
 	protected:
 
-		void SetPosition(const Vec2 position) { m_position = position; };
-		void SetSize(const Vec2 size) { m_size = size; };
-		void SetPadding(const Vec2 padding) { m_padding = padding; };
-		void SetColor(const Vec3 color) { m_color = color; }
+		void SetPosition(const Vec2 position);
+		void SetSize(const Vec2 size);
+		void SetColor(const Vec4 color);
 
 		Vec2 m_position;
 		Vec2 m_size;
-		Vec2 m_padding;
-		Vec3 m_color;
+		Vec4 m_color;
 		uint32_t m_layerNumber;
 
 	};

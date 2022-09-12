@@ -1,30 +1,33 @@
 #ifndef _GAME_H
 #define _GAME_H
 
-class Player;
-
-class Game
+namespace Orange
 {
-public:
+	class Player;
 
-	Game() = delete;
-	Game(const Game& other) = delete;
-	~Game() = delete;
+	class Game
+	{
+	public:
 
-	static void Initialize();
+		Game() = delete;
+		Game(const Game& other) = delete;
+		~Game() = delete;
 
-	static void Shutdown();
+		static void Initialize();
 
-	static Player* GetPrimaryPlayer();
+		static void Shutdown();
 
-	static void SetPrimaryPlayer(Player* player);
+		static Player* GetPrimaryPlayer();
 
-	static void Update(const float dt);
+		static void SetPrimaryPlayer(Player* player);
 
-private:
+		static void Update(const float dt);
 
-	static Player* m_primaryPlayer;
+	private:
 
-};
+		static Player* m_primaryPlayer;
+
+	};
+}
 
 #endif

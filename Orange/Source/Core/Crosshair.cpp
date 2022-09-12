@@ -1,10 +1,11 @@
 #include "../Misc/pch.h"
-#include "Crosshair.h"
+
 #include <DirectXMath.h>
 
 #include "Application.h"
-#include "../Utility/Math.h"
-#include "ShaderBufferManagers\QuadNDCBufferManager.h"
+#include "Crosshair.h"
+#include "ShaderBufferManagers/QuadNDCBufferManager.h"
+#include "../Utility/Utility.h"
 
 using namespace DirectX;
 
@@ -13,9 +14,9 @@ namespace Orange
 
 	float Crosshair::m_scale = 0.5f;
 
-	void Crosshair::Update(const float dt) 
+	void Crosshair::Update(const float dt)
 	{
-		UNREFERENCED_PARAMETER(dt);
+		UNUSED(dt);
 		PushQuadsToManager();
 	}
 

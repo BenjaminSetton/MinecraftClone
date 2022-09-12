@@ -2,6 +2,7 @@
 #define _TEXTURE_H
 
 #include "../Utility/MathTypes.h"
+#include "../Utility/Utility.h"
 
 namespace Orange
 {
@@ -22,12 +23,11 @@ namespace Orange
 		THREE
 	};
 
-	struct TextureData
+	struct TextureSpecs
 	{
 		TextureFormat format = TextureFormat::INVALID;
 		TextureDimensions dimensions = TextureDimensions::INVALID;
-		Vec3 size = Vec3(0.0f);
-		void* data = nullptr;
+		Vec3 size = Vec3(0.0f, 0.0f, 0.0f);
 	};
 
 	// This texture class is a way of storing textures in a
@@ -37,33 +37,44 @@ namespace Orange
 	{
 	public:
 
-		Texture() = default;
-		Texture(const TextureData& data);
+		Texture();
+		Texture(const TextureSpecs& specs, const void* data);
 		Texture(const Texture& other);
-		~Texture();
+		~Texture() = default;
 
-		const TextureData& GetTextureData() const;
+		const TextureSpecs& GetSpecs() const;
+		Ref<void> GetData() const;
+		const uint64_t& GetId() const;
 
-		// This call that sets texture data will copy the data over to
-		// an internal buffer. If copying is not intended and you just
-		// want to hold a reference to an existing texture, see SetReferenceDataToTexture()
-		void SetTextureData(const TextureData& data);
+		// Creates a one-pixel-sized texture of the specified color. This is useful for binding
+		// to shaders as default textures
+		void CreateSolidColorTexture(const Vec4& color);
 
-		// Sets texture data but does not copy to internal buffer (ie. does not call Create())
-		void SetReferenceDataToTexture(const TextureData& data);
-
-	private:
-
-		void Create();
-		void Destroy();
+		const bool IsValid() const;
 
 		// Returns the size of each unit (pixel) of data, depending on
 		// the format, in BYTES
-		uint32_t GetUnitSize();
+		uint32_t GetUnitSize() const;
 
-		TextureData m_texData;
+	private:
 
-		bool m_isReference;
+		void Create(const void* data);
+
+		uint32_t ConvertVec4IntoRGBA32(const Vec4& color);
+
+		void AllocateAndPopulateBuffer(const void* data, const uint64_t numBytes);
+
+		TextureSpecs m_specs;
+
+		// Data is automatically cleaned up when ref_count == 0. This means that the texture registry can
+		// return copies of a texture object, and the user can be guaranteed that the object will exist
+		// when they are using it, even if the "real" texture object is deleted from the registry
+		Ref<void> m_data;
+
+		// A UUID that describes this texture object. This is used to tie all the dependencies together.
+		// For example, there exists another map somewhere in the code that contains a map from a tex ID
+		// to a SRV that is passed onto the shader. The ID allows us to always retrieve the same texture
+		uint64_t m_id = 0;
 
 	};
 

@@ -9,7 +9,7 @@
 using namespace DirectX;
 
 // Static variable definitions
-SortedPool<Chunk> ChunkManager::m_activeChunks = SortedPool<Chunk>((2 * RENDER_DIST + 1) * (2 * RENDER_DIST + 1) * (2 * RENDER_DIST + 1));
+Orange::SortedPool<Chunk> ChunkManager::m_activeChunks = Orange::SortedPool<Chunk>((2 * RENDER_DIST + 1) * (2 * RENDER_DIST + 1) * (2 * RENDER_DIST + 1));
 bool ChunkManager::m_runThreads = true;
 XMFLOAT3 ChunkManager::m_playerPos = { 0.0f, 0.0f, 0.0f };
 std::vector<XMFLOAT3> ChunkManager::m_newChunkList = std::vector<XMFLOAT3>();
@@ -373,7 +373,7 @@ Chunk* ChunkManager::GetChunkAtPos(const DirectX::XMFLOAT3 posCS)
 	else return val->second;
 }
 
-SortedPool<Chunk>& ChunkManager::GetChunkPool()
+Orange::SortedPool<Chunk>& ChunkManager::GetChunkPool()
 {
 	return m_activeChunks;
 }

@@ -17,51 +17,55 @@
 // idk why it makes me include this here..again
 #include <windows.h>
 
-/////////////
-// GLOBALS
-/////////////
-const bool VSYNC_ENABLED = false;
-const float SCREEN_FAR = 1000.0f;
-const float SCREEN_NEAR = 0.1f;
-
-class DefaultBlockShader;
-class ShadowShader;
-class DebugRendererShader;
-class QuadShader;
-
-class Graphics
+namespace Orange
 {
-public:
+	/////////////
+	// GLOBALS
+	/////////////
+	const bool VSYNC_ENABLED = false;
+	const float SCREEN_FAR = 1000.0f;
+	const float SCREEN_NEAR = 0.1f;
 
-	Graphics() = default;
-	Graphics(const Graphics&) = default;
-	~Graphics() = default;
+	class DefaultBlockShader;
+	class ShadowShader;
+	class DebugRendererShader;
+	class QuadShader;
 
-	bool Initialize();
+	class Graphics
+	{
+	public:
 
-	void Shutdown();
+		Graphics() = default;
+		Graphics(const Graphics&) = default;
+		~Graphics() = default;
 
-	bool Frame(const float deltaTime);
+		bool Initialize();
 
-	void Present();
+		void Shutdown();
 
-	bool WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+		bool Frame(const float deltaTime);
 
-private:
+		void Present();
 
-	FrustumCamera* m_frustumCam = nullptr;
+		bool WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
-	DefaultBlockShader* m_chunkShader = nullptr;
-	DebugRendererShader* m_debugShader = nullptr;
-	QuadShader* m_quadShader = nullptr;
+	private:
 
-	TextureManager* m_textureManager = nullptr;
+		FrustumCamera* m_frustumCam = nullptr;
 
-	TextureViewer* m_texViewer = nullptr;
+		DefaultBlockShader* m_chunkShader = nullptr;
+		DebugRendererShader* m_debugShader = nullptr;
+		QuadShader* m_quadShader = nullptr;
 
-	// Temporary
-	int m_screenWidth, m_screenHeight;
-};
+		TextureManager* m_textureManager = nullptr;
+
+		TextureViewer* m_texViewer = nullptr;
+
+		// Temporary
+		int m_screenWidth, m_screenHeight;
+	};
+}
+
 
 #endif
 

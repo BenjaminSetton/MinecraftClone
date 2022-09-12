@@ -39,6 +39,9 @@ private:
 
 	static Panel* m_panels[EditorLayer_NumberOfPanels];
 
+	static bool tempTest;
+	static float tempTest2;
+
 };
 
 #endif

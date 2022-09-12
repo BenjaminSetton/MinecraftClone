@@ -144,13 +144,22 @@
     <ClInclude Include="..\Source\Core\TextureManager.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\Core\TextureRegistry.h">
+      <Filter>Core</Filter>
+    </ClInclude>
     <ClInclude Include="..\Source\Core\TextureViewer.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\Core\UI\TextBox.h">
+    <ClInclude Include="..\Source\Core\UI\Image.h">
       <Filter>Core\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\Core\UI\UIBuffer.h">
+    <ClInclude Include="..\Source\Core\UI\Text.h">
+      <Filter>Core\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Core\UI\UIContainerTypes.h">
+      <Filter>Core\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Core\UI\UIDataTypes.h">
       <Filter>Core\UI</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\Core\UI\UIElement.h">
@@ -160,9 +169,6 @@
       <Filter>Core\UI</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\Core\UI\UIRenderer.h">
-      <Filter>Core\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\Core\UI\UITypes.h">
       <Filter>Core\UI</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\Core\Window.h">
@@ -341,13 +347,13 @@
     <ClCompile Include="..\Source\Core\TextureManager.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\Core\TextureRegistry.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
     <ClCompile Include="..\Source\Core\TextureViewer.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="..\Source\Core\UI\TextBox.cpp">
-      <Filter>Core\UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\Core\UI\UIBuffer.cpp">
+    <ClCompile Include="..\Source\Core\UI\UIElement.cpp">
       <Filter>Core\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\Core\UI\UIHelper.cpp">

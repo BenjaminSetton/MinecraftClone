@@ -6,6 +6,7 @@
 #include "Game.h"
 #include "../Utility/ImGuiLayer.h"
 #include "./Events/KeyCodes.h"
+#include "UI/UIHelper.h"
 
 namespace Orange
 {
@@ -130,8 +131,6 @@ namespace Orange
 
 	bool Application::Update()
 	{
-		//ImGuiLayer::BeginFrame();
-
 		// Quit running if ESC is pressed
 		if (m_Input->IsKeyDown(VK_ESCAPE)) return false;
 		m_Input->Update();
@@ -144,20 +143,21 @@ namespace Orange
 		// HACK! Prevent delta time from giving bad results after moving game window
 		dt = dt > 0.5f ? 0.016666f : dt;
 
+		UI::BeginFrame(dt);
+
 		// Update the player
 		Game::Update(dt);
-
-		// Process each frame in the graphics class
-		m_Graphics->Frame(dt);
 
 		// We should consider using a switch case to check which layer is active
 		EditorLayer::Update(dt);
 
+		// Process each frame in the graphics class
+		m_Graphics->Frame(dt);
+
 		// TODO: Move this to a separate Draw function
 		EditorLayer::Draw();
 
-		//ImGuiLayer::Draw();
-		//ImGuiLayer::EndFrame();
+		UI::EndFrame();
 
 		m_Graphics->Present();
 

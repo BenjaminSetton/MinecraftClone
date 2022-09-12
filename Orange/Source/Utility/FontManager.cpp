@@ -12,9 +12,54 @@
 namespace Orange
 {
 
+	// Static variable declarations
 	std::unordered_map<char, FontManager_CharacterData> FontManager::m_charData = std::unordered_map<char, FontManager_CharacterData>();
+	FontManager_FontStats FontManager::m_fontStats = { 0, };
+	Vec2 FontManager::m_loadedFontSize = Vec2(0.0);
+	bool FontManager::isInitialized = false;
 
-	void FontManager::Initialize(const std::string fontName, const uint32_t fontSize)
+	void FontManager::Initialize()
+	{
+		OG_ASSERT_MSG(!isInitialized, "Why are we re-initializing the FontManager?");
+
+		LoadFont("verdana.ttf", 15);
+
+		isInitialized = true;
+	}
+
+	void FontManager::Deinitialize()
+	{
+		Reset();
+
+		isInitialized = false;
+	}
+
+	const Orange::FontManager_CharacterData FontManager::GetDataForChar(const char c)
+	{
+		return m_charData.at(c);
+	}
+
+	const Orange::Vec2& FontManager::GetLoadedFontSize()
+	{
+		return m_loadedFontSize;
+	}
+
+	const FontManager_FontStats& FontManager::GetFontStats()
+	{
+		return m_fontStats;
+	}
+
+	uint32_t FontManager::GetVerticalOffsetForLineNumber(const uint32_t& lineNum)
+	{
+		return lineNum * GetVerticalOffset();
+	}
+
+	uint32_t FontManager::GetVerticalOffset()
+	{
+		return static_cast<uint32_t>(m_fontStats.maxCharSize.y + m_fontStats.maxNegativeVerticalOffset);
+	}
+
+	void FontManager::LoadFont(const char* fontName, const uint32_t fontSize)
 	{
 		FT_Library ftLibrary;
 		if (FT_Init_FreeType(&ftLibrary))
@@ -33,32 +78,58 @@ namespace Orange
 		// make the function calculate it based on the height, which is what we do here.
 		FT_Set_Pixel_Sizes(face, 0, fontSize);
 
+		// Set the pixel size of the font we're currently loading
+		// TODO - Figure out how to retrieve the font width in pixels, setting to 0 for now
+		m_loadedFontSize = { 0.0f, static_cast<float>(fontSize) };
+
 		// Load in the first 128 characters
+		Vec2 bearing = Vec2(0.0f);
+		Vec2 size = Vec2(0.0f);
+		uint32_t advance = 0;
 		for (unsigned char c = 0; c < 128; c++)
 		{
 			if (FT_Load_Char(face, c, FT_LOAD_RENDER))
 			{
-				OG_ASSERT_MSG(false, "Failed to load char '%c'!", c);
+				OG_ASSERT_MSG(false, "Failed to load char!");
 				continue;
 			}
 
+			// Gather the data from the newly-loaded face
+			bearing = { face->glyph->bitmap_left, face->glyph->bitmap_top };
+			advance = static_cast<uint32_t>(face->glyph->advance.x);
+			size = { static_cast<float>(face->glyph->bitmap.width), static_cast<float>(face->glyph->bitmap.rows) };
+
 			// Create the new texture
-			TextureData texData;
-			texData.format = TextureFormat::R_8;
+			TextureSpecs texData;
+			texData.format = TextureFormat::RGBA_32;
 			texData.dimensions = TextureDimensions::TWO;
-			texData.data = face->glyph->bitmap.buffer;
-			texData.size = { static_cast<float>(face->glyph->bitmap.width), static_cast<float>(face->glyph->bitmap.rows), 0.0f };
-			Texture* charTexture = new Texture(texData);
-			
+			texData.size = { size.x, size.y, 0.0f };
+
+
+			// Get the accumulated font stats
+			m_fontStats.maxCharSize = { max(m_fontStats.maxCharSize.x, size.x), max(m_fontStats.maxCharSize.y, size.y) };
+			m_fontStats.minCharSize = { min(m_fontStats.minCharSize.x, size.x), min(m_fontStats.minCharSize.y, size.y) };
+			m_fontStats.maxNegativeVerticalOffset = max(m_fontStats.maxNegativeVerticalOffset, size.y - bearing.y);
+
+			// Convert from 8-bit gray scale to a regular 32-bit texture. This will allow the UI Renderer to be a lot simpler, since
+			// we won't have to deal with a separate case for sampling an 8-bit texture in the shaders. We can just use a 32-bit texture for everything
+			uint32_t arraySize = static_cast<uint32_t>(size.x * size.y);
+			uint32_t* newBuffer = new uint32_t[arraySize];
+			Convert8BitGrayscaleTo32BitWithPadding(static_cast<uint8_t*>(face->glyph->bitmap.buffer), Vec2(size.x, size.y), newBuffer);
+
 			// Cache the character data
-			FontManager_CharacterData character = 
+			FontManager_CharacterData character =
 			{
-				charTexture,
-				Vec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-				static_cast<uint32_t>(face->glyph->advance.x)
+				Texture(texData, newBuffer),
+				bearing,
+				advance
 			};
 
-			m_charData[c] =  character;
+			// We can now delete this temporary buffer, since the Texture object will have created it's own copy of the buffer
+			delete[] newBuffer;
+
+			// Finally, add the character data to the map
+			m_charData[c] = character;
 		}
 
 		// Finally, release FT's resources
@@ -66,25 +137,29 @@ namespace Orange
 		FT_Done_FreeType(ftLibrary);
 	}
 
-	void FontManager::Deinitialize()
-	{
-		Reset();
-	}
-
-	const Orange::FontManager_CharacterData FontManager::GetDataForChar(const char c)
-	{
-		return m_charData.at(c);
-	}
-
 	void FontManager::Reset()
 	{
-		// Delete the dynamically-allocated textures
-		for (auto iter : m_charData)
-		{
-			delete iter.second.texture;
-		}
-
 		m_charData.clear();
+	}
+
+
+	void FontManager::Convert8BitGrayscaleTo32BitWithPadding(uint8_t* sourceData, const Vec2& arraySize, uint32_t* targetData)
+	{
+		// Convert to char* because it'll allow us to get each byte by simply indexing
+		for (uint32_t height = 0; height < arraySize.y; height++)
+		{
+			for (uint32_t width = 0; width < arraySize.x; width++)
+			{
+				uint32_t index = static_cast<uint32_t>(arraySize.x) * height + width;
+				uint8_t currentPaddedByte = sourceData[index];
+
+				// Since we're rendering text, we want to set the color to white and the alpha
+				// to whatever value the grayscale texture has. We can alter the color of the text
+				// by using a separate float4 in the shaders
+				uint32_t finalResult = 0x00FFFFFF | (currentPaddedByte << 24);
+				targetData[index] = finalResult;
+			}
+		}
 	}
 
 }

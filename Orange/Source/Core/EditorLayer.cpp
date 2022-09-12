@@ -12,6 +12,10 @@ using namespace Orange;
 
 Panel* EditorLayer::m_panels[EditorLayer_NumberOfPanels] = { nullptr, };
 
+// TEMP TEST
+bool EditorLayer::tempTest = false;
+float EditorLayer::tempTest2 = 0.6f;
+
 void EditorLayer::Initialize()
 {
 	Vec2 windowSize = Application::Handle->GetMainWindow()->GetSize();
@@ -82,8 +86,12 @@ void EditorLayer::Update(const float& dt)
 	static float totalTime = 0.0f;
 	totalTime += dt;
 
-	UI::GetContextDescription()->colorMultiplier = { sin(totalTime) * 0.5f + 0.5f, cos(totalTime) * 0.5f + 0.5f, -sin(totalTime - 10.0f) * 0.5f + 0.5f };
-	UI::Text("Hola novia, te amo nalgona");
+	UI::Begin("Debug Container");
+	UI::Text("Hola ratilla sexy mira mira ocserba. Ahora hay un title-bar (sin texto todavia) y lo puedo mover y highlightear :D");
+	UI::Text("Metiendo otra pinga aqui a ver que");
+	UI::Checkbox(&tempTest, "Testing new checkbox! %i", (int)tempTest);
+	UI::Slider(&tempTest2, 0.0f, 10.0f, "Pee-pee length", tempTest2);
+	UI::End();
 }
 
 void EditorLayer::Draw()

@@ -2,29 +2,32 @@
 #include "Game.h"
 #include "Player.h"
 
-Player* Game::m_primaryPlayer = nullptr;
-
-void Game::Initialize()
+namespace Orange
 {
-	// Create a primary player
-	m_primaryPlayer = new Player();
-}
+	Player* Game::m_primaryPlayer = nullptr;
 
-void Game::Shutdown()
-{
-	if (m_primaryPlayer)
+	void Game::Initialize()
 	{
-		delete m_primaryPlayer;
-		m_primaryPlayer = nullptr;
+		// Create a primary player
+		m_primaryPlayer = new Player();
 	}
-}
 
-Player* Game::GetPrimaryPlayer() { return m_primaryPlayer; }
+	void Game::Shutdown()
+	{
+		if (m_primaryPlayer)
+		{
+			delete m_primaryPlayer;
+			m_primaryPlayer = nullptr;
+		}
+	}
 
-void Game::SetPrimaryPlayer(Player* player) { m_primaryPlayer = player; }
+	Player* Game::GetPrimaryPlayer() { return m_primaryPlayer; }
 
-void Game::Update(const float dt)
-{
-	// Update the primary player
-	m_primaryPlayer->Update(dt);
+	void Game::SetPrimaryPlayer(Player* player) { m_primaryPlayer = player; }
+
+	void Game::Update(const float dt)
+	{
+		// Update the primary player
+		m_primaryPlayer->Update(dt);
+	}
 }

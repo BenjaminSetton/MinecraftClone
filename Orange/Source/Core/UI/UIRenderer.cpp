@@ -2,16 +2,18 @@
 #include "../Application.h"
 #include "../D3D.h"
 #include "../../Utility/FileSystem/FileSystem.h"
-#include "UIBuffer.h"
+#include "UIContainerTypes.h"
 #include "UIHelper.h"
 #include "UIRenderer.h"
 #include "../../Utility/Utility.h"
 
 namespace Orange
 {
+	// TODO - Use DrawIndexed and change this over to 4
+	static constexpr uint32_t VERTEX_COUNT_PER_UI_ELEMENT = 6;
 
 	UIVertex UIRenderer::m_UIVertices[4] = { };
-	std::unordered_map<char, ID3D11ShaderResourceView*> UIRenderer::m_charToSRVMap = std::unordered_map<char, ID3D11ShaderResourceView*>();
+	std::unordered_map<uint64_t, ID3D11ShaderResourceView*> UIRenderer::m_idToSRVMap = std::unordered_map<uint64_t, ID3D11ShaderResourceView*>();
 
 	DirectX::XMMATRIX UIRenderer::m_orthographicProjection = DirectX::XMMatrixIdentity();
 	ID3D11VertexShader* UIRenderer::m_vertexShader = nullptr;
@@ -21,6 +23,7 @@ namespace Orange
 	ID3D11InputLayout* UIRenderer::m_inputLayout = nullptr;
 	ID3D11SamplerState* UIRenderer::m_samplerClamp = nullptr;
 	ID3D11BlendState* UIRenderer::m_blendState = nullptr;
+	ID3D11RasterizerState* UIRenderer::m_rasterState = nullptr;
 
 	void UIRenderer::Initialize()
 	{
@@ -38,18 +41,20 @@ namespace Orange
 	{
 		BindObjects();
 
+		UIContext* context = UI::GetContext();
+
 		// Loop over every draw command and execute it
-		while (!UIBuffer::IsDrawCommandQueueEmpty())
+		while (!context->drawCommandList.empty())
 		{
 			// Get the current draw command
-			UIDrawCommand currCommand = UIBuffer::PeekDrawCommand();
+			UIDrawCommand currCommand = context->drawCommandList.front();
 
 			// Get the vertices corresponding to that draw command
-			UIVertex vertices[6];
-			for (uint32_t i = 0; i < 6; i++)
+			UIVertex vertices[VERTEX_COUNT_PER_UI_ELEMENT];
+			for (uint32_t i = 0; i < VERTEX_COUNT_PER_UI_ELEMENT; i++)
 			{
-				vertices[i] = UIBuffer::PeekUIVertex();
-				UIBuffer::PopUIVertex();
+				vertices[i] = context->vertexList.front();
+				context->vertexList.pop();
 			}
 
 			switch (currCommand.type)
@@ -59,6 +64,7 @@ namespace Orange
 				OG_ASSERT_MSG(false, "Attempting to draw UI of invalid type. Something went wrong");
 				break;
 			}
+			case UIElementType::CONTAINER:
 			case UIElementType::TEXT:
 			{
 				DrawChar(currCommand, vertices);
@@ -68,31 +74,44 @@ namespace Orange
 			{
 				break;
 			}
+			default:
+			{
+				OG_ASSERT_MSG(false, "This UI Element type does not have an associated DrawXXX() call. This will not be drawn!");
+			}
 			}
 
 			// Create the vertices using the current draw command
 
-			UIBuffer::PopDrawCommand();
+			context->drawCommandList.pop();
 		}
+
+		OG_ASSERT_MSG(context->vertexList.size() == 0, "There are more vertices than draw commands. Make sure all vertices have their respective draw commands");
 	}
 
 	void UIRenderer::DrawChar(const UIDrawCommand& drawCommand, const UIVertex* vertices)
 	{
 		ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
-		char c = drawCommand.drawContext.text.c;
+		Texture texHandle = drawCommand.textureHandle;
+
+		// Create a white texture as the default fallback
+		//if (!texHandle.IsValid())
+		//{
+		//	texHandle.CreateSolidColorTexture(Vec4(1.0f));
+		//}
+		uint64_t id = texHandle.GetId();
 
 		// We need to create a new SRV
-		if (!m_charToSRVMap.contains(c))
+		if (!m_idToSRVMap.contains(id))
 		{
-			CreateCharSRVAndAddToMap(drawCommand.textureHandle, c);
+			CreateSRVFromTexture(texHandle);
 		}
 
 		// The space character '' does not have a width or a height, so we cannot create a texture out of it.
 		// In this case, we will not draw anything and we will just advance to simulate a "space".
-		if (m_charToSRVMap[c] != nullptr)
+		if (m_idToSRVMap[id] != nullptr)
 		{
-			BindCharTexture(c);
+			BindTexture(id);
 
 			// Update the vertex buffer with the new vertices
 			D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -100,26 +119,31 @@ namespace Orange
 			HRESULT hr = context->Map(m_vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 			OG_ASSERT(!FAILED(hr));
 
-			int64_t numBytes = (int64_t)sizeof(UIVertex) * 6;
+			int64_t numBytes = (int64_t)sizeof(UIVertex) * VERTEX_COUNT_PER_UI_ELEMENT;
 			memcpy(mappedResource.pData, vertices, numBytes);
 
 			context->Unmap(m_vertexBuffer, 0);
 
 			BindVertexBuffer();
 
-			context->Draw(6, 0);
+			context->Draw(VERTEX_COUNT_PER_UI_ELEMENT, 0);
 		}
+	}
+
+	void UIRenderer::DrawContainer(const UIDrawCommand& drawCommand, const UIVertex* vertices)
+	{
+		UNUSED(drawCommand);
+		UNUSED(vertices);
 	}
 
 	void UIRenderer::CreateObjects()
 	{
 		ID3D11Device* device = D3D::GetDevice();
-
 		HRESULT hr;
 
 		// Calculate and set the projection matrix
 		Vec2 windowSize = Application::Handle->GetMainWindow()->GetSize();
-		m_orthographicProjection = DirectX::XMMatrixTranspose(DirectX::XMMatrixOrthographicOffCenterLH(0.0f, windowSize.x, 0.0f, windowSize.y, D3D::GetNearPlane(), D3D::GetFarPlane()));
+		m_orthographicProjection = DirectX::XMMatrixTranspose(DirectX::XMMatrixOrthographicOffCenterLH(0.0f, windowSize.x, 0.0, windowSize.y, D3D::GetNearPlane(), D3D::GetFarPlane()));
 
 		// Setup the description of the constant buffer
 		D3D11_BUFFER_DESC cBufferDesc;
@@ -188,7 +212,24 @@ namespace Orange
 		vertexBufferDesc.StructureByteStride = 0;
 
 		// Create the vertex buffer
-		hr = D3D::GetDevice()->CreateBuffer(&vertexBufferDesc, nullptr, &m_vertexBuffer);
+		hr = device->CreateBuffer(&vertexBufferDesc, nullptr, &m_vertexBuffer);
+		OG_ASSERT(!FAILED(hr));
+
+		// Fill out rasterizer description for UI elements
+		D3D11_RASTERIZER_DESC rasterizerDesc;
+		rasterizerDesc.AntialiasedLineEnable = false;
+		rasterizerDesc.CullMode = D3D11_CULL_NONE;	// UI SHOULD ALWAYS BE BILLBOARDED OR IN NDC, SO IT SHOULD ALWAYS FACE TOWARDS CAMERA
+		rasterizerDesc.DepthBias = 0;
+		rasterizerDesc.DepthBiasClamp = 0.0f;
+		rasterizerDesc.DepthClipEnable = true;
+		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+		rasterizerDesc.FrontCounterClockwise = false;
+		rasterizerDesc.MultisampleEnable = false;
+		rasterizerDesc.ScissorEnable = false;
+		rasterizerDesc.SlopeScaledDepthBias = 0.0f;
+
+		// Create the rasterizer state
+		hr = device->CreateRasterizerState(&rasterizerDesc, &m_rasterState);
 		OG_ASSERT(!FAILED(hr));
 	}
 
@@ -229,7 +270,7 @@ namespace Orange
 			{ "COORDINATE",	0, DXGI_FORMAT_R32G32_FLOAT,    0, 0,							  D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "SIZE",       0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "POSITION",   0, DXGI_FORMAT_R32G32_FLOAT,    0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 },
-			{ "COLOR",      0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "COLOR",      0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
 
 		// Create the input layout.
@@ -257,43 +298,39 @@ namespace Orange
 	void UIRenderer::BindObjects()
 	{
 		ID3D11DeviceContext* context = D3D::GetDeviceContext();
-
-		// Set the back buffer and the depth buffer
 		ID3D11RenderTargetView* rttRTV = D3D::GetBackBuffer();
 		ID3D11DepthStencilState* rttDSS = D3D::GetDepthStencilState();
+		ID3D11SamplerState* samplers[] = { m_samplerClamp };
+		ID3D11Buffer* buffer[] = { m_constantBuffer };
 
+		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		context->IASetInputLayout(m_inputLayout);
+		context->VSSetConstantBuffers(0, 1, buffer);
+		context->VSSetShader(m_vertexShader, nullptr, 0);
+		context->PSSetSamplers(0, ARRAYSIZE(samplers), samplers);
+		context->PSSetShader(m_pixelShader, nullptr, 0);
+		context->RSSetState(m_rasterState);
 		context->OMSetDepthStencilState(rttDSS, 1);
 		context->OMSetRenderTargets(1, &rttRTV, nullptr);
-
-		ID3D11Buffer* buffer[] = { m_constantBuffer };
-		context->VSSetConstantBuffers(0, 1, buffer);
-
-		context->IASetInputLayout(m_inputLayout);
-
-		context->VSSetShader(m_vertexShader, nullptr, 0);
-		context->PSSetShader(m_pixelShader, nullptr, 0);
-
-		// Set the sampler state in the pixel shader.
-		ID3D11SamplerState* samplers[] = { m_samplerClamp };
-		context->PSSetSamplers(0, ARRAYSIZE(samplers), samplers);
-
-		// Set the blend state
 		context->OMSetBlendState(m_blendState, nullptr, 0xFFFFFFFF);
-
-		// Set the type of primitive that should be rendered from this vertex buffer, in this case triangles.
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	}
 
 
-	void UIRenderer::BindCharTexture(const char c)
+	void UIRenderer::BindTexture(const uint64_t id)
 	{
 		ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
-		context->PSSetShaderResources(0, 1, &m_charToSRVMap[c]);
+		context->PSSetShaderResources(0, 1, &m_idToSRVMap[id]);
 	}
 
 	void UIRenderer::DeleteObjects()
 	{
+		if (m_rasterState)
+		{
+			m_rasterState->Release();
+			m_rasterState = nullptr;
+		}
+
 		if (m_vertexBuffer)
 		{
 			m_vertexBuffer->Release();
@@ -317,6 +354,13 @@ namespace Orange
 			m_constantBuffer->Release();
 			m_constantBuffer = nullptr;
 		}
+
+		for (auto iter : m_idToSRVMap)
+		{
+			auto SRV = iter.second;
+			if(SRV) SRV->Release();
+		}
+		m_idToSRVMap.clear();
 	}
 
 	void UIRenderer::DeleteShaders()
@@ -334,27 +378,51 @@ namespace Orange
 		}
 	}
 
-	void UIRenderer::CreateCharSRVAndAddToMap(const Texture* tex, const char c)
+	void UIRenderer::CreateSRVFromTexture(const Texture& tex)
 	{
+		//////////////////////////////////////////////////////
+		//
+		//	TODO - Fill out this function!!!
+		//
+		//////////////////////////////////////////////////////
 
-		if (tex->GetTextureData().size.x == 0 || tex->GetTextureData().size.y == 0)
+
+		void* texDataPtr = tex.GetData().get();
+		TextureSpecs texSpecs = tex.GetSpecs();
+		if (texSpecs.size.x == 0 || texSpecs.size.y == 0)
 		{
-			m_charToSRVMap[c] = nullptr;
 			return;
 		}
 
 		HRESULT hr;
 		ID3D11Device* device = D3D::GetDevice();
 		ID3D11Texture2D* texObject;
-		ID3D11ShaderResourceView* charSRV;
+		ID3D11ShaderResourceView* texSRV;
 
 		D3D11_TEXTURE2D_DESC texDesc;
 		ZeroMemory(&texDesc, sizeof(texDesc));
-		texDesc.Width = static_cast<UINT>(tex->GetTextureData().size.x);
-		texDesc.Height = static_cast<UINT>(tex->GetTextureData().size.y);
+		texDesc.Width = static_cast<UINT>(texSpecs.size.x);
+		texDesc.Height = static_cast<UINT>(texSpecs.size.y);
 		texDesc.MipLevels = 1;
 		texDesc.ArraySize = 1;
-		texDesc.Format = DXGI_FORMAT_R8_UNORM;
+		switch (texSpecs.format)
+		{
+		case TextureFormat::R_8:
+		{
+			texDesc.Format = DXGI_FORMAT_R8_UNORM;
+			break;
+		}
+		case TextureFormat::RGBA_32:
+		{
+			texDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+			break;
+		}
+		default:
+		{
+			OG_ASSERT_MSG(false, "Attempting to create an SRV from a texture with a new format. Please include it in this switch case");
+			break;
+		}
+		}
 		texDesc.SampleDesc.Count = 1;
 		texDesc.SampleDesc.Quality = 0;
 		texDesc.Usage = D3D11_USAGE_IMMUTABLE;
@@ -363,8 +431,8 @@ namespace Orange
 		texDesc.MiscFlags = 0;
 
 		D3D11_SUBRESOURCE_DATA texData;
-		texData.pSysMem = tex->GetTextureData().data;
-		texData.SysMemPitch = texDesc.Width;
+		texData.pSysMem = texDataPtr;
+		texData.SysMemPitch = tex.GetUnitSize() * texDesc.Width; // In BYTES!!
 		texData.SysMemSlicePitch = 0;
 
 		// Create the texture
@@ -378,11 +446,11 @@ namespace Orange
 		srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MipLevels = 1;
 
-		hr = device->CreateShaderResourceView(texObject, &srvDesc, &charSRV);
+		hr = device->CreateShaderResourceView(texObject, &srvDesc, &texSRV);
 		OG_ASSERT(!FAILED(hr));
 
-		// Finally insert the SRV into the map
-		m_charToSRVMap[c] = charSRV;
+		// Finally, add the SRV to the hash map
+		m_idToSRVMap[tex.GetId()] = texSRV;
 	}
 
 }
