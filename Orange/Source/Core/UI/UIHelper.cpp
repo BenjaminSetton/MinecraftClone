@@ -9,7 +9,6 @@
 #include "../../Utility/Math.h"
 #include "../../Utility/MathTypes.h"
 #include "Text.h"
-#include "UIContainerTypes.h"
 #include "UIHelper.h"
 #include "../../Utility/Utility.h"
 
@@ -41,6 +40,49 @@ namespace Orange
 				len++;
 			}
 			return len;
+		}
+
+		// TODO - Rework so this operation is not O(N)
+		const uint32_t GetContainerDepth(const UIHash& containerHash)
+		{
+			for (uint32_t depth = 0; depth < gContext.ZMap.size(); depth++)
+			{
+				UIHash hash = gContext.ZMap[depth];
+				if (hash == containerHash) return depth;
+			}
+
+			// Hash is not in the depth map
+			return INVALID_UIHASH;
+		}
+
+		bool IsContainer(const UIHash& hash)
+		{
+			return (gContext.containerList.find(hash) != gContext.containerList.end());
+		}
+
+		UIHash FindHighestContainer()
+		{
+			Vec2 mousePos = Input::GetMousePositionRelativeToBottomLeft();
+			UIHash highestContainer = INVALID_UIHASH;
+			uint32_t maxDepth = 0;
+
+			for (auto containerIter : gContext.containerList)
+			{
+				UIContainer* container = containerIter.second;
+
+				// Allow the user to move the container by clicking on the titlebar (no titlebar = no moving around)
+				if (container->titleBarRect.IsPointInRect(mousePos))
+				{
+					uint32_t containerDepth = GetContainerDepth(container->hash);
+					if (containerDepth > maxDepth)
+					{
+						maxDepth = containerDepth;
+						highestContainer = container->hash;
+					}
+				}
+			}
+
+			return highestContainer;
 		}
 
 		const UIHash GetHashForString(const char* str)
@@ -449,29 +491,55 @@ namespace Orange
 			}
 
 			UIContainer* container = nullptr;
+			UIHash containerHash = GetHashForString(containerName);
 
-			if (!gContext.containerList.contains(std::string(containerName)))
+			if (!gContext.containerList.contains(containerHash))
 			{
 				// If the container is NOT already inside the containerList, create a new one.
-				gContext.containerList[containerName] = new UIContainer();
+				gContext.containerList[containerHash] = new UIContainer();
 			}
-			container = gContext.containerList.at(std::string(containerName));
+			container = gContext.containerList.at(containerHash);
 
-			UIHash containerHash = GetHashForString(containerName);
+			container->hash = containerHash;
 			gContext.parentID = containerHash;
+
+			// Calculate the depth of this container
+			bool containerFoundInDepthMap = false;
+			for (uint32_t i = 0; i < gContext.ZMap.size(); i++)
+			{
+				UIHash hash = gContext.ZMap[i];
+				if (hash == containerHash)
+				{
+					// Swap this hash to the last position of the map
+					gContext.ZMap.erase(gContext.ZMap.begin() + i);
+					gContext.ZMap.push_back(hash);
+
+					containerFoundInDepthMap = true;
+					break;
+				}
+			}
+
+			// If we don't find this container in the depth map, we just have to add it
+			// to the end of the depth map
+			if (!containerFoundInDepthMap)
+			{
+				gContext.ZMap.push_back(containerHash);
+			}
+
+			DrawQuad_Internal(container->containerRect, container->color, container->backgroundTextureObject, UIElementType::CONTAINER);
 
 			// Create vertices and a draw command for the new container. We want to do this here
 			// because the API allows multiple elements to be appended to a container every frame
 			// with separate Begin/End calls
-			Vec2 size = container->containerRect.GetSize();
-			Vec4 color = container->color;
-			Vec2 position = container->containerRect.GetMin();
-			EmplaceQuadVertices(position, size, color);
+			//Vec2 size = container->containerRect.GetSize();
+			//Vec4 color = container->color;
+			//Vec2 position = container->containerRect.GetMin();
+			//EmplaceQuadVertices(position, size, color);
 
-			UIDrawCommand drawCommand; DEBUG_DRAW_COMMAND_FILE_AND_LINE(drawCommand)
-			drawCommand.textureHandle = container->backgroundTextureObject;
-			drawCommand.type = UIElementType::CONTAINER;
-			EmplaceDrawCommand(drawCommand);
+			//UIDrawCommand drawCommand; DEBUG_DRAW_COMMAND_FILE_AND_LINE(drawCommand)
+			//drawCommand.textureHandle = container->backgroundTextureObject;
+			//drawCommand.type = UIElementType::CONTAINER;
+			//EmplaceDrawCommand(drawCommand);
 
 			// Append the title-bar, if necessary
 			if (container->IsDataFlagSet(UIContainer_ShowTitleBar))
@@ -482,45 +550,18 @@ namespace Orange
 				titlebarRect.extent = titleBarExtent;
 				Vec2 spaceUsed = DrawTitleBar_Internal(titlebarRect, container->backgroundTextureObject);
 
+				container->titleBarRect = titlebarRect;
+
 				// Draw the name of the container
 				DrawText_Internal(containerName, container->containerRect.GetCorner(RECT_CORNER::TOP_LEFT), false, static_cast<uint32_t>(container->titleBarSize.x), container->padding);
 
 				// Invalidate the space from the title-bar. Note that it
 				// doesn't take up any extra horizontal space unlike the scroll-bar
 				container->InvalidateSpace(Vec2(0.0f, spaceUsed.y));
-
-				// Allow the user to move the container by clicking on the titlebar (no titlebar = no moving around)
-				Vec2 mousePos = Input::GetMousePositionRelativeToBottomLeft();
-				if (titlebarRect.IsPointInRect(mousePos))
-				{
-					if (container->IsDataFlagSet(UIContainer_CanHighlight))
-					{
-						container->color = selectedBackgroundColor;
-					}
-
-					if (Input::IsMouseDown(MouseCode::LBUTTON))
-					{
-						if (container->IsDataFlagSet(UIContainer_CanCursorLock))
-						{
-							if (!container->cursorLocked)
-							{
-								container->distToCursorIfCursorLocked = container->containerRect.center - mousePos;
-							}
-
-							container->cursorLocked = true;
-						}
-					}
-					else
-					{
-						container->distToCursorIfCursorLocked.x = container->distToCursorIfCursorLocked.y = 0.0f;
-
-						container->cursorLocked = false;
-					}
-				}
-				else
-				{
-					container->color = defaultBackgroundColor;
-				}
+			}
+			else
+			{
+				container->titleBarRect = UIRect(Vec2(0), Vec2(0));
 			}
 			
 			// Push it onto the stack
@@ -542,42 +583,9 @@ namespace Orange
 			gContext.containerStack.pop();
 		}
 
-		void BeginFrame(const float& dt)
+		void BeginFrame()
 		{
-			// Reset the active ID if the LMB is up
-			if (!Input::IsMouseDown(MouseCode::LBUTTON)) gContext.activeID = 0;
-
-			// Reset the IDs in the context
-			if (gContext.activeID == gContext.prevActiveID) gContext.activeIDTimer += dt;
-			if (gContext.hoveredID == gContext.prevHoveredID) gContext.hoveredIDTimer += dt;
-
-
-			// Iterate through containers
-			for (auto containerIter : gContext.containerList)
-			{
-				UIContainer* container = containerIter.second;
-
-				// If container is cursor locked, we want to "stick" it to the cursor
-				Vec2 mousePos = Input::GetMousePositionRelativeToBottomLeft();
-				if (container->cursorLocked)
-				{
-					container->containerRect.center = Vec2(mousePos + container->distToCursorIfCursorLocked);
-
-					if (container->IsDataFlagSet(UIContainer_KeepInWindowBounds))
-					{
-						Vec2 windowDimensions = Application::Handle->GetMainWindow()->GetSize();
-						Vec2 rectExtent = container->containerRect.extent;
-
-						container->containerRect.center.x = max(0.0f + rectExtent.x, container->containerRect.center.x);
-						container->containerRect.center.x = min(windowDimensions.x - rectExtent.x, container->containerRect.center.x);
-						container->containerRect.center.y = max(0.0f + rectExtent.y, container->containerRect.center.y);
-						container->containerRect.center.y = min(windowDimensions.y - rectExtent.y, container->containerRect.center.y);
-					}
-
-					// We also want to keep the color as "selected", even though the cursor could briefly move out of the container
-					container->color = selectedBackgroundColor;
-				}
-			}
+			
 		}
 
 		void EndFrame()
@@ -591,7 +599,90 @@ namespace Orange
 			{
 				UIContainer* currContainer = iter.second;
 				currContainer->ResetDynamicData();
+				currContainer->color = defaultBackgroundColor;
 			}
+		}
+
+		void Update(const float& dt)
+		{
+			UNUSED(dt);
+
+			// Reset the active ID if the LMB is up
+			if (!Input::IsMouseDown(MouseCode::LBUTTON))
+			{
+				gContext.activeID = INVALID_UIHASH;
+				gContext.activeIDTimer = 0;
+				gContext.distToCenterOfActiveContainer = Vec2(0);
+			}
+
+			Vec2 mousePos = Input::GetMousePositionRelativeToBottomLeft();
+
+			// We're dragging the container around, so update it's position.
+			// We also don't care whether we're hovering over another container
+			// or w/e else might be happening, so this check should go first
+			if (IsContainer(gContext.activeID) && (gContext.activeID != INVALID_UIHASH))
+			{
+				UIContainer* activeContainer = gContext.containerList[gContext.activeID];
+				activeContainer->containerRect.center = Vec2(mousePos + gContext.distToCenterOfActiveContainer);
+
+				if (activeContainer->IsDataFlagSet(UIContainer_KeepInWindowBounds))
+				{
+					Vec2 windowDimensions = Application::Handle->GetMainWindow()->GetSize();
+					Vec2 rectExtent = activeContainer->containerRect.extent;
+
+					activeContainer->containerRect.center.x = max(0.0f + rectExtent.x, activeContainer->containerRect.center.x);
+					activeContainer->containerRect.center.x = min(windowDimensions.x - rectExtent.x, activeContainer->containerRect.center.x);
+					activeContainer->containerRect.center.y = max(0.0f + rectExtent.y, activeContainer->containerRect.center.y);
+					activeContainer->containerRect.center.y = min(windowDimensions.y - rectExtent.y, activeContainer->containerRect.center.y);
+				}
+
+				// Keep the color as "selected", even though the cursor could briefly move out of the container
+				activeContainer->color = selectedBackgroundColor;
+			}
+
+			// Find the active and hovered container
+			UIHash highestContainerHash = FindHighestContainer();
+
+			// We're not hovering over any container, so set hoveredID to 0 and bail
+			gContext.hoveredID = INVALID_UIHASH;
+			if (highestContainerHash == INVALID_UIHASH) return;
+
+			UIContainer* hotContainer = gContext.containerList[highestContainerHash];
+			bool isMouseDown = Input::IsMouseDown(MouseCode::LBUTTON);
+
+			gContext.hoveredID = highestContainerHash;
+			if (hotContainer->IsDataFlagSet(UIContainer_CanHighlight))
+			{
+				hotContainer->color = selectedBackgroundColor;
+			}
+
+			if (isMouseDown && (gContext.activeID == INVALID_UIHASH))
+			{
+				if (hotContainer->IsDataFlagSet(UIContainer_CanCursorLock))
+				{
+					// Set the distance to the center of the container in the context
+					gContext.distToCenterOfActiveContainer = hotContainer->containerRect.center - mousePos;
+				}
+				gContext.activeID = highestContainerHash;
+			}
+
+			// Reset the depth map
+			memset(&gContext.ZMap[0], INVALID_UIHASH, gContext.ZMap.size() * sizeof(UIHash));
+		}
+
+		void Initialize()
+		{
+			// Do INI parsing and other necessary stuff
+		}
+
+		void Shutdown()
+		{
+			// Clean up all containers
+			for (auto containerIter : gContext.containerList)
+			{
+				delete containerIter.second;
+			}
+			gContext.containerList.clear();
 		}
 
 	}

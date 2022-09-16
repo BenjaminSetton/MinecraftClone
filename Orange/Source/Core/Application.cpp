@@ -65,6 +65,8 @@ namespace Orange
 		// Initialize the game object
 		Game::Initialize();
 
+		UI::Initialize();
+
 		// Create the graphics object
 		m_Graphics = new Graphics();
 		result = m_Graphics->Initialize();
@@ -125,6 +127,7 @@ namespace Orange
 		FontManager::Deinitialize();
 		EditorLayer::Shutdown();
 		Game::Shutdown();
+		UI::Shutdown();
 
 		Handle = nullptr;
 	}
@@ -138,14 +141,15 @@ namespace Orange
 		// Signal the clock every frame to obtain deltaTime
 		m_Clock->Signal();
 
+		UI::BeginFrame();
+
 		// Store the frame's delta time in dt
 		float dt = m_Clock->GetDeltaTime(Clock::TimePrecision::SECONDS);
 		// HACK! Prevent delta time from giving bad results after moving game window
 		dt = dt > 0.5f ? 0.016666f : dt;
 
-		UI::BeginFrame(dt);
+		UI::Update(dt);
 
-		// Update the player
 		Game::Update(dt);
 
 		// We should consider using a switch case to check which layer is active

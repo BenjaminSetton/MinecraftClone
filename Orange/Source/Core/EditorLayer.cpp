@@ -87,10 +87,16 @@ void EditorLayer::Update(const float& dt)
 	totalTime += dt;
 
 	UI::Begin("Debug Container");
-	UI::Text("Hola ratilla sexy mira mira ocserba. Ahora hay un title-bar (sin texto todavia) y lo puedo mover y highlightear :D");
-	UI::Text("Metiendo otra pinga aqui a ver que");
+	UI::Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse in malesuada sem. Phasellus leo nunc, consequat id interdum a, vehicula sed enim.");
+	UI::Text("Some other text...testing interaction");
 	UI::Checkbox(&tempTest, "Testing new checkbox! %i", (int)tempTest);
-	UI::Slider(&tempTest2, 0.0f, 10.0f, "Pee-pee length", tempTest2);
+	UI::Slider(&tempTest2, 50.0f, 100.0f, "Slider text", tempTest2);
+	UI::End();
+
+	UI::Begin("Other Debug Container");
+	UI::Text("ActiveID: %u", UI::GetContext()->activeID);
+	UI::Text("HoveredID: %u", UI::GetContext()->hoveredID);
+	UI::Text("DistToCenter: %2.2f, %2.2f", UI::GetContext()->distToCenterOfActiveContainer.x, UI::GetContext()->distToCenterOfActiveContainer.y);
 	UI::End();
 }
 

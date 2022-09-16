@@ -15,6 +15,10 @@
 
 namespace Orange
 {
+	// Typedef for descriptive types
+	typedef uint64_t UIHash;
+	constexpr UIHash INVALID_UIHASH = 0;
+
 	// The draw command struct that will get filled out upon any calls to UI::XXXX() calls. This is a description of what
 	// we want to draw, and it's up to the UIBuffer to create the correct quad vertices. Then the UIRenderer will request
 	// those vertices and handle all the graphics API calls from there (e.g. updating buffers, setting up shaders, drawing, etc)
@@ -89,9 +93,11 @@ objectName.lineNumber = __LINENUMBER__;
 			effectiveSize							= Vec2(0);
 			padding									= Vec2(5);
 			color									= defaultBackgroundColor;
-			cursorLocked							= false;
-			distToCursorIfCursorLocked				= Vec2(0);
+			//cursorLocked							= false;
+			//distToCursorIfCursorLocked				= Vec2(0);
 			titleBarSize							= Vec2(containerRect.GetSize().x, 25.0f);
+			titleBarRect							= UIRect();
+			hash									= INVALID_UIHASH;
 
 			// DO NOT USE
 			backgroundTextureObject.CreateSolidColorTexture(Vec4(1.0f, 1.0f, 1.0f, 1.0f));
@@ -163,7 +169,7 @@ objectName.lineNumber = __LINENUMBER__;
 
 		// This flag allows the container to be locked to the cursor.
 		// This is used when a container is being moved around
-		bool cursorLocked;
+		//bool cursorLocked;
 
 		UIContainerFlags dataFlags;
 
@@ -173,6 +179,12 @@ objectName.lineNumber = __LINENUMBER__;
 		// Contains information about how much space is left for other "stuff" to use. For example, when we append text
 		// to this container we invalidate some space at the top of the containerRect, but we keep track of it in here
 		UIRect remainingSpace;
+
+		// The rect that represents the titlebar
+		UIRect titleBarRect;
+
+		// The hash of this container (guaranteed to be a UUID)
+		UIHash hash;
 
 		// Represents the effective size of the container, which is not always equal to the physical size
 		// of the UIRect. If the children take up more space than what the UIRect can represent, the container
@@ -185,7 +197,8 @@ objectName.lineNumber = __LINENUMBER__;
 		// The background color of the container
 		Vec4 color;
 
-		Vec2 distToCursorIfCursorLocked;
+		// Distance from center of container to the cursor if we're cursor locked. Used for dragging
+		//Vec2 distToCursorIfCursorLocked;
 
 		// DO NOT USE
 		Texture backgroundTextureObject;
@@ -203,35 +216,40 @@ objectName.lineNumber = __LINENUMBER__;
 		Vec4 color = Vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	};
 
-	// Typedef for descriptive types
-	typedef uint64_t UIHash;
-	constexpr UIHash INVALID_UIHASH = 0;
 
 	// Provides context around the draw calls in the current frame
 	struct UIContext
 	{
-		std::unordered_map<std::string, UIContainer*> containerList;
+		std::unordered_map<UIHash, UIContainer*> containerList = std::unordered_map<UIHash, UIContainer*>();
+
+		// Keeps track of the "depth" of every container. This is updated every time a Begin()
+		// call is made, and is reset at the beginning of each frame. The index corresponds to the depth
+		// value of the hash, and the higher the Z value the "higher" it is on the screen. Top-most container
+		// is (ZMap.size() - 1)
+		std::vector<UIHash> ZMap = std::vector<UIHash>();
 
 		// Stores the container that all UI::XXXX calls will append their data to. A container is pushed every time
 		// UI::Begin() is called, and popped every time UI::End() is called. By definition, the container inside the stack
 		// should always point to the last element inside the containerList
-		std::stack<UIContainer*> containerStack;
+		std::stack<UIContainer*> containerStack = std::stack<UIContainer*>();
 
 		// Rendering-related data members
-		std::queue<UIDrawCommand> drawCommandList;
-		std::queue<UIVertex> vertexList;
+		std::queue<UIDrawCommand> drawCommandList = std::queue<UIDrawCommand>();
+		std::queue<UIVertex> vertexList = std::queue<UIVertex>();
 
 		// Slider data
-		Vec2 sliderBarSizeInPixels			= Vec2(150, 20);
-		Vec2 sliderHandleSizeInPixels		= Vec2(12, static_cast<int>(sliderBarSizeInPixels.y));
+		Vec2 sliderBarSizeInPixels					= Vec2(150, 20);
+		Vec2 sliderHandleSizeInPixels				= Vec2(12, static_cast<int>(sliderBarSizeInPixels.y));
 
-		UIHash activeID						= INVALID_UIHASH;	// Hash of the widget that is currently active
-		UIHash prevActiveID					= INVALID_UIHASH;	// Hash of the previous frame, equal to current active ID if the same widget is still active
-		float activeIDTimer					= 0.0f;				// Timer for how long the active widget has been active for
-		UIHash hoveredID					= INVALID_UIHASH;	// Hash of the widget that is currently hovered
-		UIHash prevHoveredID				= INVALID_UIHASH;	// Hash of the previous frame, equal to current hovered ID if the same widget is still hovered
-		float hoveredIDTimer				= 0.0f;				// Timer for how long the hovered widget has been hovered for
-		UIHash parentID						= INVALID_UIHASH;	// Hash of the container that every widget call is going to add itself to
+		UIHash activeID								= INVALID_UIHASH;	// Hash of the widget that is currently active
+		UIHash prevActiveID							= INVALID_UIHASH;	// Hash of the previous frame, equal to current active ID if the same widget is still active
+		float activeIDTimer							= 0.0f;				// Timer for how long the active widget has been active for
+		UIHash hoveredID							= INVALID_UIHASH;	// Hash of the widget that is currently hovered
+		UIHash prevHoveredID						= INVALID_UIHASH;	// Hash of the previous frame, equal to current hovered ID if the same widget is still hovered
+		float hoveredIDTimer						= 0.0f;				// Timer for how long the hovered widget has been hovered for
+		UIHash parentID								= INVALID_UIHASH;	// Hash of the container that every widget call is going to add itself to
+		uint32_t maxDepth							= 0;				// Keeps count of the max depth of any given container. This allows us to determine which container is on top of which other one
+		Vec2 distToCenterOfActiveContainer			= Vec2(0);			// Stores the distance to the center of the active container for dragging
 
 	};
 }
