@@ -72,12 +72,7 @@ namespace Orange
 				}
 				else // lerp between prev blcok
 				{
-					m_currentIndicatorPos =
-					{
-						m_currentIndicatorPos.x + ((m_targetIndicatorPos.x - m_currentIndicatorPos.x) * m_transitionDamping * dt),
-						m_currentIndicatorPos.y + ((m_targetIndicatorPos.y - m_currentIndicatorPos.y) * m_transitionDamping * dt),
-						m_currentIndicatorPos.z + ((m_targetIndicatorPos.z - m_currentIndicatorPos.z) * m_transitionDamping * dt)
-					};
+					m_currentIndicatorPos = m_targetIndicatorPos;
 				}
 			}
 

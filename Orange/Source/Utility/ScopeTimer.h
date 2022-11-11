@@ -3,6 +3,8 @@
 
 
 #include <chrono>
+#include <string_view>
+
 #include "../imgui/imgui.h"
 
 // A small scope timer class that gets destroyed when it goes out of scope
@@ -17,7 +19,7 @@ public:
 	//	CONSOLE = 1
 	
 
-	ScopeTimer(std::string name = "Unnamed", const int mode = 0, float* outDeltaTime = nullptr);
+	ScopeTimer(std::string_view name = "Unnamed", const int mode = 0, float* outDeltaTime = nullptr);
 	ScopeTimer(const ScopeTimer& other) = default;
 
 	~ScopeTimer();

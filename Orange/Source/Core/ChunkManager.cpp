@@ -1,10 +1,11 @@
 #include "../Misc/pch.h"
 
 #include "ChunkManager.h"
-#include "../Utility/Utility.h"
 #include "Chunk.h"
+#include "../Utility/HeapOverrides.h"
 #include "../Utility/ImGuiLayer.h"
 #include "../Utility/Math.h"
+#include "../Utility/Utility.h"
 
 using namespace DirectX;
 
@@ -87,7 +88,7 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 		{
 			int32_t startingChunk = threadID * actualDepthSlicesPerThread - RENDER_DIST;
 			int32_t numChunksToInit = threadID == static_cast<int16_t>(numThreadsToRun) - 1 ? actualDepthSlicesPerThread + ((2 * RENDER_DIST + 1) - numThreadsToRun * actualDepthSlicesPerThread) : actualDepthSlicesPerThread;
-			std::thread* currThread = new std::thread(InitChunksMultithreaded, startingChunk, numChunksToInit, playerPosCS);
+			std::thread* currThread = OG_NEW std::thread(InitChunksMultithreaded, startingChunk, numChunksToInit, playerPosCS);
 			chunkLoaderThreads[threadID] = currThread;
 
 			OG_LOG_INFO("Thread %i initialized %i chunks from %i to %i", threadID, numChunksToInit, startingChunk, startingChunk + numChunksToInit);
@@ -110,7 +111,7 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 		{
 			uint32_t startingIndex = threadID * static_cast<int32_t>(numIndicesPerChunk);
 			uint32_t numIndiciesToInit = threadID == static_cast<int32_t>(numThreadsToRun) - 1 ? m_activeChunks.Size() - startingIndex : numIndicesPerChunk;
-			std::thread* currThread = new std::thread(InitChunkVertexBuffersMultithreaded, startingIndex, numIndiciesToInit);
+			std::thread* currThread = OG_NEW std::thread(InitChunkVertexBuffersMultithreaded, startingIndex, numIndiciesToInit);
 			vertexBufferThreads[threadID] = currThread;
 			OG_LOG_INFO("Thread %i initialized %i indicies from %i to %i", threadID, numIndiciesToInit, startingIndex, startingIndex + numIndiciesToInit);
 		}
@@ -121,7 +122,7 @@ void ChunkManager::Initialize(const XMFLOAT3 playerPosWS)
 	}
 
 	// Start the updater thread
-	m_updaterThread = new std::thread(UpdaterEntryPoint);
+	m_updaterThread = OG_NEW std::thread(UpdaterEntryPoint);
 
 }
 

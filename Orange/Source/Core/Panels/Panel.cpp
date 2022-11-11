@@ -23,10 +23,10 @@ void Panel::Draw()
 {
 	ImVec2 windowSize = ImVec2(m_dimensions.x, m_dimensions.y);
 	ImVec2 windowPos = ImVec2(m_pos.x, m_pos.y);
-	ImGuiCond condition = ImGuiCond_Once;
+	//ImGuiCond condition = ImGuiCond_Once;
 
-	ImGui::SetNextWindowSize(windowSize, condition);
-	ImGui::SetNextWindowPos(windowPos, condition);
+	/*ImGui::SetNextWindowSize(windowSize, condition);
+	ImGui::SetNextWindowPos(windowPos, condition);*/
 
 	if (m_components.size() > 0)
 	{
@@ -38,9 +38,9 @@ void Panel::Draw()
 	}
 	else // just draw an empty window
 	{
-		ImGui::Begin(m_name.c_str(), &m_isOpen, m_flags);
+		/*ImGui::Begin(m_name.c_str(), &m_isOpen, m_flags);
 		ImGui::Text("This is the %s", m_name.c_str());
-		ImGui::End();
+		ImGui::End();*/
 	}
 
 }
@@ -92,5 +92,5 @@ PanelComponent* Panel::GetComponent(const PanelComponentType type)
 
 uint32_t Panel::GetID() const
 {
-	return static_cast<uint32_t>(ImGui::GetID(m_name.c_str()));
+	return 0;
 }

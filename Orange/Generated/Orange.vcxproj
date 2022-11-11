@@ -195,6 +195,7 @@
     <ClInclude Include="..\Source\Utility\FileSystem\FileSystem_Base.h" />
     <ClInclude Include="..\Source\Utility\FileSystem\FileSystem_Windows.h" />
     <ClInclude Include="..\Source\Utility\FontManager.h" />
+    <ClInclude Include="..\Source\Utility\HeapOverrides.h" />
     <ClInclude Include="..\Source\Utility\ImGuiDrawData.h" />
     <ClInclude Include="..\Source\Utility\ImGuiLayer.h" />
     <ClInclude Include="..\Source\Utility\Input.h" />
@@ -202,18 +203,11 @@
     <ClInclude Include="..\Source\Utility\Math.h" />
     <ClInclude Include="..\Source\Utility\MathConstants.h" />
     <ClInclude Include="..\Source\Utility\MathTypes.h" />
+    <ClInclude Include="..\Source\Utility\MemoryUtilities.h" />
     <ClInclude Include="..\Source\Utility\ScopeTimer.h" />
     <ClInclude Include="..\Source\Utility\SimplexNoise.h" />
     <ClInclude Include="..\Source\Utility\SortedPool.h" />
     <ClInclude Include="..\Source\Utility\Utility.h" />
-    <ClInclude Include="..\Source\imgui\imconfig.h" />
-    <ClInclude Include="..\Source\imgui\imgui.h" />
-    <ClInclude Include="..\Source\imgui\imgui_impl_dx11.h" />
-    <ClInclude Include="..\Source\imgui\imgui_impl_win32.h" />
-    <ClInclude Include="..\Source\imgui\imgui_internal.h" />
-    <ClInclude Include="..\Source\imgui\imstb_rectpack.h" />
-    <ClInclude Include="..\Source\imgui\imstb_textedit.h" />
-    <ClInclude Include="..\Source\imgui\imstb_truetype.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Source\Core\Application.cpp" />
@@ -259,6 +253,7 @@
     <ClCompile Include="..\Source\Utility\FileSystem\FileSystem.cpp" />
     <ClCompile Include="..\Source\Utility\FileSystem\FileSystem_Windows.cpp" />
     <ClCompile Include="..\Source\Utility\FontManager.cpp" />
+    <ClCompile Include="..\Source\Utility\HeapOverrides.cpp" />
     <ClCompile Include="..\Source\Utility\ImGuiDrawData.cpp" />
     <ClCompile Include="..\Source\Utility\ImGuiLayer.cpp" />
     <ClCompile Include="..\Source\Utility\Input.cpp" />
@@ -266,13 +261,6 @@
     <ClCompile Include="..\Source\Utility\ScopeTimer.cpp" />
     <ClCompile Include="..\Source\Utility\SimplexNoise.cpp" />
     <ClCompile Include="..\Source\Utility\SortedPool.cpp" />
-    <ClCompile Include="..\Source\imgui\imgui.cpp" />
-    <ClCompile Include="..\Source\imgui\imgui_demo.cpp" />
-    <ClCompile Include="..\Source\imgui\imgui_draw.cpp" />
-    <ClCompile Include="..\Source\imgui\imgui_impl_dx11.cpp" />
-    <ClCompile Include="..\Source\imgui\imgui_impl_win32.cpp" />
-    <ClCompile Include="..\Source\imgui\imgui_tables.cpp" />
-    <ClCompile Include="..\Source\imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Source\Shaders\DebugRenderer_PS.hlsl">

@@ -240,29 +240,6 @@ namespace Orange
 			player->m_FPSCamera->SetCameraParameters(player->m_position, player->m_rotation);
 			player->m_FPSCamera->Update(dt);
 
-			// TEST RAYCASTING, PLEASE REMOVE
-	#pragma region RAYCAST_TEST
-			OG_COOLDOWN(0.1f, dt)
-			{
-				XMFLOAT3 rayHit = { 0, 0, 0 };
-				if (Input::IsMouseDown(MouseCode::RBUTTON))
-				{
-					XMFLOAT3 rayPos, rayDir;
-					XMStoreFloat3(&rayPos, player->m_FPSCamera->GetWorldMatrix().r[3]);
-					XMStoreFloat3(&rayDir, DirectX::XMVector3Normalize(player->m_FPSCamera->GetWorldMatrix().r[2]));
-					if (Orange::Math::Raycast(rayPos, rayDir, player->GetInteractionRange(), ChunkManager::CheckBlockRaycast, &rayHit))
-					{
-						//OG_LOG("Target Hit - [%2.2f, %2.2f, %2.2f]", rayHit.x, rayHit.y, rayHit.z);
-						DebugRenderer::DrawLine(rayPos, rayHit, { 1.0f, 0, 0, 1.0f });
-						DebugRenderer::DrawSphere(1, rayHit, 0.01f, { 1.0f, 0, 0, 1.0f });
-					}
-					else
-					{
-						//OG_LOG("Target Missed");
-					}
-				}
-			}
-	#pragma endregion
 			break;
 		}
 		case CameraType::Debug:

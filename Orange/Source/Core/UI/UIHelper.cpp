@@ -1,9 +1,11 @@
 
 #include <functional>
 #include <stdarg.h>
+#include <sstream>
 
 #include "../Application.h"
 #include "../../Utility/FontManager.h"
+#include "../../Utility/HeapOverrides.h"
 #include "../../Utility/Input.h"
 #include "Image.h"
 #include "../../Utility/Math.h"
@@ -40,6 +42,14 @@ namespace Orange
 				len++;
 			}
 			return len;
+		}
+
+		template<typename T>
+		std::string ToString(T arg)
+		{
+			std::stringstream ss;
+			ss << arg;
+			return ss.str();
 		}
 
 		// TODO - Rework so this operation is not O(N)
@@ -135,24 +145,76 @@ namespace Orange
 		}
 
 		// Calculates position of text quads using parameters and enqueues the vertices and draw commands to the draw queues
-		const Vec2 DrawText_Internal(const char* text, const Vec2 startPosition, const bool wrapText, const uint32_t widthLimit, const Vec2 padding)
+		const Vec2 DrawText_Internal(const char* text, const Vec2 startPosition, const bool wrapText, const uint32_t widthLimit, const Vec2 padding, const HORIZONTAL_TEXT_ALIGNMENT& horAlign)
 		{
 			OG_ASSERT(padding.x < widthLimit);
 
 			// Get the length of the container name
 			uint32_t numChars = GetCharArrayLength(text);
 
-			Vec2 prevPos(padding);
+			// Loop over all char data for entire text to determine specs for the entire text, such as
+			// how much space it will use up (used for alignment). Char data is then cached to save computation
+			std::vector<FontManager_CharacterData> charDataForText;
+			charDataForText.reserve(numChars);
+			Vec2 spaceUsed = Vec2(0);
+			for (uint32_t i = 0; i < numChars; i++)
+			{
+				charDataForText.push_back(FontManager::GetDataForChar(text[i]));
+				FontManager_CharacterData& charData = charDataForText[i];
+
+				// Calculate how much space the text takes up, we
+				// need special cases for the beginning and end
+				if (i == 0)
+				{
+					spaceUsed.x += (charData.advance - charData.bearing.x);
+				}
+				else if(i == numChars - 1)
+				{
+					spaceUsed.x += (charData.bearing.x + charData.textureHandle.GetSpecs().size.x);
+				}
+				else
+				{
+					spaceUsed.x += (charData.advance);
+				}
+			}
+
+			Vec2 prevPos(0);
+
+			// Dictate where we will start writing our chars to (regarding alignment)
+			switch (horAlign)
+			{
+			case HORIZONTAL_TEXT_ALIGNMENT::LEFT:
+			{
+				prevPos = padding;
+				break;
+			}
+			case HORIZONTAL_TEXT_ALIGNMENT::CENTER:
+			{
+				prevPos = Vec2((widthLimit - spaceUsed.x) / 2.0f, padding.y);
+				break;
+			}
+			case HORIZONTAL_TEXT_ALIGNMENT::RIGHT:
+			{
+				prevPos = Vec2(widthLimit - spaceUsed.x, padding.y);
+				break;
+			}
+			default:
+			{
+				OG_ERROR("Unknown alignment");
+				break;
+			}
+			}
+
 			uint32_t currentLine = 0;
 			uint32_t widthTaken = 0;
 			for (uint32_t i = 0; i < numChars; i++)
 			{
 				char c = text[i];
-				FontManager_CharacterData charData = FontManager::GetDataForChar(c);
+				FontManager_CharacterData charData = charDataForText[i];
 
 				Vec2 size = { charData.textureHandle.GetSpecs().size.x, charData.textureHandle.GetSpecs().size.y };
 				// Bit-shift to give value in pixels
-				float advanceToNextGlyph = static_cast<float>(charData.advance >> 6);
+				float advanceToNextGlyph = static_cast<float>(charData.advance);
 				Vec2 startQuadPosition(0);
 
 				float negativeVerticalOffset = size.y - charData.bearing.y;
@@ -297,7 +359,7 @@ namespace Orange
 			UIContainer* container = GetContainer();
 
 			// Draw the actual text
-			Vec2 spaceUsed = DrawText_Internal(tempBuffer, container->GetRemainingSpace().GetCorner(RECT_CORNER::TOP_LEFT), container->IsDataFlagSet(UIContainer_WrapText), static_cast<uint32_t>(container->GetRemainingSize().x), container->padding);
+			Vec2 spaceUsed = DrawText_Internal(tempBuffer, container->GetRemainingSpace().GetCorner(RECT_CORNER::TOP_LEFT), container->IsDataFlagSet(UIContainer_WrapText), static_cast<uint32_t>(container->GetRemainingSize().x), container->padding, HORIZONTAL_TEXT_ALIGNMENT::LEFT);
 			
 			// Invalidate the space we just used for the text
 			container->InvalidateSpace(Vec2(0.0f, spaceUsed.y));
@@ -388,7 +450,7 @@ namespace Orange
 
 			// Draw the text after the checkbox
 			Vec2 textStartingPos = Vec2(container->GetRemainingSpace().GetCorner(RECT_CORNER::TOP_LEFT).x + checkBox.GetSize().x + container->padding.x, container->GetRemainingSpace().GetCorner(RECT_CORNER::TOP_LEFT).y);
-			Vec2 spaceUsed = DrawText_Internal(tempBuffer, textStartingPos, container->IsDataFlagSet(UIContainer_WrapText), static_cast<uint32_t>(container->GetRemainingSize().x), container->padding);
+			Vec2 spaceUsed = DrawText_Internal(tempBuffer, textStartingPos, container->IsDataFlagSet(UIContainer_WrapText), static_cast<uint32_t>(container->GetRemainingSize().x), container->padding, HORIZONTAL_TEXT_ALIGNMENT::LEFT);
 
 			// Invalidate the space we just used for the text
 			container->InvalidateSpace(Vec2(0.0f, spaceUsed.y));
@@ -452,32 +514,30 @@ namespace Orange
 				// Set this widget as hovered because we're actively moving the handle
 				gContext.hoveredID = id;
 
-				float minHandlePosition = barRect.GetMin().x + halfHandleWidth;
-				float maxHandlePosition = barRect.GetMin().x + realAvailableSliderDistance + halfHandleWidth;
+				float handlePosX = Input::GetMousePosition().x;
+				float maxHandlePos = barRect.GetMax().x - handleRect.extent.x;
+				float minHandlePos = barRect.GetMin().x + handleRect.extent.x;
 
-				Vec2 mouseDelta = Input::GetMouseDelta();
-				float adjustedTween = tween + (mouseDelta.x * 0.01f);
-				Math::Clamp(adjustedTween, 0.0f, 1.0f); 
+				Math::Clamp(handlePosX, minHandlePos, maxHandlePos);
+
+				float handlePosNorm = 1.0f - ((maxHandlePos - handlePosX) / (maxHandlePos - minHandlePos));
+				OG_ASSERT(handlePosNorm >= 0.0 && handlePosNorm <= 1.0);
 
 				// Set the new float value
-				(*value) = ((max - min) * adjustedTween) + min;
+				(*value) = ((max - min) * handlePosNorm) + min;
 
 				// Set the center of the handle
-				handleRect.center.x = Math::Clamp((adjustedTween * (maxHandlePosition - minHandlePosition)) + minHandlePosition, minHandlePosition, maxHandlePosition);
+				handleRect.center.x = handlePosX;
 			}
 
 			DrawSlider_Internal(barRect, handleRect, container->backgroundTextureObject, gContext.hoveredID == id);
 
 			Vec2 textStartPosition = container->remainingSpace.GetCorner(RECT_CORNER::TOP_LEFT) + Vec2(barRect.GetSize().x + container->padding.x, -container->padding.y);
-			DrawText_Internal(tempBuffer, textStartPosition, false, static_cast<uint32_t>(container->containerRect.GetMax().x - textStartPosition.x), container->padding.x);
+			DrawText_Internal(tempBuffer, textStartPosition, false, static_cast<uint32_t>(container->containerRect.GetMax().x - textStartPosition.x), container->padding.x, HORIZONTAL_TEXT_ALIGNMENT::LEFT);
 
-			// Draw the current value of the variable (half-working at the moment, text position is wrong)
-			const uint32_t maxFloatToCharBufferSize = 25;
-			char floatToChar[maxFloatToCharBufferSize];
-			int res = snprintf(floatToChar, maxFloatToCharBufferSize, "%7.3f", *value);
-			if (res < 0) OG_ASSERT_MSG(false, "Something went wrong when converting float representation to const char*");
-			else if (res >= maxFloatToCharBufferSize) OG_ASSERT_MSG(false, "Buffer is not big enough for float to fit");
-			DrawText_Internal(floatToChar, barRect.center, false, static_cast<uint32_t>(container->containerRect.GetMax().x - textStartPosition.x), container->padding.x);
+			// Draw the current value of the variable
+			auto string = ToString(*value);
+			DrawText_Internal(string.c_str(), barRect.GetCorner(RECT_CORNER::TOP_LEFT), false, static_cast<uint32_t>(barRect.GetSize().x), container->padding.x, HORIZONTAL_TEXT_ALIGNMENT::CENTER);
 		}
 
 		void Begin(const char* containerName)
@@ -496,7 +556,7 @@ namespace Orange
 			if (!gContext.containerList.contains(containerHash))
 			{
 				// If the container is NOT already inside the containerList, create a new one.
-				gContext.containerList[containerHash] = new UIContainer();
+				gContext.containerList[containerHash] = OG_NEW UIContainer();
 			}
 			container = gContext.containerList.at(containerHash);
 
@@ -553,7 +613,7 @@ namespace Orange
 				container->titleBarRect = titlebarRect;
 
 				// Draw the name of the container
-				DrawText_Internal(containerName, container->containerRect.GetCorner(RECT_CORNER::TOP_LEFT), false, static_cast<uint32_t>(container->titleBarSize.x), container->padding);
+				DrawText_Internal(containerName, container->containerRect.GetCorner(RECT_CORNER::TOP_LEFT), false, static_cast<uint32_t>(container->titleBarSize.x), container->padding, HORIZONTAL_TEXT_ALIGNMENT::LEFT);
 
 				// Invalidate the space from the title-bar. Note that it
 				// doesn't take up any extra horizontal space unlike the scroll-bar

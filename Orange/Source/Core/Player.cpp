@@ -1,7 +1,8 @@
 #include "../Misc/pch.h"
-#include "Player.h"
 
+#include "../Utility/HeapOverrides.h"
 #include "../Utility/Input.h"
+#include "Player.h"
 #include "PlayerController.h"
 
 using namespace DirectX;
@@ -11,10 +12,10 @@ namespace Orange
 	Player::Player() :	m_acceleration({0.0f, 0.0f, 0.0f}), m_velocity({0.0f, 0.0f, 0.0f}), m_FPSCamera(nullptr), m_debugCamera(nullptr), m_selectedCameraType(CameraType::FirstPerson),
 						m_movementSpeed(7.0f), m_position({ -4.0f, 150.0f, -10.0f }), m_rotation({ 0.0f, 0.0f, 0.0f }), m_allowJump(false), m_interactionRange(7.0f)
 	{
-		m_FPSCamera = new Camera(0.4f, 20.0f);
+		m_FPSCamera = OG_NEW Camera(0.4f, 20.0f);
 		m_FPSCamera->ConstructMatrix(m_position, m_rotation);
 
-		m_debugCamera = new Camera(0.5f, 22.0f);
+		m_debugCamera = OG_NEW Camera(0.5f, 22.0f);
 		m_debugCamera->ConstructMatrix(m_position, m_rotation);
 
 		m_hitbox.center = { m_position.x, m_position.y - 2.0f, m_position.z };

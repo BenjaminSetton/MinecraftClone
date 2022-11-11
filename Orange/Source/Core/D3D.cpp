@@ -2,6 +2,7 @@
 
 #include "Application.h"
 #include "D3D.h"
+#include "../Utility/HeapOverrides.h"
 #include "../Utility/MathTypes.h"
 #include "../Utility/Utility.h"
 
@@ -76,7 +77,7 @@ bool D3D::Initialize(const bool& vsync, const float& screenFar, const float& scr
 	if (FAILED(result)){ return false; }
 
 	// Create a list to hold all the possible display modes for this monitor/video card combination.
-	displayModeList = new DXGI_MODE_DESC[numModes];
+	displayModeList = OG_NEW DXGI_MODE_DESC[numModes];
 	if (!displayModeList){ return false; }
 
 	// Now fill the display mode list structures.

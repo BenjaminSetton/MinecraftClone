@@ -4,6 +4,7 @@
 #include "../Utility/FileSystem/FileSystem.h"
 #include "../Utility/FontManager.h"
 #include "Game.h"
+#include "../Utility/HeapOverrides.h"
 #include "../Utility/ImGuiLayer.h"
 #include "./Events/KeyCodes.h"
 #include "UI/UIHelper.h"
@@ -49,14 +50,14 @@ namespace Orange
 		params.alignment = Centered;
 
 		// Create the main window
-		m_mainWindow = new Window();
+		m_mainWindow = OG_NEW Window();
 		m_mainWindow->Create(params);
 
 		// Initialize the Font Manager
 		FontManager::Initialize();
 
 		// Create the input object.  This object will be used to handle reading the keyboard input from the user.
-		m_Input = new Input();
+		m_Input = OG_NEW Input();
 		Subscribe(m_Input);
 
 		// Initialize the EditorLayer module
@@ -68,7 +69,7 @@ namespace Orange
 		UI::Initialize();
 
 		// Create the graphics object
-		m_Graphics = new Graphics();
+		m_Graphics = OG_NEW Graphics();
 		result = m_Graphics->Initialize();
 		OG_ASSERT_MSG(result, "Graphics Initialize() failed");
 

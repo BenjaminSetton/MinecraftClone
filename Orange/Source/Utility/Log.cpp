@@ -1,4 +1,6 @@
 #include "../Misc/pch.h"
+
+#include "../Utility/HeapOverrides.h"
 #include "Log.h"
 #include "../Utility/Utility.h"
 #include <cstdarg>
@@ -26,7 +28,7 @@ void Log::SetOutputFile(const char* path)
 
 	uint32_t filePathSize = static_cast<uint32_t>(strlen(path));
 
-	mOutputFile = new char[filePathSize + 1];
+	mOutputFile = OG_NEW char[filePathSize + 1];
 	memcpy(mOutputFile, path, filePathSize);
 	mOutputFile[filePathSize] = 0;
 

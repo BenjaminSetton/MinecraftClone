@@ -1,6 +1,7 @@
 
 #include "FileSystem.h"
 #include "FileSystem_Windows.h"
+#include "../HeapOverrides.h"
 #include "../Utility.h"
 
 namespace Orange
@@ -20,7 +21,7 @@ namespace Orange
 		// TODO - Add other platforms
 	#if defined(OG_WINDOWS)
 
-		m_instance = new FileSystem_Windows();
+		m_instance = OG_NEW FileSystem_Windows();
 
 	#endif
 	

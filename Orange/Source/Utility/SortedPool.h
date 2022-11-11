@@ -1,6 +1,7 @@
 #ifndef _SORTEDPOOL_H
 #define _SORTEDPOOL_H
 
+#include "../Utility/HeapOverrides.h"
 #include "Utility.h"
 
 // SortedPool templated class sorts T
@@ -20,7 +21,7 @@ namespace Orange
 		{	
 			if (m_pool) OG_ASSERT_MSG(false, "Sorted pool should not exist here");
 
-			m_pool = new T[numberOfInstances];
+			m_pool = OG_NEW T[numberOfInstances];
 		}
 
 		SortedPool(const SortedPool& other)

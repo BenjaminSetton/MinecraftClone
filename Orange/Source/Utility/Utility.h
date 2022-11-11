@@ -36,23 +36,19 @@ using WeakRef = std::weak_ptr<T>;
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #endif
 #define __LINENUMBER__ __LINE__
+#define __FUNCTIONNAME__ __FUNCTION__
 
 // Asserting
 #define OG_ASSERT(cond) assert(cond)
 #define OG_ASSERT_MSG(cond, msg) assert(cond && msg)
+#define OG_ERROR(msg) OG_ASSERT_MSG(false, msg)
 
 // Profiling
-#define OG_PROFILE_FUNC() auto OG_VARNAME(var) = ScopeTimer(std::string(__FUNCTION__))
-#define OG_PROFILE_FUNC_MODE(mode) auto OG_VARNAME(var) = ScopeTimer(std::string(__FUNCTION__), mode)
-#define OG_PROFILE_SCOPE(msg) auto OG_VARNAME(var) = ScopeTimer(std::string(msg))
-#define OG_PROFILE_SCOPE_MODE(msg, mode) auto OG_VARNAME(var) = ScopeTimer(std::string(msg), mode)
-#define OG_PROFILE_OUT(outVar) auto OG_VARNAME(var) = ScopeTimer(std::string(__FUNCTION__), 0, outVar)
-
-#define OG_COOLDOWN(numberOfSeconds, dt)\
-static auto OG_VARNAME(var) = numberOfSeconds;\
-if(OG_VARNAME(var) <= 0) OG_VARNAME(var) += numberOfSeconds;\
-OG_VARNAME(var) -= dt;\
-if(OG_VARNAME(var) <= 0)
+#define OG_PROFILE_FUNC() auto OG_VARNAME(var) = ScopeTimer(__FUNCTION__)
+#define OG_PROFILE_FUNC_MODE(mode) auto OG_VARNAME(var) = ScopeTimer(__FUNCTION__, mode)
+#define OG_PROFILE_SCOPE(msg) auto OG_VARNAME(var) = ScopeTimer(msg)
+#define OG_PROFILE_SCOPE_MODE(msg, mode) auto OG_VARNAME(var) = ScopeTimer(msg, mode)
+#define OG_PROFILE_OUT(outVar) auto OG_VARNAME(var) = ScopeTimer(__FUNCTION__, 0, outVar)
 
 // Logging
 #define OG_LOG_ERROR(...) \
@@ -87,16 +83,20 @@ OG_VARNAME(log).End();
 
 #else
 
-	// Misc defines
+// Misc defines
 #define OG_CONCAT_(a, b)
 #define OG_CONCAT(a, b)
 #define OG_VARNAME(var)
 #define OG_BIT(x) (1 << x)
 #define UNUSED(x)
+#define __FILENAME__
+#define __LINENUMBER__
+#define __FUNCTIONNAME__
 
 // Assert defines
 #define OG_ASSERT(cond)
-#define OG_ASSERT_MSG(cond, ...)
+#define OG_ASSERT_MSG(cond, msg)
+#define OG_ERROR(msg)
 
 // Log defines
 #define OG_PROFILE_FUNC()
@@ -104,8 +104,6 @@ OG_VARNAME(log).End();
 #define OG_PROFILE_SCOPE()
 #define OG_PROFILE_SCOPE_MODE(msg, mode)
 #define OG_PROFILE_OUT(outVar)
-
-#define OG_COOLDOWN(numberOfSeconds, dt)
 
 #define OG_LOG_ERROR(...)
 #define OG_LOG_WARNING(...)

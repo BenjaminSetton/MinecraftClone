@@ -83,9 +83,9 @@ namespace Orange
 		std::string lastDirectory = "";
 		for (recursive_directory_iterator curr(path(GetRootDirectory().c_str())), end; curr != end; curr++)
 		{
-			std::string root = GetRootDirectory();
-			std::string currPath = curr->path().string();
-			std::filesystem::path relativePathToProjectDir = relative(currPath, GetRootDirectory());
+			//std::string root = GetRootDirectory();
+			//std::string currPath = curr->path().string();
+			std::filesystem::path relativePathToProjectDir = relative(curr->path(), GetRootDirectory());
 
 			std::string fileName = relativePathToProjectDir.filename().string();
 			bool isDirectory = !relativePathToProjectDir.has_extension();

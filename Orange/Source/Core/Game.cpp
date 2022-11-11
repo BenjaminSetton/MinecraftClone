@@ -1,5 +1,6 @@
 #include "../Misc/pch.h"
 #include "Game.h"
+#include "../Utility/HeapOverrides.h"
 #include "Player.h"
 
 namespace Orange
@@ -9,7 +10,7 @@ namespace Orange
 	void Game::Initialize()
 	{
 		// Create a primary player
-		m_primaryPlayer = new Player();
+		m_primaryPlayer = OG_NEW Player();
 	}
 
 	void Game::Shutdown()

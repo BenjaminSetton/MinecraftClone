@@ -6,6 +6,7 @@
 
 #include "FileSystem/FileSystem.h"
 #include "FontManager.h"
+#include "../Utility/HeapOverrides.h"
 #include "MathTypes.h"
 #include "Utility.h"
 
@@ -22,7 +23,7 @@ namespace Orange
 	{
 		OG_ASSERT_MSG(!isInitialized, "Why are we re-initializing the FontManager?");
 
-		LoadFont("verdana.ttf", 15);
+		LoadFont("verdana.ttf", 12);
 
 		isInitialized = true;
 	}
@@ -96,7 +97,7 @@ namespace Orange
 
 			// Gather the data from the newly-loaded face
 			bearing = { face->glyph->bitmap_left, face->glyph->bitmap_top };
-			advance = static_cast<uint32_t>(face->glyph->advance.x);
+			advance = static_cast<uint32_t>(face->glyph->advance.x) >> 6; // Get value in pixels!
 			size = { static_cast<float>(face->glyph->bitmap.width), static_cast<float>(face->glyph->bitmap.rows) };
 
 			// Create the new texture
@@ -114,7 +115,7 @@ namespace Orange
 			// Convert from 8-bit gray scale to a regular 32-bit texture. This will allow the UI Renderer to be a lot simpler, since
 			// we won't have to deal with a separate case for sampling an 8-bit texture in the shaders. We can just use a 32-bit texture for everything
 			uint32_t arraySize = static_cast<uint32_t>(size.x * size.y);
-			uint32_t* newBuffer = new uint32_t[arraySize];
+			uint32_t* newBuffer = OG_NEW uint32_t[arraySize];
 			Convert8BitGrayscaleTo32BitWithPadding(static_cast<uint8_t*>(face->glyph->bitmap.buffer), Vec2(size.x, size.y), newBuffer);
 
 			// Cache the character data

@@ -3,6 +3,7 @@
 #include "Application.h"
 #include "DefaultBlockShader.h"
 #include "EditorLayer.h"
+#include "../Utility/HeapOverrides.h"
 #include "../Utility/MathTypes.h"
 #include "Panels/MainViewportPanel.h"
 #include "UI/UIHelper.h"
@@ -29,31 +30,31 @@ void EditorLayer::Initialize()
 	panelFlags |= PanelPropertyFlags_NoCollapse;
 	panelFlags |= PanelPropertyFlags_NoTitleBar;
 
-	//Panel* windowPanel = new Panel();
+	//Panel* windowPanel =\s*OG_NEW\s+Panel();
 	//windowPanel->Create("WindowPanel", windowSize, { 0.0f, 0.0f }, panelFlags);
 
-	Panel* leftPanel = new Panel();
+	Panel* leftPanel = OG_NEW Panel();
 	Vec2 leftPanelSize = { 200.0f, windowSize.y * 0.8f };
 	Vec2 leftPanelPos = Application::Handle->GetMainWindow()->GetPosition();
 	leftPanel->Create("LeftPanel", leftPanelSize, leftPanelPos, panelFlags);
 
-	Panel* rightPanel = new Panel();
+	Panel* rightPanel = OG_NEW Panel();
 	Vec2 rightPanelSize = { 200.0f, windowSize.y * 0.8f };
 	Vec2 rightPanelPos = { windowPos.x + windowSize.x - rightPanelSize.x, windowPos.y };
 	rightPanel->Create("RightPanel", rightPanelSize, rightPanelPos, panelFlags);
 
-	Panel* bottomPanel = new Panel();
+	Panel* bottomPanel = OG_NEW Panel();
 	Vec2 bottomPanelSize = { windowSize.x, ceil(windowSize.y * 0.2f) };
 	Vec2 bottomPanelPos = { windowPos.x, windowPos.y + (windowSize.y * 0.8f) };
 	bottomPanel->Create("BottomPanel", bottomPanelSize, bottomPanelPos, panelFlags);
 
-	Panel* mainViewportPanel = new Panel();
+	Panel* mainViewportPanel = OG_NEW Panel();
 	Vec2 mainViewportPanelSize = { windowSize.x - leftPanelSize.x - rightPanelSize.x, windowSize.y - bottomPanelSize.y };
 	Vec2 mainViewportPanelPos = { windowPos.x + leftPanelSize.x, windowPos.y };
 	mainViewportPanel->Create("MainViewportPanel", mainViewportPanelSize, mainViewportPanelPos, panelFlags);
 
 	// Create all the panel components and attach them to the panels
-	MainViewportPanel* viewportPanelComponent = new MainViewportPanel(mainViewportPanel);
+	MainViewportPanel* viewportPanelComponent = OG_NEW MainViewportPanel(mainViewportPanel);
 	mainViewportPanel->AddComponent(viewportPanelComponent);
 
 	// Push back all the panels
@@ -87,17 +88,18 @@ void EditorLayer::Update(const float& dt)
 	totalTime += dt;
 
 	UI::Begin("Debug Container");
+	UI::Text("Mouse Position: %f, %f", Input::GetMousePosition().x, Input::GetMousePosition().y);
 	UI::Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse in malesuada sem. Phasellus leo nunc, consequat id interdum a, vehicula sed enim.");
 	UI::Text("Some other text...testing interaction");
 	UI::Checkbox(&tempTest, "Testing new checkbox! %i", (int)tempTest);
 	UI::Slider(&tempTest2, 50.0f, 100.0f, "Slider text", tempTest2);
 	UI::End();
 
-	UI::Begin("Other Debug Container");
-	UI::Text("ActiveID: %u", UI::GetContext()->activeID);
-	UI::Text("HoveredID: %u", UI::GetContext()->hoveredID);
-	UI::Text("DistToCenter: %2.2f, %2.2f", UI::GetContext()->distToCenterOfActiveContainer.x, UI::GetContext()->distToCenterOfActiveContainer.y);
-	UI::End();
+	//UI::Begin("Other Debug Container");
+	//UI::Text("ActiveID: %u", UI::GetContext()->activeID);
+	//UI::Text("HoveredID: %u", UI::GetContext()->hoveredID);
+	//UI::Text("DistToCenter: %2.2f, %2.2f", UI::GetContext()->distToCenterOfActiveContainer.x, UI::GetContext()->distToCenterOfActiveContainer.y);
+	//UI::End();
 }
 
 void EditorLayer::Draw()

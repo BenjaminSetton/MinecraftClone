@@ -3,7 +3,7 @@
 #include "ScopeTimer.h"
 #include "Log.h"
 
-ScopeTimer::ScopeTimer(std::string name, const int mode, float* outDeltaTime) : 
+ScopeTimer::ScopeTimer(std::string_view name, const int mode, float* outDeltaTime) : 
 	m_name(name), m_mode(mode), m_timerVariable(outDeltaTime)
 {
 	m_start = std::chrono::steady_clock::now();

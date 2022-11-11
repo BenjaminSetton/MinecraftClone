@@ -4,6 +4,7 @@
 #include "../Utility/FileSystem/FileSystem.h"
 #include "Game.h"
 #include "Graphics.h"
+#include "../Utility/HeapOverrides.h"
 #include "../Utility/Utility.h"
 #include "../Utility/MathTypes.h"
 
@@ -41,13 +42,13 @@ namespace Orange
 
 		Player* player = Game::GetPrimaryPlayer();
 
-		m_frustumCam = new FrustumCamera();
+		m_frustumCam = OG_NEW FrustumCamera();
 		m_frustumCam->ConstructMatrix({ -15.0f, 20.0f, 15.0f }, { 0.0f, 0.0f, 0.0f });
 		FrustumCulling::CalculateFrustum(XM_PIDIV4, (float)m_screenWidth / m_screenHeight,
 			SCREEN_NEAR, SCREEN_FAR, player->GetCamera(CameraType::FirstPerson)->GetWorldMatrix(), player->GetPosition());
 
 		// Create and initialize the texture manager
-		m_textureManager = new TextureManager();
+		m_textureManager = OG_NEW TextureManager();
 		m_textureManager->Init(D3D::GetDevice());
 	
 		// Initialize ChunkManager class (DefaultBlockShader will use it's data so initialization has to take place before it)
@@ -61,7 +62,7 @@ namespace Orange
 		UIRenderer::Initialize();
 
 		// Create the chunk shader class object
-		m_chunkShader = new DefaultBlockShader();
+		m_chunkShader = OG_NEW DefaultBlockShader();
 
 		m_chunkShader->CreateObjects
 		(
@@ -72,7 +73,7 @@ namespace Orange
 		m_chunkShader->Initialize(player->GetCamera(CameraType::FirstPerson)->GetViewMatrix());
 
 		// Create the debug renderer class object
-		m_debugShader = new DebugRendererShader();
+		m_debugShader = OG_NEW DebugRendererShader();
 		m_debugShader->CreateObjects
 		(
 			FileSystem::GetFileNameRelativeToGeneratedDirectory(L"DebugRenderer_VS.hlsl").c_str(),
@@ -81,7 +82,7 @@ namespace Orange
 		m_debugShader->Initialize(player->GetCamera(CameraType::FirstPerson)->GetViewMatrix());
 
 		// Create the quad shader class object
-		m_quadShader = new QuadShader();
+		m_quadShader = OG_NEW QuadShader();
 		m_quadShader->CreateObjects
 		(
 			FileSystem::GetFileNameRelativeToGeneratedDirectory(L"Quad_VS.hlsl").c_str(),
@@ -92,7 +93,7 @@ namespace Orange
 		// Initialize the ImGuiLayer
 		//ImGuiLayer::Initialize(Application::Handle->GetMainWindow()->GetHWND(), D3D::GetDevice(), D3D::GetDeviceContext());
 
-		m_texViewer = new TextureViewer(nullptr, 5, 5, 0.15f);
+		m_texViewer = OG_NEW TextureViewer(nullptr, 5, 5, 0.15f);
 
 		return true;
 	}
@@ -266,7 +267,7 @@ namespace Orange
 	bool Graphics::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	{
 		// Call the ImGuiLayer WndProc
-		if (ImGuiLayer::WndProc(hwnd, msg, wparam, lparam)) return true;
+		//if (ImGuiLayer::WndProc(hwnd, msg, wparam, lparam)) return true;
 
 		// Call the D3D WndProc
 		if (D3D::WndProc(hwnd, msg, wparam, lparam)) return true;

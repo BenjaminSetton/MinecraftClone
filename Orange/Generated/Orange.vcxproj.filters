@@ -28,9 +28,6 @@
     <Filter Include="Utility\FileSystem">
       <UniqueIdentifier>{CDDEF674-B9C2-B7CA-2223-B21D0E26A24C}</UniqueIdentifier>
     </Filter>
-    <Filter Include="imgui">
-      <UniqueIdentifier>{0098A80F-6CAC-D0C0-352E-7420A101CDF1}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Core\Application.h">
@@ -198,6 +195,9 @@
     <ClInclude Include="..\Source\Utility\FontManager.h">
       <Filter>Utility</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\Utility\HeapOverrides.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
     <ClInclude Include="..\Source\Utility\ImGuiDrawData.h">
       <Filter>Utility</Filter>
     </ClInclude>
@@ -219,6 +219,9 @@
     <ClInclude Include="..\Source\Utility\MathTypes.h">
       <Filter>Utility</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\Utility\MemoryUtilities.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
     <ClInclude Include="..\Source\Utility\ScopeTimer.h">
       <Filter>Utility</Filter>
     </ClInclude>
@@ -230,30 +233,6 @@
     </ClInclude>
     <ClInclude Include="..\Source\Utility\Utility.h">
       <Filter>Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\imgui\imconfig.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\imgui\imgui.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\imgui\imgui_impl_dx11.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\imgui\imgui_impl_win32.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\imgui\imgui_internal.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\imgui\imstb_rectpack.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\imgui\imstb_textedit.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\imgui\imstb_truetype.h">
-      <Filter>imgui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -386,6 +365,9 @@
     <ClCompile Include="..\Source\Utility\FontManager.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\Utility\HeapOverrides.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
     <ClCompile Include="..\Source\Utility\ImGuiDrawData.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
@@ -406,27 +388,6 @@
     </ClCompile>
     <ClCompile Include="..\Source\Utility\SortedPool.cpp">
       <Filter>Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\imgui\imgui.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\imgui\imgui_demo.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\imgui\imgui_draw.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\imgui\imgui_impl_dx11.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\imgui\imgui_impl_win32.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\imgui\imgui_tables.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Source\imgui\imgui_widgets.cpp">
-      <Filter>imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
