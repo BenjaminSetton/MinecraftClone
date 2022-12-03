@@ -1,2 +1,3 @@
-# MinecraftClone
-A personal project where I create a small voxel engine
+# Orange Engine
+
+Developing a small game engine called Orange.
