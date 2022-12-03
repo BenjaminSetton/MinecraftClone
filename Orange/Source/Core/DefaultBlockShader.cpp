@@ -401,6 +401,9 @@ namespace Orange
 
 		// Set the type of primitive that should be rendered from this vertex buffer, in this case triangles.
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		// Bind the default raster state
+		context->RSSetState(D3D::GetDefaultRasterState());
 	}
 
 	void DefaultBlockShader::CreateRTTObjects()

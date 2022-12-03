@@ -37,6 +37,11 @@ namespace Orange
 		void Initialize();
 
 		void Shutdown();
+
+		// Converts a coordinate from my UI's base bottom-left origin
+		// to top-left origin. Required when rendering using DX, since
+		// their origin is on the top-left.
+		Vec2 GetCoordinateRelativeToTopLeft(const Vec2& coord);
 	}
 }
 

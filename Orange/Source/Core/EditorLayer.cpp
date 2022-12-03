@@ -125,7 +125,7 @@ void EditorLayer::Update(const float& dt)
 	UI::Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse in malesuada sem. Phasellus leo nunc, consequat id interdum a, vehicula sed enim.");
 	UI::Text("Some other text...testing interaction");
 	UI::Checkbox(&tempTest, "Testing new checkbox! %i", (int)tempTest);
-	UI::Slider(&tempTest2, 0.0f, 10000000.0f, "Transparency", tempTest2);
+	UI::Slider(&tempTest2, 0.0f, 1.0f, "Transparency", tempTest2);
 
 
 	// TEST - DEBUG

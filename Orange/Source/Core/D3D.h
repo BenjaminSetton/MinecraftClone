@@ -29,6 +29,7 @@ public:
 	static ID3D11Device* GetDevice();
 	static ID3D11DeviceContext* GetDeviceContext();
 	static IDXGISwapChain* GetSwapChain();
+	static ID3D11RasterizerState* GetDefaultRasterState();
 
 	static DirectX::XMMATRIX GetWorldMatrix();
 	static DirectX::XMMATRIX GetProjectionMatrix();

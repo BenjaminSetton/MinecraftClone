@@ -32,9 +32,7 @@ namespace Orange
 	private:
 
 		// Helper draw functions specific to each UIElement
-		static void DrawChar(const UIDrawCommand& drawCommand, const UIVertex* vertices);
-		static void DrawImage(const UIDrawCommand& drawCommand, const UIVertex* vertices);
-		static void DrawContainer(const UIDrawCommand& drawCommand, const UIVertex* vertices);
+		static void Draw_Internal(const UIDrawCommand& drawCommand, const UIVertex* vertices);
 
 		static void CreateObjects();
 		static void CreateShaders();
@@ -42,6 +40,7 @@ namespace Orange
 		// Bind once per frame
 		static void BindVertexBuffer();
 		static void BindObjects();
+		static void BindRasterObjects(const UIDrawCommand& drawCommand);
 
 		// Update multiple times per frame for every character
 		//static void BindCharTexture(const char c);
@@ -75,7 +74,9 @@ namespace Orange
 		static ID3D11InputLayout* m_inputLayout;
 		static ID3D11SamplerState* m_samplerClamp;
 		static ID3D11BlendState* m_blendState;
-		static ID3D11RasterizerState* m_rasterState;
+		static ID3D11RasterizerState* m_defaultRasterState;
+		static ID3D11RasterizerState* m_clippingRasterState;
+		static D3D11_RECT* m_scissorRect;
 
 	};
 

@@ -363,6 +363,11 @@ ID3D11DeviceContext* D3D::GetDeviceContext() { return m_deviceContext; }
 
 IDXGISwapChain* D3D::GetSwapChain() { return m_swapChain; }
 
+ID3D11RasterizerState* D3D::GetDefaultRasterState()
+{
+	return m_defaultRasterState;
+}
+
 XMMATRIX D3D::GetWorldMatrix() { return m_worldMatrix; }
 XMMATRIX D3D::GetProjectionMatrix() { return m_projectionMatrix; }
 XMMATRIX D3D::GetOrthoMatrix() { return m_orthoMatrix; }

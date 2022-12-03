@@ -141,6 +141,10 @@ namespace Orange
 			UIDrawCommand drawCommand;
 			drawCommand.textureHandle = tex;
 			drawCommand.type = elementType;
+			if (elementType == UIElementType::CONTAINER)
+			{
+				drawCommand.scissorRect = &GetContainer()->containerRect;
+			}
 			EmplaceDrawCommand(drawCommand);
 
 			return quadRect.GetSize();
@@ -320,7 +324,7 @@ namespace Orange
 		const Vec2 DrawTitleBar_Internal(const UIRect& titleBarRect, const Texture& tex)
 		{
 			// Draw title-bar quad
-			DrawQuad_Internal(titleBarRect, titleBarColor, tex, UIElementType::CONTAINER);
+			DrawQuad_Internal(titleBarRect, titleBarColor, tex, UIElementType::IMAGE);
 
 			// Return the space used by the title-bar
 			return titleBarRect.GetSize();
@@ -336,7 +340,7 @@ namespace Orange
 
 			UIDrawCommand drawCommand; DEBUG_DRAW_COMMAND_FILE_AND_LINE(drawCommand)
 			drawCommand.textureHandle = tex;
-			drawCommand.type = UIElementType::CONTAINER;
+			drawCommand.type = UIElementType::CHECKBOX;
 			EmplaceDrawCommand(drawCommand);
 
 			// Return the space used by the checkbox
@@ -346,10 +350,10 @@ namespace Orange
 		const Vec2 DrawSlider_Internal(const UIRect& sliderBarRect, const UIRect& sliderHandleRect, const Texture& tex, const bool& isMouseHovering)
 		{
 			// Draw the slider bar quad
-			DrawQuad_Internal(sliderBarRect, sliderBarColor, tex, UIElementType::CONTAINER);
+			DrawQuad_Internal(sliderBarRect, sliderBarColor, tex, UIElementType::IMAGE);
 
 			// Draw the slider handle quad
-			DrawQuad_Internal(sliderHandleRect, isMouseHovering ? sliderHandleSelectedColor : sliderHandleUnselectedColor, tex, UIElementType::CONTAINER);
+			DrawQuad_Internal(sliderHandleRect, isMouseHovering ? sliderHandleSelectedColor : sliderHandleUnselectedColor, tex, UIElementType::IMAGE);
 
 			return sliderBarRect.GetSize();
 		}
@@ -607,6 +611,9 @@ namespace Orange
 			}
 			container = gContext.containerList.at(containerHash);
 
+			// Push it onto the stack
+			gContext.containerStack.push(container);
+
 			container->hash = containerHash;
 			gContext.parentID = containerHash;
 
@@ -633,20 +640,8 @@ namespace Orange
 				gContext.ZMap.push_back(containerHash);
 			}
 
+			// Draw the container
 			DrawQuad_Internal(container->containerRect, container->color, container->backgroundTextureObject, UIElementType::CONTAINER);
-
-			// Create vertices and a draw command for the new container. We want to do this here
-			// because the API allows multiple elements to be appended to a container every frame
-			// with separate Begin/End calls
-			//Vec2 size = container->containerRect.GetSize();
-			//Vec4 color = container->color;
-			//Vec2 position = container->containerRect.GetMin();
-			//EmplaceQuadVertices(position, size, color);
-
-			//UIDrawCommand drawCommand; DEBUG_DRAW_COMMAND_FILE_AND_LINE(drawCommand)
-			//drawCommand.textureHandle = container->backgroundTextureObject;
-			//drawCommand.type = UIElementType::CONTAINER;
-			//EmplaceDrawCommand(drawCommand);
 
 			// Append the title-bar, if necessary
 			if (container->IsDataFlagSet(UIContainer_ShowTitleBar))
@@ -671,9 +666,6 @@ namespace Orange
 			{
 				container->titleBarRect = UIRect(Vec2(0), Vec2(0));
 			}
-			
-			// Push it onto the stack
-			gContext.containerStack.push(container);
 
 		}
 
@@ -791,6 +783,12 @@ namespace Orange
 				delete containerIter.second;
 			}
 			gContext.containerList.clear();
+		}
+
+		Vec2 GetCoordinateRelativeToTopLeft(const Vec2& coord)
+		{
+			Vec2 windowSize = Application::Handle->GetMainWindow()->GetSize();
+			return Vec2(coord.x, windowSize.y - coord.y);
 		}
 
 	}

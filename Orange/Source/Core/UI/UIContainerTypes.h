@@ -29,7 +29,7 @@ namespace Orange
 		// A handle to an existing texture. We don't own it, just reference it
 		Texture textureHandle = Texture();
 
-		//The renderer needs to know what to draw, so this needs to be here
+		//The renderer needs to know what to draw
 		UIElementType type = UIElementType::INVALID;
 
 		float roundEdgesMultiplier = 0.0f;
@@ -45,6 +45,9 @@ namespace Orange
 			{
 			} image;
 		} drawContext = {};
+
+		// Optionally provide a scissor rect to use when rendering
+		UIRect* scissorRect = nullptr;
 
 #ifdef OG_DEBUG
 #define DEBUG_DRAW_COMMAND_FILE_AND_LINE(objectName) \

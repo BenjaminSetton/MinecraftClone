@@ -36,7 +36,7 @@ namespace Orange
 		CHECKBOX,
 		SLIDER,
 		GRAPH,
-		CONTAINER
+		CONTAINER,
 		// TODO - Add more
 	};
 

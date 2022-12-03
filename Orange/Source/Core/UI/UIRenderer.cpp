@@ -23,7 +23,9 @@ namespace Orange
 	ID3D11InputLayout* UIRenderer::m_inputLayout = nullptr;
 	ID3D11SamplerState* UIRenderer::m_samplerClamp = nullptr;
 	ID3D11BlendState* UIRenderer::m_blendState = nullptr;
-	ID3D11RasterizerState* UIRenderer::m_rasterState = nullptr;
+	ID3D11RasterizerState* UIRenderer::m_defaultRasterState = nullptr;
+	ID3D11RasterizerState* UIRenderer::m_clippingRasterState = nullptr;
+	D3D11_RECT* UIRenderer::m_scissorRect = nullptr;
 
 	void UIRenderer::Initialize()
 	{
@@ -57,6 +59,9 @@ namespace Orange
 				context->vertexList.pop();
 			}
 
+			// Bind the raster objects
+			BindRasterObjects(currCommand);
+
 			switch (currCommand.type)
 			{
 			case UIElementType::INVALID:
@@ -67,8 +72,9 @@ namespace Orange
 			case UIElementType::CONTAINER:
 			case UIElementType::TEXT:
 			case UIElementType::IMAGE:
+			case UIElementType::CHECKBOX:
 			{
-				DrawChar(currCommand, vertices);
+				Draw_Internal(currCommand, vertices);
 				break;
 			}
 			default:
@@ -85,7 +91,7 @@ namespace Orange
 		OG_ASSERT_MSG(context->vertexList.size() == 0, "There are more vertices than draw commands. Make sure all vertices have their respective draw commands");
 	}
 
-	void UIRenderer::DrawChar(const UIDrawCommand& drawCommand, const UIVertex* vertices)
+	void UIRenderer::Draw_Internal(const UIDrawCommand& drawCommand, const UIVertex* vertices)
 	{
 		ID3D11DeviceContext* context = D3D::GetDeviceContext();
 
@@ -120,12 +126,6 @@ namespace Orange
 
 			context->Draw(VERTEX_COUNT_PER_UI_ELEMENT, 0);
 		}
-	}
-
-	void UIRenderer::DrawContainer(const UIDrawCommand& drawCommand, const UIVertex* vertices)
-	{
-		UNUSED(drawCommand);
-		UNUSED(vertices);
 	}
 
 	void UIRenderer::CreateObjects()
@@ -208,21 +208,41 @@ namespace Orange
 		OG_ASSERT(!FAILED(hr));
 
 		// Fill out rasterizer description for UI elements
-		D3D11_RASTERIZER_DESC rasterizerDesc;
-		rasterizerDesc.AntialiasedLineEnable = false;
-		rasterizerDesc.CullMode = D3D11_CULL_NONE;	// UI SHOULD ALWAYS BE BILLBOARDED OR IN NDC, SO IT SHOULD ALWAYS FACE TOWARDS CAMERA
-		rasterizerDesc.DepthBias = 0;
-		rasterizerDesc.DepthBiasClamp = 0.0f;
-		rasterizerDesc.DepthClipEnable = true;
-		rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-		rasterizerDesc.FrontCounterClockwise = false;
-		rasterizerDesc.MultisampleEnable = false;
-		rasterizerDesc.ScissorEnable = false;
-		rasterizerDesc.SlopeScaledDepthBias = 0.0f;
+		D3D11_RASTERIZER_DESC defaultRasterizerDesc;
+		defaultRasterizerDesc.AntialiasedLineEnable = false;
+		defaultRasterizerDesc.CullMode = D3D11_CULL_NONE;	// UI SHOULD ALWAYS BE BILLBOARDED OR IN NDC, SO IT SHOULD ALWAYS FACE TOWARDS CAMERA
+		defaultRasterizerDesc.DepthBias = 0;
+		defaultRasterizerDesc.DepthBiasClamp = 0.0f;
+		defaultRasterizerDesc.DepthClipEnable = true;
+		defaultRasterizerDesc.FillMode = D3D11_FILL_SOLID;
+		defaultRasterizerDesc.FrontCounterClockwise = false;
+		defaultRasterizerDesc.MultisampleEnable = false;
+		defaultRasterizerDesc.ScissorEnable = false;
+		defaultRasterizerDesc.SlopeScaledDepthBias = 0.0f;
 
 		// Create the rasterizer state
-		hr = device->CreateRasterizerState(&rasterizerDesc, &m_rasterState);
+		hr = device->CreateRasterizerState(&defaultRasterizerDesc, &m_defaultRasterState);
 		OG_ASSERT(!FAILED(hr));
+
+		// Clipping raster state
+		D3D11_RASTERIZER_DESC clippingRasterizerDesc;
+		clippingRasterizerDesc.AntialiasedLineEnable = false;
+		clippingRasterizerDesc.CullMode = D3D11_CULL_NONE;	// UI SHOULD ALWAYS BE BILLBOARDED OR IN NDC, SO IT SHOULD ALWAYS FACE TOWARDS CAMERA
+		clippingRasterizerDesc.DepthBias = 0;
+		clippingRasterizerDesc.DepthBiasClamp = 0.0f;
+		clippingRasterizerDesc.DepthClipEnable = true;
+		clippingRasterizerDesc.FillMode = D3D11_FILL_SOLID;
+		clippingRasterizerDesc.FrontCounterClockwise = false;
+		clippingRasterizerDesc.MultisampleEnable = false;
+		clippingRasterizerDesc.ScissorEnable = true;
+		clippingRasterizerDesc.SlopeScaledDepthBias = 0.0f;
+
+		// Create the rasterizer state
+		hr = device->CreateRasterizerState(&clippingRasterizerDesc, &m_clippingRasterState);
+		OG_ASSERT(!FAILED(hr));
+
+		// Create the scissor rect
+		m_scissorRect = new D3D11_RECT[1];
 	}
 
 	void UIRenderer::CreateShaders()
@@ -301,12 +321,39 @@ namespace Orange
 		context->VSSetShader(m_vertexShader, nullptr, 0);
 		context->PSSetSamplers(0, ARRAYSIZE(samplers), samplers);
 		context->PSSetShader(m_pixelShader, nullptr, 0);
-		context->RSSetState(m_rasterState);
 		context->OMSetDepthStencilState(rttDSS, 1);
 		context->OMSetRenderTargets(1, &rttRTV, nullptr);
 		context->OMSetBlendState(m_blendState, nullptr, 0xFFFFFFFF);
 	}
 
+
+	void UIRenderer::BindRasterObjects(const UIDrawCommand& drawCommand)
+	{
+		ID3D11DeviceContext* context = D3D::GetDeviceContext();
+		if (drawCommand.type == UIElementType::CONTAINER)
+		{
+			if (drawCommand.scissorRect != nullptr)
+			{
+				UIRect uiRect = *drawCommand.scissorRect;
+				Vec2 topLeft = uiRect.GetCorner(RECT_CORNER::TOP_LEFT);
+				Vec2 bottomRight = uiRect.GetCorner(RECT_CORNER::BOTTOM_RIGHT);
+				// My UI system has a bottom left of (0, 0) while DX's system has a top left of (0, 0)
+				m_scissorRect[0].left = static_cast<LONG>(topLeft.x);
+				m_scissorRect[0].top = static_cast<LONG>(UI::GetCoordinateRelativeToTopLeft(topLeft).y);
+				m_scissorRect[0].right = static_cast<LONG>(bottomRight.x);
+				m_scissorRect[0].bottom = static_cast<LONG>(UI::GetCoordinateRelativeToTopLeft(bottomRight).y);
+
+				// Only allow one scissor rect for now
+				context->RSSetScissorRects(1, m_scissorRect);
+				context->RSSetState(m_clippingRasterState);
+			}
+			else
+			{
+				context->RSSetScissorRects(0, nullptr);
+				context->RSSetState(m_defaultRasterState);
+			}
+		}
+	}
 
 	void UIRenderer::BindTexture(const uint64_t id)
 	{
@@ -317,10 +364,22 @@ namespace Orange
 
 	void UIRenderer::DeleteObjects()
 	{
-		if (m_rasterState)
+		if (m_defaultRasterState)
 		{
-			m_rasterState->Release();
-			m_rasterState = nullptr;
+			m_defaultRasterState->Release();
+			m_defaultRasterState = nullptr;
+		}
+
+		if (m_clippingRasterState)
+		{
+			m_clippingRasterState->Release();
+			m_clippingRasterState = nullptr;
+		}
+
+		if (m_scissorRect)
+		{
+			delete[] m_scissorRect;
+			m_scissorRect = nullptr;
 		}
 
 		if (m_vertexBuffer)
