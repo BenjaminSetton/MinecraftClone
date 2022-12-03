@@ -248,7 +248,7 @@ objectName.lineNumber = __LINENUMBER__;
 		UIHash parentID								= INVALID_UIHASH;	// Hash of the container that every widget call is going to add itself to
 		uint32_t maxDepth							= 0;				// Keeps count of the max depth of any given container. This allows us to determine which container is on top of which other one
 		Vec2 distToCenterOfActiveContainer			= Vec2(0);			// Stores the distance to the center of the active container for dragging
-
+		const char* sliderDecimalPrecisionFormat	= "%0.3f";			// The format that the slider uses to display it's interpolated value
 	};
 }
 

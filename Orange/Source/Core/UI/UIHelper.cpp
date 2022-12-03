@@ -147,10 +147,9 @@ namespace Orange
 		}
 
 		// Calculates position of text quads using parameters and enqueues the vertices and draw commands to the draw queues
-		Vec2 DrawText_Internal(const char* text, const Vec2 startPosition, const bool wrapText, const Vec2 sizeLimit, const Vec2 padding, const HOR_ALIGNMENT& horAlign = HOR_ALIGNMENT::LEFT, const VER_ALIGNMENT& verAlign = VER_ALIGNMENT::TOP, const char* fmt = nullptr)
+		Vec2 DrawText_Internal(const char* text, const Vec2 startPosition, const bool wrapText, const Vec2 sizeLimit, const Vec2 padding, const HOR_ALIGNMENT& horAlign = HOR_ALIGNMENT::LEFT, const VER_ALIGNMENT& verAlign = VER_ALIGNMENT::TOP)
 		{
 			UNUSED(verAlign);
-			UNUSED(fmt); // TODO - Allow for text formatting
 
 			OG_ASSERT_MSG(padding.x < sizeLimit.x, "Can't have horizontal padding greater than or equal to text's width limit");
 
@@ -572,10 +571,17 @@ namespace Orange
 			Vec2 sizeLimit = Vec2(static_cast<uint32_t>(container->containerRect.GetMax().x - textStartPosition.x), static_cast<uint32_t>(barRect.GetSize().y));
 			DrawText_Internal(tempBuffer, textStartPosition, false, sizeLimit, container->padding.x, HOR_ALIGNMENT::LEFT, VER_ALIGNMENT::CENTER);
 
+			// Format the interpolated value as a string
+			char formattedValue[20];
+			int charsWritten = sprintf_s(formattedValue, gContext.sliderDecimalPrecisionFormat, *value);
+			if (charsWritten < 0 || charsWritten > 19)
+			{
+				OG_ERROR("Failed to format the slider's value as string");
+			}
+
 			// Draw the current value of the variable
-			auto string = ToString(*value);
 			sizeLimit = Vec2(static_cast<uint32_t>(barRect.GetSize().x), static_cast<uint32_t>(barRect.GetSize().y));
-			DrawText_Internal(string.c_str(), barRect.GetCorner(RECT_CORNER::TOP_LEFT), false, sizeLimit, container->padding.x, HOR_ALIGNMENT::CENTER, VER_ALIGNMENT::CENTER);
+			DrawText_Internal(formattedValue, barRect.GetCorner(RECT_CORNER::TOP_LEFT), false, sizeLimit, container->padding.x, HOR_ALIGNMENT::CENTER, VER_ALIGNMENT::CENTER);
 
 			// Invalidate the space for the slider widget
 			container->InvalidateSpace(Vec2(0.0f, spaceUsed.y + container->padding.y));
