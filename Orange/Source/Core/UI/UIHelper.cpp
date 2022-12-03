@@ -147,9 +147,18 @@ namespace Orange
 		}
 
 		// Calculates position of text quads using parameters and enqueues the vertices and draw commands to the draw queues
-		Vec2 DrawText_Internal(const char* text, const Vec2 startPosition, const bool wrapText, const uint32_t widthLimit, const Vec2 padding, const HORIZONTAL_TEXT_ALIGNMENT& horAlign)
+		Vec2 DrawText_Internal(const char* text, const Vec2 startPosition, const bool wrapText, const Vec2 sizeLimit, const Vec2 padding, const HOR_ALIGNMENT& horAlign = HOR_ALIGNMENT::LEFT, const VER_ALIGNMENT& verAlign = VER_ALIGNMENT::TOP, const char* fmt = nullptr)
 		{
-			OG_ASSERT(padding.x < widthLimit);
+			UNUSED(verAlign);
+			UNUSED(fmt); // TODO - Allow for text formatting
+
+			OG_ASSERT_MSG(padding.x < sizeLimit.x, "Can't have horizontal padding greater than or equal to text's width limit");
+
+			bool hasVerticalSizeLimit = sizeLimit.y >= 0;
+			if(hasVerticalSizeLimit)
+			{
+				OG_ASSERT_MSG(padding.y < sizeLimit.y, "Can't have vertical padding greater than or equal to text's height limit");
+			}
 
 			// Get the length of the container name
 			uint32_t numChars = GetCharArrayLength(text);
@@ -164,7 +173,7 @@ namespace Orange
 				charDataForText.push_back(FontManager::GetDataForChar(text[i]));
 				FontManager_CharacterData& charData = charDataForText[i];
 
-				// Calculate how much space the text takes up, we
+				// Calculate how much space the text takes up horizontally, we
 				// need special cases for the beginning and end
 				if (i == 0)
 				{
@@ -178,26 +187,29 @@ namespace Orange
 				{
 					spaceUsed.x += (charData.advance);
 				}
+
+				// Consider how much vertical space it takes up
+				spaceUsed.y = max(spaceUsed.y, charData.textureHandle.GetSpecs().size.y);
 			}
 
-			Vec2 prevPos(0);
+			Vec2 prevPos = Vec2(0);
 
-			// Dictate where we will start writing our chars to (regarding alignment)
+			// Dictate where we will start writing our chars to considering horizontal alignment
 			switch (horAlign)
 			{
-			case HORIZONTAL_TEXT_ALIGNMENT::LEFT:
+			case HOR_ALIGNMENT::LEFT:
 			{
-				prevPos = padding;
+				prevPos.x = padding.x;
 				break;
 			}
-			case HORIZONTAL_TEXT_ALIGNMENT::CENTER:
+			case HOR_ALIGNMENT::CENTER:
 			{
-				prevPos = Vec2(std::trunc((widthLimit - spaceUsed.x) / 2.0f), padding.y);
+				prevPos.x = std::trunc((sizeLimit.x - spaceUsed.x) / 2.0f);
 				break;
 			}
-			case HORIZONTAL_TEXT_ALIGNMENT::RIGHT:
+			case HOR_ALIGNMENT::RIGHT:
 			{
-				prevPos = Vec2(widthLimit - spaceUsed.x - padding.x, padding.y);
+				prevPos.x = sizeLimit.x - spaceUsed.x - padding.x;
 				break;
 			}
 			default:
@@ -205,6 +217,40 @@ namespace Orange
 				OG_ERROR("Unknown alignment");
 				break;
 			}
+			}
+
+			// Dictate where we will start writing our chars to considering vertical alignment
+			if (hasVerticalSizeLimit)
+			{
+				switch (verAlign)
+				{
+				case VER_ALIGNMENT::TOP:
+				{
+					prevPos.y = -padding.y;
+					break;
+				}
+				case VER_ALIGNMENT::CENTER:
+				{
+					// TODO - Figure out how to deal with jittering when typing
+					prevPos.y = -std::trunc((sizeLimit.y - spaceUsed.y) / 2.0f);
+					break;
+				}
+				case VER_ALIGNMENT::BOTTOM:
+				{
+					prevPos.y = -(sizeLimit.y - spaceUsed.y - padding.y);
+					break;
+				}
+				default:
+				{
+					OG_ERROR("Unknown alignment");
+					break;
+				}
+				}
+			}
+			else
+			{
+				// Always include padding, so we're just defaulting to top alignment
+				prevPos.y = -padding.y;
 			}
 
 			uint32_t currentLine = 0;
@@ -223,7 +269,7 @@ namespace Orange
 				if (wrapText)
 				{
 					// We don't fit in the current line, so go down by one row
-					if (prevPos.x + charData.bearing.x + size.x >= widthLimit - padding.x)
+					if (prevPos.x + charData.bearing.x + size.x >= sizeLimit.x - padding.x)
 					{
 						currentLine++;
 						startQuadPosition = { padding.x, prevPos.y - negativeVerticalOffset - FontManager::GetVerticalOffsetForLineNumber(currentLine) };
@@ -240,13 +286,13 @@ namespace Orange
 					startQuadPosition = { prevPos.x + charData.bearing.x, prevPos.y - negativeVerticalOffset - FontManager::GetVerticalOffsetForLineNumber(currentLine) };
 				}
 
-				widthTaken = min(static_cast<uint32_t>(prevPos.x + charData.bearing.x + size.x), widthLimit);
+				widthTaken = min(static_cast<uint32_t>(prevPos.x + charData.bearing.x + size.x), static_cast<uint32_t>(sizeLimit.x));
 
-				// Text starts at top-left of the container and is bottom-aligned
+				// Text starts at top-left of the container
 				Vec2 vertexPos = Vec2
 				(
 					startPosition.x + startQuadPosition.x,
-					startPosition.y + startQuadPosition.y - FontManager::GetFontStats().maxCharSize.y - padding.y
+					startPosition.y + startQuadPosition.y - spaceUsed.y/*FontManager::GetFontStats().maxCharSize.y*/
 				);
 
 				// Advance to the next glyph
@@ -361,7 +407,8 @@ namespace Orange
 			UIContainer* container = GetContainer();
 
 			// Draw the actual text
-			Vec2 spaceUsed = DrawText_Internal(tempBuffer, container->GetRemainingSpace().GetCorner(RECT_CORNER::TOP_LEFT), container->IsDataFlagSet(UIContainer_WrapText), static_cast<uint32_t>(container->GetRemainingSize().x), container->padding, HORIZONTAL_TEXT_ALIGNMENT::LEFT);
+			Vec2 sizeLimit = Vec2(static_cast<int32_t>(container->GetRemainingSize().x), -1);
+			Vec2 spaceUsed = DrawText_Internal(tempBuffer, container->GetRemainingSpace().GetCorner(RECT_CORNER::TOP_LEFT), container->IsDataFlagSet(UIContainer_WrapText), sizeLimit, container->padding);
 			
 			// Invalidate the space we just used for the text
 			container->InvalidateSpace(Vec2(0.0f, spaceUsed.y));
@@ -414,7 +461,7 @@ namespace Orange
 			UIHash id = GetHashForString(tempBuffer);
 
 			Vec2 checkBoxExtent = Vec2(10);
-			Vec2 checkBoxStartingPos = Vec2(container->GetRemainingSpace().GetCorner(RECT_CORNER::TOP_LEFT).x + container->padding.x + checkBoxExtent.x, container->GetRemainingSpace().GetCorner(RECT_CORNER::TOP_LEFT).y - ((FontManager::GetVerticalOffsetForLineNumber(1) + container->padding.y) / 2.0f));
+			Vec2 checkBoxStartingPos = Vec2(container->GetRemainingSpace().GetCorner(RECT_CORNER::TOP_LEFT).x + container->padding.x + checkBoxExtent.x, container->GetRemainingSpace().GetCorner(RECT_CORNER::TOP_LEFT).y - (FontManager::GetVerticalOffsetForLineNumber(1) / 2.0f) - container->padding.y);
 			
 			// Build a rect to check mouse collision with the checkbox
 			UIRect checkBox = UIRect(checkBoxStartingPos, checkBoxExtent);
@@ -431,11 +478,13 @@ namespace Orange
 
 				gContext.hoveredID = id;
 			}
+
 			Vec2 spaceUsed = DrawCheckbox_Internal(checkBox.GetMin(), checkBoxExtent * 2.0f, container->backgroundTextureObject, pBool);
 
 			// Draw the text after the checkbox
 			Vec2 textStartingPos = Vec2(container->GetRemainingSpace().GetCorner(RECT_CORNER::TOP_LEFT).x + checkBox.GetSize().x + container->padding.x, container->GetRemainingSpace().GetCorner(RECT_CORNER::TOP_LEFT).y);
-			DrawText_Internal(tempBuffer, textStartingPos, container->IsDataFlagSet(UIContainer_WrapText), static_cast<uint32_t>(container->GetRemainingSize().x), container->padding, HORIZONTAL_TEXT_ALIGNMENT::LEFT);
+			Vec2 sizeLimit = Vec2(static_cast<uint32_t>(container->GetRemainingSize().x), static_cast<uint32_t>(checkBox.GetSize().y));
+			DrawText_Internal(tempBuffer, textStartingPos, container->IsDataFlagSet(UIContainer_WrapText), sizeLimit, Vec2(container->padding.x, 0.0f), HOR_ALIGNMENT::LEFT, VER_ALIGNMENT::CENTER);
 
 			// Invalidate space
 			container->InvalidateSpace(Vec2(0.0f, spaceUsed.y));
@@ -449,6 +498,7 @@ namespace Orange
 			Math::Clamp(tween, 0.0f, 1.0f);
 
 			UIContainer* container = GetContainer();
+			Vec2 spaceUsed = Vec2(0);
 
 			// Draw the text after the slider (the parameter)
 			char tempBuffer[MAX_TEXT_BUFFER_SIZE];
@@ -516,17 +566,19 @@ namespace Orange
 				handleRect.center.x = handlePosX;
 			}
 
-			Vec2 spaceUsed = DrawSlider_Internal(barRect, handleRect, container->backgroundTextureObject, gContext.hoveredID == id);
+			spaceUsed = DrawSlider_Internal(barRect, handleRect, container->backgroundTextureObject, gContext.hoveredID == id);
 
 			Vec2 textStartPosition = container->remainingSpace.GetCorner(RECT_CORNER::TOP_LEFT) + Vec2(barRect.GetSize().x + container->padding.x, -container->padding.y);
-			DrawText_Internal(tempBuffer, textStartPosition, false, static_cast<uint32_t>(container->containerRect.GetMax().x - textStartPosition.x), container->padding.x, HORIZONTAL_TEXT_ALIGNMENT::LEFT);
+			Vec2 sizeLimit = Vec2(static_cast<uint32_t>(container->containerRect.GetMax().x - textStartPosition.x), static_cast<uint32_t>(barRect.GetSize().y));
+			DrawText_Internal(tempBuffer, textStartPosition, false, sizeLimit, container->padding.x, HOR_ALIGNMENT::LEFT, VER_ALIGNMENT::CENTER);
 
 			// Draw the current value of the variable
 			auto string = ToString(*value);
-			DrawText_Internal(string.c_str(), barRect.GetCorner(RECT_CORNER::TOP_LEFT), false, static_cast<uint32_t>(barRect.GetSize().x), container->padding.x, HORIZONTAL_TEXT_ALIGNMENT::CENTER);
+			sizeLimit = Vec2(static_cast<uint32_t>(barRect.GetSize().x), static_cast<uint32_t>(barRect.GetSize().y));
+			DrawText_Internal(string.c_str(), barRect.GetCorner(RECT_CORNER::TOP_LEFT), false, sizeLimit, container->padding.x, HOR_ALIGNMENT::CENTER, VER_ALIGNMENT::CENTER);
 
 			// Invalidate the space for the slider widget
-			container->InvalidateSpace(Vec2(0.0f, spaceUsed.y));
+			container->InvalidateSpace(Vec2(0.0f, spaceUsed.y + container->padding.y));
 		}
 
 		void Begin(const char* containerName)
@@ -602,7 +654,8 @@ namespace Orange
 				container->titleBarRect = titlebarRect;
 
 				// Draw the name of the container
-				DrawText_Internal(containerName, container->containerRect.GetCorner(RECT_CORNER::TOP_LEFT), false, static_cast<uint32_t>(container->titleBarSize.x), container->padding, HORIZONTAL_TEXT_ALIGNMENT::LEFT);
+				Vec2 sizeLimit = Vec2(static_cast<uint32_t>(container->titleBarSize.x), static_cast<uint32_t>(container->titleBarSize.y));
+				DrawText_Internal(containerName, container->containerRect.GetCorner(RECT_CORNER::TOP_LEFT), false, sizeLimit, container->padding, HOR_ALIGNMENT::CENTER, VER_ALIGNMENT::CENTER);
 
 				// Invalidate the space from the title-bar. Note that it
 				// doesn't take up any extra horizontal space unlike the scroll-bar

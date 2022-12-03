@@ -48,14 +48,14 @@ namespace Orange
 		BOTTOM_RIGHT
 	};
 
-	enum class HORIZONTAL_TEXT_ALIGNMENT : uint8_t
+	enum class HOR_ALIGNMENT : uint8_t
 	{
 		LEFT,
 		CENTER,
 		RIGHT,
 	};
 
-	enum class VERTICAL_TEXT_ALIGNMENT : uint8_t
+	enum class VER_ALIGNMENT : uint8_t
 	{
 		TOP,
 		CENTER,

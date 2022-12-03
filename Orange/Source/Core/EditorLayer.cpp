@@ -75,14 +75,17 @@ void EditorLayer::Initialize()
 	{
 		for (uint32_t width = 0; width < w; width++)
 		{
-			//uint32_t widthNorm = (uint32_t)(((float)width / w) * 0xFF);
-			//uint32_t heightNorm = (uint32_t)(((float)height / h) * 0xFF);
-			//uint32_t currColor = 0xFF000000;
-			//currColor |= heightNorm << 8;
-			//currColor |= widthNorm << 0;
-			//currColor |= 0x000000FF << 16;
+			uint32_t widthNorm = (uint32_t)(((float)width / w) * 0xFF);
+			uint32_t heightNorm = (uint32_t)(((float)height / h) * 0xFF);
+			uint32_t currColor = 0xFF000000;
+			uint32_t r = heightNorm;
+			uint32_t g = widthNorm;
+			uint32_t b = 0;
+			currColor |= r << 0;
+			currColor |= g << 8;
+			currColor |= b << 16;
 			uint32_t flatIx = height * w + width;
-			data[flatIx] = 0xFFFFFFFF;
+			data[flatIx] = currColor;
 		}
 	}
 	TextureSpecs specs;
