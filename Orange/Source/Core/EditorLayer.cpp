@@ -13,9 +13,12 @@ using namespace Orange;
 
 Panel* EditorLayer::m_panels[EditorLayer_NumberOfPanels] = { nullptr, };
 
+// DEBUG - PLEASE REMOVE
+Texture globalTex;
+
 // TEMP TEST
 bool EditorLayer::tempTest = false;
-float EditorLayer::tempTest2 = 0.6f;
+float EditorLayer::tempTest2 = 1.0f;
 
 void EditorLayer::Initialize()
 {
@@ -62,6 +65,32 @@ void EditorLayer::Initialize()
 	m_panels[static_cast<int>(PanelLocation::RIGHT)] = rightPanel;
 	m_panels[static_cast<int>(PanelLocation::BOTTOM)] = bottomPanel;
 	m_panels[static_cast<int>(PanelLocation::CENTER)] = mainViewportPanel;
+
+
+	// SUPER TEMP - DEBUG
+	const uint32_t w = 256;
+	const uint32_t h = 256;
+	uint32_t* data = new uint32_t[w * h];
+	for (uint32_t height = 0; height < h; height++)
+	{
+		for (uint32_t width = 0; width < w; width++)
+		{
+			//uint32_t widthNorm = (uint32_t)(((float)width / w) * 0xFF);
+			//uint32_t heightNorm = (uint32_t)(((float)height / h) * 0xFF);
+			//uint32_t currColor = 0xFF000000;
+			//currColor |= heightNorm << 8;
+			//currColor |= widthNorm << 0;
+			//currColor |= 0x000000FF << 16;
+			uint32_t flatIx = height * w + width;
+			data[flatIx] = 0xFFFFFFFF;
+		}
+	}
+	TextureSpecs specs;
+	specs.dimensions = TextureDimensions::TWO;
+	specs.format = TextureFormat::RGBA_32;
+	specs.size = Vec3(w, h, 0.0f);
+
+	globalTex = Texture(specs, (void*)data);
 }
 
 void EditorLayer::Shutdown()
@@ -89,10 +118,31 @@ void EditorLayer::Update(const float& dt)
 
 	UI::Begin("Debug Container");
 	UI::Text("Mouse Position: %f, %f", Input::GetMousePosition().x, Input::GetMousePosition().y);
+	UI::Text("ActiveID: %u", UI::GetContextRO()->activeID);
 	UI::Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse in malesuada sem. Phasellus leo nunc, consequat id interdum a, vehicula sed enim.");
 	UI::Text("Some other text...testing interaction");
 	UI::Checkbox(&tempTest, "Testing new checkbox! %i", (int)tempTest);
-	UI::Slider(&tempTest2, 50.0f, 100.0f, "Slider text", tempTest2);
+	UI::Slider(&tempTest2, 0.0f, 1.0f, "Transparency", tempTest2);
+
+
+	// TEST - DEBUG
+	/*uint32_t* data = (uint32_t*)globalTex.GetData();
+	uint32_t w = globalTex.GetSpecs().size.x;
+	uint32_t h = globalTex.GetSpecs().size.y;
+	for (uint32_t height = 0; height < h; height++)
+	{
+		for (uint32_t width = 0; width < w; width++)
+		{
+			uint32_t flatIx = height * w + width;
+			uint32_t currColor = data[flatIx];
+			uint32_t modifiedAlpha = (uint32_t)(tempTest2 * 0xFF);
+			data[flatIx] = currColor & 0x00FFFFFF;
+			data[flatIx] |= (modifiedAlpha << 24);
+		}
+	}*/
+
+
+	UI::Image(globalTex);
 	UI::End();
 
 	//UI::Begin("Other Debug Container");

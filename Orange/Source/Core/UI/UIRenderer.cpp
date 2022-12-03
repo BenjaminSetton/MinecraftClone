@@ -66,12 +66,9 @@ namespace Orange
 			}
 			case UIElementType::CONTAINER:
 			case UIElementType::TEXT:
-			{
-				DrawChar(currCommand, vertices);
-				break;
-			}
 			case UIElementType::IMAGE:
 			{
+				DrawChar(currCommand, vertices);
 				break;
 			}
 			default:
@@ -94,11 +91,6 @@ namespace Orange
 
 		Texture texHandle = drawCommand.textureHandle;
 
-		// Create a white texture as the default fallback
-		//if (!texHandle.IsValid())
-		//{
-		//	texHandle.CreateSolidColorTexture(Vec4(1.0f));
-		//}
 		uint64_t id = texHandle.GetId();
 
 		// We need to create a new SRV

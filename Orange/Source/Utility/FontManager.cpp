@@ -116,7 +116,7 @@ namespace Orange
 			// we won't have to deal with a separate case for sampling an 8-bit texture in the shaders. We can just use a 32-bit texture for everything
 			uint32_t arraySize = static_cast<uint32_t>(size.x * size.y);
 			uint32_t* newBuffer = OG_NEW uint32_t[arraySize];
-			Convert8BitGrayscaleTo32BitWithPadding(static_cast<uint8_t*>(face->glyph->bitmap.buffer), Vec2(size.x, size.y), newBuffer);
+			Convert8BitGrayscaleTo32BitWithPadding(static_cast<uint8_t*>(face->glyph->bitmap.buffer), size, newBuffer);
 
 			// Cache the character data
 			FontManager_CharacterData character =

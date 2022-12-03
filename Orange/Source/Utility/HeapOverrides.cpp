@@ -43,6 +43,8 @@ void TrackHeapChange(HEAP_CHANGE change, void* ptr, size_t sz = 0, const char* f
 	g_heapChanges[changeIx][g_currentChangeIndices[changeIx]++] = ci;
 }
 
+#if defined (ENABLE_MEMORY_TRACKING)
+
 void* operator new(size_t sz, std::source_location location)
 {
 	void* ptr = malloc(sz);
@@ -115,3 +117,5 @@ void Orange::Memory::FindMemoryLeaks()
 	// TODO - Optionally spit these leaks out to a csv file
 	OG_ASSERT_MSG(memoryLeaks.size() == 0, "Memory leaks found! Please check the vector above");
 }
+
+#endif

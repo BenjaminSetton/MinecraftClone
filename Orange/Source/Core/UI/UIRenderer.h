@@ -33,6 +33,7 @@ namespace Orange
 
 		// Helper draw functions specific to each UIElement
 		static void DrawChar(const UIDrawCommand& drawCommand, const UIVertex* vertices);
+		static void DrawImage(const UIDrawCommand& drawCommand, const UIVertex* vertices);
 		static void DrawContainer(const UIDrawCommand& drawCommand, const UIVertex* vertices);
 
 		static void CreateObjects();

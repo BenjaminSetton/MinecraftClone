@@ -23,6 +23,8 @@ void operator delete[](void* ptr, std::source_location location);	// Placement d
 
 #define OG_NEW new
 
+#define OG_DELETE delete
+
 #endif
 
 #endif

@@ -1,6 +1,6 @@
 #include "../Misc/pch.h"
 
-#define ENABLE_MEMORY_TRACKING 1
+//#define ENABLE_MEMORY_TRACKING
 
 // Allows for allocation tracking - include before everything
 #include "../Utility/HeapOverrides.h"
@@ -24,7 +24,6 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 #ifdef OG_DEBUG
 		CreateConsole();
 #endif
-		int* test = OG_NEW int(523);
 
 		Orange::Application* app = OG_NEW Orange::Application;
 
@@ -42,7 +41,9 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 	}
 
+#if defined (ENABLE_MEMORY_TRACKING)
 	Orange::Memory::FindMemoryLeaks();
+#endif
 
 	return 0;
 }

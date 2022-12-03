@@ -53,7 +53,7 @@ namespace Orange
 		}
 
 		// TODO - Rework so this operation is not O(N)
-		const uint32_t GetContainerDepth(const UIHash& containerHash)
+		uint32_t GetContainerDepth(const UIHash& containerHash)
 		{
 			for (uint32_t depth = 0; depth < gContext.ZMap.size(); depth++)
 			{
@@ -84,7 +84,7 @@ namespace Orange
 				if (container->titleBarRect.IsPointInRect(mousePos))
 				{
 					uint32_t containerDepth = GetContainerDepth(container->hash);
-					if (containerDepth > maxDepth)
+					if (containerDepth >= maxDepth)
 					{
 						maxDepth = containerDepth;
 						highestContainer = container->hash;
@@ -95,7 +95,7 @@ namespace Orange
 			return highestContainer;
 		}
 
-		const UIHash GetHashForString(const char* str)
+		UIHash GetHashForString(const char* str)
 		{
 			std::hash<const char*> hasher;
 			return hasher(str);
@@ -133,7 +133,7 @@ namespace Orange
 			gContext.drawCommandList.emplace(drawCommand);
 		}
 
-		void DrawQuad_Internal(const UIRect& quadRect, const Vec4& color, const Texture& tex, const UIElementType& elementType)
+		Vec2 DrawQuad_Internal(const UIRect& quadRect, const Vec4& color, const Texture& tex, const UIElementType& elementType)
 		{
 			// Emplace the quad and draw command
 			EmplaceQuadVertices(quadRect.GetMin(), quadRect.GetSize(), color);
@@ -142,10 +142,12 @@ namespace Orange
 			drawCommand.textureHandle = tex;
 			drawCommand.type = elementType;
 			EmplaceDrawCommand(drawCommand);
+
+			return quadRect.GetSize();
 		}
 
 		// Calculates position of text quads using parameters and enqueues the vertices and draw commands to the draw queues
-		const Vec2 DrawText_Internal(const char* text, const Vec2 startPosition, const bool wrapText, const uint32_t widthLimit, const Vec2 padding, const HORIZONTAL_TEXT_ALIGNMENT& horAlign)
+		Vec2 DrawText_Internal(const char* text, const Vec2 startPosition, const bool wrapText, const uint32_t widthLimit, const Vec2 padding, const HORIZONTAL_TEXT_ALIGNMENT& horAlign)
 		{
 			OG_ASSERT(padding.x < widthLimit);
 
@@ -190,12 +192,12 @@ namespace Orange
 			}
 			case HORIZONTAL_TEXT_ALIGNMENT::CENTER:
 			{
-				prevPos = Vec2((widthLimit - spaceUsed.x) / 2.0f, padding.y);
+				prevPos = Vec2(std::trunc((widthLimit - spaceUsed.x) / 2.0f), padding.y);
 				break;
 			}
 			case HORIZONTAL_TEXT_ALIGNMENT::RIGHT:
 			{
-				prevPos = Vec2(widthLimit - spaceUsed.x, padding.y);
+				prevPos = Vec2(widthLimit - spaceUsed.x - padding.x, padding.y);
 				break;
 			}
 			default:
@@ -367,33 +369,16 @@ namespace Orange
 
 		void Image(const Texture& tex)
 		{
-			UNUSED(tex);
-			//// Assert that there's a container in the stack. Otherwise, this means that we are attempting to calls UI::XXXX() without
-			//// a matching Begin/End around it
-			//if (g_Context.containerStack.size() == 0)
-			//{
-			//	OG_ASSERT_MSG(false, "Attempting to call UI::Image() without calling UI::Begin() first!");
-			//	return;
-			//}
+			Vec2 imageSize = Vec2(tex.GetSpecs().size.x, tex.GetSpecs().size.y);
+			Vec2 imageExtent = imageSize / 2.0f;
+			UIContainer* container = GetContainer();
 
-			//// Get the container we're appending to
-			//// NOTE - We'll use this soon enough
-			////UIContainer* container = g_Context.containerStack.top();
+			UIRect imageRect;
+			imageRect.center = container->GetRemainingSpace().GetCorner(RECT_CORNER::TOP_LEFT) + Vec2(container->padding.x, -container->padding.y) + Vec2(imageExtent.x, -imageExtent.y);
+			imageRect.extent = imageExtent;
+			Vec2 spaceUsed = DrawQuad_Internal(imageRect, Vec4(1.0f, 1.0f, 1.0f, 1.0f), tex, UIElementType::IMAGE);
 
-			//// Create the 6 corresponding vertices for the quad and send to UIBuffer
-			//Vec2 position = Vec2(100, 250);
-
-			//// NOTE: This should be controlled by some sort of style var that gets pushed onto a stack and popped
-			//// Exactly like how ImGui handles this type of thing. Hard-coded to white for now
-			//Vec4 colorModifier = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-			//EmplaceQuadVertices(position, size, colorModifier);
-
-			//UIDrawCommand drawCommand; DEBUG_DRAW_COMMAND_FILE_AND_LINE(drawCommand)
-			//drawCommand.textureHandle = tex;
-			//drawCommand.type = UIElementType::IMAGE;
-
-			//g_Context.drawCommandList.emplace(drawCommand);
+			container->InvalidateSpace(Vec2(0.0f, spaceUsed.y));
 		}
 
 		void Checkbox(bool* pBool, const char* format, ...)
@@ -446,14 +431,15 @@ namespace Orange
 
 				gContext.hoveredID = id;
 			}
-			DrawCheckbox_Internal(checkBox.GetMin(), checkBoxExtent * 2.0f, container->backgroundTextureObject, pBool);
+			Vec2 spaceUsed = DrawCheckbox_Internal(checkBox.GetMin(), checkBoxExtent * 2.0f, container->backgroundTextureObject, pBool);
 
 			// Draw the text after the checkbox
 			Vec2 textStartingPos = Vec2(container->GetRemainingSpace().GetCorner(RECT_CORNER::TOP_LEFT).x + checkBox.GetSize().x + container->padding.x, container->GetRemainingSpace().GetCorner(RECT_CORNER::TOP_LEFT).y);
-			Vec2 spaceUsed = DrawText_Internal(tempBuffer, textStartingPos, container->IsDataFlagSet(UIContainer_WrapText), static_cast<uint32_t>(container->GetRemainingSize().x), container->padding, HORIZONTAL_TEXT_ALIGNMENT::LEFT);
+			DrawText_Internal(tempBuffer, textStartingPos, container->IsDataFlagSet(UIContainer_WrapText), static_cast<uint32_t>(container->GetRemainingSize().x), container->padding, HORIZONTAL_TEXT_ALIGNMENT::LEFT);
 
-			// Invalidate the space we just used for the text
+			// Invalidate space
 			container->InvalidateSpace(Vec2(0.0f, spaceUsed.y));
+
 		}
 
 		void Slider(float* value, const float min, const float max, const char* format, ...)
@@ -530,7 +516,7 @@ namespace Orange
 				handleRect.center.x = handlePosX;
 			}
 
-			DrawSlider_Internal(barRect, handleRect, container->backgroundTextureObject, gContext.hoveredID == id);
+			Vec2 spaceUsed = DrawSlider_Internal(barRect, handleRect, container->backgroundTextureObject, gContext.hoveredID == id);
 
 			Vec2 textStartPosition = container->remainingSpace.GetCorner(RECT_CORNER::TOP_LEFT) + Vec2(barRect.GetSize().x + container->padding.x, -container->padding.y);
 			DrawText_Internal(tempBuffer, textStartPosition, false, static_cast<uint32_t>(container->containerRect.GetMax().x - textStartPosition.x), container->padding.x, HORIZONTAL_TEXT_ALIGNMENT::LEFT);
@@ -538,6 +524,9 @@ namespace Orange
 			// Draw the current value of the variable
 			auto string = ToString(*value);
 			DrawText_Internal(string.c_str(), barRect.GetCorner(RECT_CORNER::TOP_LEFT), false, static_cast<uint32_t>(barRect.GetSize().x), container->padding.x, HORIZONTAL_TEXT_ALIGNMENT::CENTER);
+
+			// Invalidate the space for the slider widget
+			container->InvalidateSpace(Vec2(0.0f, spaceUsed.y));
 		}
 
 		void Begin(const char* containerName)
