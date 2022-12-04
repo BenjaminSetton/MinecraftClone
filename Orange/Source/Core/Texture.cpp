@@ -58,6 +58,35 @@ namespace Orange
 		AllocateAndPopulateBuffer(static_cast<void*>(&baseColor), numBytes);
 	}
 
+	
+
+	void Texture::CreateTextureUsingGenerator(const uint32_t width, const uint32_t height, std::function<uint32_t(uint32_t, uint32_t)> generatorFunc)
+	{
+		OG_ASSERT_MSG(m_data.get() == nullptr, "Overwriting data when attempting to create a solid color texture");
+
+		// Set texture data
+		m_specs.dimensions = TextureDimensions::TWO;
+		m_specs.format = TextureFormat::RGBA_32;
+		m_specs.size = Vec3(width, height, 0);
+
+		// Set the data
+		uint32_t* buffer = new uint32_t[width * height];
+		for (uint32_t y = 0; y < height; y++)
+		{
+			for (uint32_t x = 0; x < width; x++)
+			{
+				uint32_t flatIx = y * width + x;
+				buffer[flatIx] = generatorFunc(x, y);
+			}
+		}
+
+		uint64_t numBytes = static_cast<uint64_t>(GetUnitSize() * GetNumberOfPixels());
+		AllocateAndPopulateBuffer(static_cast<void*>(buffer), numBytes);
+
+		// Buffer gets copied, so we can safely delete local buffer
+		delete[] buffer;
+	}
+
 	const bool Texture::IsValid() const
 	{
 		return m_data.get() != nullptr;
@@ -159,6 +188,12 @@ namespace Orange
 		}
 
 		return unitSize;
+	}
+
+	uint64_t Texture::GetNumberOfPixels() const
+	{
+		auto& specs = GetSpecs();
+		return static_cast<uint64_t>(specs.size.x * specs.size.y);
 	}
 
 	uint32_t Texture::ConvertVec4IntoRGBA32(const Vec4& color)

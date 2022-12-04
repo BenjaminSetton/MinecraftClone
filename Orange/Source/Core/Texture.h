@@ -1,6 +1,8 @@
 #ifndef _TEXTURE_H
 #define _TEXTURE_H
 
+#include <functional>
+
 #include "../Utility/MathTypes.h"
 #include "../Utility/Utility.h"
 
@@ -50,11 +52,16 @@ namespace Orange
 		// to shaders as default textures
 		void CreateSolidColorTexture(const Vec4& color);
 
+		void CreateTextureUsingGenerator(const uint32_t width, const uint32_t height, std::function<uint32_t(uint32_t, uint32_t)> generatorFunc);
+
 		const bool IsValid() const;
 
 		// Returns the size of each unit (pixel) of data, depending on
 		// the format, in BYTES
 		uint32_t GetUnitSize() const;
+
+		// Just returns width * height
+		uint64_t GetNumberOfPixels() const;
 
 	private:
 

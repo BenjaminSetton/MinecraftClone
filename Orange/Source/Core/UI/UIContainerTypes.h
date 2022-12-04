@@ -77,7 +77,26 @@ objectName.lineNumber = __LINENUMBER__;
 		UIContainer_KeepInWindowBounds			= OG_BIT(2),
 		UIContainer_ScrollAllowed				= OG_BIT(3),
 		UIContainer_WrapText					= OG_BIT(4),
-		UIContainer_ShowTitleBar				= OG_BIT(5)
+		UIContainer_ShowTitleBar				= OG_BIT(5),
+		UIContainer_CanResize					= OG_BIT(6)
+	};
+
+	// Lists container widgets that can be interacted with
+	enum class ContainerWidget : uint8_t
+	{
+		INVALID = 0,
+		TITLEBAR,
+		RESIZE_NOOK,
+		SCROLLBAR,
+		CONTAINER_BODY
+	};
+
+	enum class WidgetActions : uint8_t
+	{
+		NONE = 0,
+		MOVING,
+		RESIZING,
+		SCROLLING
 	};
 
 
@@ -90,18 +109,16 @@ objectName.lineNumber = __LINENUMBER__;
 
 		UIContainer()
 		{
-			dataFlags								= UIContainer_CanHighlight | UIContainer_CanCursorLock | UIContainer_WrapText | UIContainer_ShowTitleBar;
+			dataFlags								= UIContainer_CanHighlight | UIContainer_CanCursorLock | UIContainer_WrapText | UIContainer_ShowTitleBar | UIContainer_CanResize;
 			containerRect							= UIRect();
 			remainingSpace							= containerRect;
 			effectiveSize							= Vec2(0);
 			padding									= Vec2(5);
 			color									= defaultBackgroundColor;
-			titleBarSize							= Vec2(containerRect.GetSize().x, 25.0f);
+			titleBarHeight							= 15;
 			titleBarRect							= UIRect();
+			resizeNookRect							= UIRect(Vec2(0), Vec2(5, 5));
 			hash									= INVALID_UIHASH;
-
-			// DO NOT USE
-			backgroundTextureObject.CreateSolidColorTexture(Vec4(1.0f, 1.0f, 1.0f, 1.0f));
 		}
 
 		typedef uint32_t UIContainerFlags;
@@ -164,9 +181,8 @@ objectName.lineNumber = __LINENUMBER__;
 			effectiveSize = Vec2(0);
 		}
 
-		// The size of the title bar is in pixels, with a max width of the container's
-		// width and a maximum height of the height of the container
-		Vec2 titleBarSize;
+		// The height of the title bar in pixels, with a max width of the container's width
+		uint32_t titleBarHeight;
 
 		// This flag allows the container to be locked to the cursor.
 		// This is used when a container is being moved around
@@ -198,11 +214,8 @@ objectName.lineNumber = __LINENUMBER__;
 		// The background color of the container
 		Vec4 color;
 
-		// Distance from center of container to the cursor if we're cursor locked. Used for dragging
-		//Vec2 distToCursorIfCursorLocked;
-
-		// DO NOT USE
-		Texture backgroundTextureObject;
+		// The rect representing the resize nook. This can be clicked to resize container
+		UIRect resizeNookRect;
 
 	};
 
@@ -242,16 +255,20 @@ objectName.lineNumber = __LINENUMBER__;
 		Vec2 sliderBarSizeInPixels					= Vec2(150, 20);
 		Vec2 sliderHandleSizeInPixels				= Vec2(12, static_cast<int>(sliderBarSizeInPixels.y));
 
-		UIHash activeID								= INVALID_UIHASH;	// Hash of the widget that is currently active
-		UIHash prevActiveID							= INVALID_UIHASH;	// Hash of the previous frame, equal to current active ID if the same widget is still active
-		float activeIDTimer							= 0.0f;				// Timer for how long the active widget has been active for
-		UIHash hoveredID							= INVALID_UIHASH;	// Hash of the widget that is currently hovered
-		UIHash prevHoveredID						= INVALID_UIHASH;	// Hash of the previous frame, equal to current hovered ID if the same widget is still hovered
-		float hoveredIDTimer						= 0.0f;				// Timer for how long the hovered widget has been hovered for
-		UIHash parentID								= INVALID_UIHASH;	// Hash of the container that every widget call is going to add itself to
-		uint32_t maxDepth							= 0;				// Keeps count of the max depth of any given container. This allows us to determine which container is on top of which other one
-		Vec2 distToCenterOfActiveContainer			= Vec2(0);			// Stores the distance to the center of the active container for dragging
-		const char* sliderDecimalPrecisionFormat	= "%0.3f";			// The format that the slider uses to display it's interpolated value
+		UIHash activeID								= INVALID_UIHASH;							// Hash of the widget that is currently active
+		UIHash prevActiveID							= INVALID_UIHASH;							// Hash of the previous frame, equal to current active ID if the same widget is still active
+		float activeIDTimer							= 0.0f;										// Timer for how long the active widget has been active for
+		UIHash hoveredID							= INVALID_UIHASH;							// Hash of the widget that is currently hovered
+		UIHash prevHoveredID						= INVALID_UIHASH;							// Hash of the previous frame, equal to current hovered ID if the same widget is still hovered
+		float hoveredIDTimer						= 0.0f;										// Timer for how long the hovered widget has been hovered for
+		UIHash parentID								= INVALID_UIHASH;							// Hash of the container that every widget call is going to add itself to
+		uint32_t maxDepth							= 0;										// Keeps count of the max depth of any given container. This allows us to determine which container is on top of which other one
+		Vec2 distToCenterOfActiveContainer			= Vec2(0);									// Stores the distance to the center of the active container for dragging
+		Vec2 topLeftPositionWhenResizing			= Vec2(0);									// Stores the top-left coordindate of the active window; used to lock window when resizing
+		const char* sliderDecimalPrecisionFormat	= "%0.3f";									// The format that the slider uses to display it's interpolated value
+		ContainerWidget hoveredContainerWidget		= ContainerWidget::INVALID;					// Described which action is currently being performed on the active container
+		WidgetActions	currentActions				= WidgetActions::NONE;						// Stores the current widget actions (moving, resizing, etc)
+		Vec2			minContainerSize			= Vec2(25, 25);								// Don't allow containers to become too small after resizing
 	};
 }
 

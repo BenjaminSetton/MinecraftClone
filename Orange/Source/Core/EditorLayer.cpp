@@ -17,7 +17,7 @@ Panel* EditorLayer::m_panels[EditorLayer_NumberOfPanels] = { nullptr, };
 Texture globalTex;
 
 // TEMP TEST
-bool EditorLayer::tempTest = false;
+bool EditorLayer::tempTest = true;
 float EditorLayer::tempTest2 = 1.0f;
 
 void EditorLayer::Initialize()
@@ -68,8 +68,8 @@ void EditorLayer::Initialize()
 
 
 	// SUPER TEMP - DEBUG
-	const uint32_t w = 256;
-	const uint32_t h = 256;
+	const uint32_t w = 512;
+	const uint32_t h = 512;
 	uint32_t* data = new uint32_t[w * h];
 	for (uint32_t height = 0; height < h; height++)
 	{
@@ -122,50 +122,26 @@ void EditorLayer::Update(const float& dt)
 	UI::Begin("Debug Container");
 	UI::Text("Mouse Position: %0.3f, %0.3f", Input::GetMousePosition().x, Input::GetMousePosition().y);
 	UI::Text("ActiveID: %u", UI::GetContextRO()->activeID);
-	UI::Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse in malesuada sem. Phasellus leo nunc, consequat id interdum a, vehicula sed enim.");
-	UI::Text("Some other text...testing interaction");
+	UI::Text("Is Resizing: %u", UI::GetContextRO()->currentActions == WidgetActions::RESIZING);
+	UI::Text("Time: %0.2f seconds", totalTime);
+	UI::Text("Hovered widget: %u", static_cast<uint32_t>(UI::GetContextRO()->hoveredContainerWidget));
 	UI::Checkbox(&tempTest, "Testing new checkbox! %i", (int)tempTest);
 	UI::Slider(&tempTest2, 0.0f, 1.0f, "Transparency", tempTest2);
-
-
-	// TEST - DEBUG
-	/*uint32_t* data = (uint32_t*)globalTex.GetData();
-	uint32_t w = globalTex.GetSpecs().size.x;
-	uint32_t h = globalTex.GetSpecs().size.y;
-	for (uint32_t height = 0; height < h; height++)
-	{
-		for (uint32_t width = 0; width < w; width++)
-		{
-			uint32_t flatIx = height * w + width;
-			uint32_t currColor = data[flatIx];
-			uint32_t modifiedAlpha = (uint32_t)(tempTest2 * 0xFF);
-			data[flatIx] = currColor & 0x00FFFFFF;
-			data[flatIx] |= (modifiedAlpha << 24);
-		}
-	}*/
-
-
 	UI::Image(globalTex);
 	UI::End();
 
-	//UI::Begin("Other Debug Container");
-	//UI::Text("ActiveID: %u", UI::GetContext()->activeID);
-	//UI::Text("HoveredID: %u", UI::GetContext()->hoveredID);
-	//UI::Text("DistToCenter: %2.2f, %2.2f", UI::GetContext()->distToCenterOfActiveContainer.x, UI::GetContext()->distToCenterOfActiveContainer.y);
-	//UI::End();
+	if (tempTest)
+	{
+		UI::Begin("Other Debug Container");
+		UI::Text("ActiveID: %u", UI::GetContext()->activeID);
+		UI::Text("HoveredID: %u", UI::GetContext()->hoveredID);
+		UI::Text("DistToCenter: %2.2f, %2.2f", UI::GetContext()->distToCenterOfActiveContainer.x, UI::GetContext()->distToCenterOfActiveContainer.y);
+		UI::End();
+	}
+
 }
 
 void EditorLayer::Draw()
 {
-	// Create a dock space over the entire viewport so we can dock all the panels. This means that
-	// resizing any panel will be taken care of by ImGui
-	//ImGuiID mainViewportID = ImGui::DockSpaceOverViewport(nullptr, ImGuiDockNodeFlags_PassthruCentralNode);
-	//ImGui::DockBuilderAddNode(m_panels[static_cast<int>(PanelLocation::LEFT)]->GetID(), ImGuiDockNodeFlags_None);
-
-	// Comment out for now, so I can test my font renderer
-	//for (auto panel : m_panels)
-	//{
-	//	panel->Draw();
-	//}
 }
 

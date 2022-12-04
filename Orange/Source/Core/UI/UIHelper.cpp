@@ -7,16 +7,17 @@
 #include "../../Utility/FontManager.h"
 #include "../../Utility/HeapOverrides.h"
 #include "../../Utility/Input.h"
-#include "Image.h"
 #include "../../Utility/Math.h"
 #include "../../Utility/MathTypes.h"
-#include "Text.h"
+#include "../../Core/TextureRegistry.h"
 #include "UIHelper.h"
 #include "../../Utility/Utility.h"
 
 static constexpr uint32_t MAX_TEXT_BUFFER_SIZE = 1024;
 
 static Orange::UIContext gContext;
+
+static Orange::Texture gPlaceholderTexture;
 
 namespace Orange
 {
@@ -70,11 +71,16 @@ namespace Orange
 			return (gContext.containerList.find(hash) != gContext.containerList.end());
 		}
 
-		UIHash FindHighestContainer()
+		// Returns the hash of the highest container we're hovering over,
+		// and also caches the type of widget we're interacting with in
+		// the global context
+		UIHash FindHoveredContainerWidget()
 		{
 			Vec2 mousePos = Input::GetMousePositionRelativeToBottomLeft();
 			UIHash highestContainer = INVALID_UIHASH;
 			uint32_t maxDepth = 0;
+			ContainerWidget hoveredWidget = ContainerWidget::INVALID;
+			bool isHoveringAnyWidget = false;
 
 			for (auto containerIter : gContext.containerList)
 			{
@@ -83,13 +89,40 @@ namespace Orange
 				// Allow the user to move the container by clicking on the titlebar (no titlebar = no moving around)
 				if (container->titleBarRect.IsPointInRect(mousePos))
 				{
+					hoveredWidget = ContainerWidget::TITLEBAR;
+				}
+				// Allow the user to resize by clicking on the resize nook
+				else if (container->resizeNookRect.IsPointInRect(mousePos))
+				{
+					hoveredWidget = ContainerWidget::RESIZE_NOOK;
+				}
+				else if (container->containerRect.IsPointInRect(mousePos))
+				{
+					hoveredWidget = ContainerWidget::CONTAINER_BODY;
+				}
+				else
+				{
+					hoveredWidget = ContainerWidget::INVALID;
+				}
+
+				if (hoveredWidget != ContainerWidget::INVALID)
+				{
 					uint32_t containerDepth = GetContainerDepth(container->hash);
 					if (containerDepth >= maxDepth)
 					{
 						maxDepth = containerDepth;
 						highestContainer = container->hash;
+						gContext.hoveredContainerWidget = hoveredWidget;
 					}
+
+					isHoveringAnyWidget = true;
 				}
+			}
+
+			// If we're not hovering any widget, set the hovered widget to invalid
+			if (!isHoveringAnyWidget)
+			{
+				gContext.hoveredContainerWidget = ContainerWidget::INVALID;
 			}
 
 			return highestContainer;
@@ -153,14 +186,22 @@ namespace Orange
 		// Calculates position of text quads using parameters and enqueues the vertices and draw commands to the draw queues
 		Vec2 DrawText_Internal(const char* text, const Vec2 startPosition, const bool wrapText, const Vec2 sizeLimit, const Vec2 padding, const HOR_ALIGNMENT& horAlign = HOR_ALIGNMENT::LEFT, const VER_ALIGNMENT& verAlign = VER_ALIGNMENT::TOP)
 		{
-			UNUSED(verAlign);
-
-			OG_ASSERT_MSG(padding.x < sizeLimit.x, "Can't have horizontal padding greater than or equal to text's width limit");
+			if (sizeLimit.x <= padding.x)
+			{
+				OG_LOG_WARNING("Skipped text draw. Can't have horizontal padding greater than or equal to text's width limit");
+				return Vec2(0);
+			}
+			//OG_ASSERT_MSG(padding.x < sizeLimit.x, "Can't have horizontal padding greater than or equal to text's width limit");
 
 			bool hasVerticalSizeLimit = sizeLimit.y >= 0;
 			if(hasVerticalSizeLimit)
 			{
-				OG_ASSERT_MSG(padding.y < sizeLimit.y, "Can't have vertical padding greater than or equal to text's height limit");
+				if (sizeLimit.y <= padding.y)
+				{
+					OG_LOG_WARNING("Skipped text draw. Can't have vertical padding greater than or equal to text's height limit");
+					return Vec2(0);
+				}
+				//OG_ASSERT_MSG(padding.y < sizeLimit.y, "Can't have vertical padding greater than or equal to text's height limit");
 			}
 
 			// Get the length of the container name
@@ -414,7 +455,7 @@ namespace Orange
 			Vec2 spaceUsed = DrawText_Internal(tempBuffer, container->GetRemainingSpace().GetCorner(RECT_CORNER::TOP_LEFT), container->IsDataFlagSet(UIContainer_WrapText), sizeLimit, container->padding);
 			
 			// Invalidate the space we just used for the text
-			container->InvalidateSpace(Vec2(0.0f, spaceUsed.y));
+			container->InvalidateSpace(Vec2(0.0f, spaceUsed.y + container->padding.y));
 		}
 
 		void Image(const Texture& tex)
@@ -482,15 +523,15 @@ namespace Orange
 				gContext.hoveredID = id;
 			}
 
-			Vec2 spaceUsed = DrawCheckbox_Internal(checkBox.GetMin(), checkBoxExtent * 2.0f, container->backgroundTextureObject, pBool);
+			Vec2 spaceUsed = DrawCheckbox_Internal(checkBox.GetMin(), checkBoxExtent * 2.0f, gPlaceholderTexture, pBool);
 
 			// Draw the text after the checkbox
-			Vec2 textStartingPos = Vec2(container->GetRemainingSpace().GetCorner(RECT_CORNER::TOP_LEFT).x + checkBox.GetSize().x + container->padding.x, container->GetRemainingSpace().GetCorner(RECT_CORNER::TOP_LEFT).y);
-			Vec2 sizeLimit = Vec2(static_cast<uint32_t>(container->GetRemainingSize().x), static_cast<uint32_t>(checkBox.GetSize().y));
+			Vec2 textStartingPos = Vec2(container->GetRemainingSpace().GetCorner(RECT_CORNER::TOP_LEFT).x + checkBox.GetSize().x + container->padding.x, container->GetRemainingSpace().GetCorner(RECT_CORNER::TOP_LEFT).y - container->padding.y);
+			Vec2 sizeLimit = Vec2(static_cast<uint32_t>(container->GetRemainingSize().x), static_cast<uint32_t>(checkBox.extent.y));
 			DrawText_Internal(tempBuffer, textStartingPos, container->IsDataFlagSet(UIContainer_WrapText), sizeLimit, Vec2(container->padding.x, 0.0f), HOR_ALIGNMENT::LEFT, VER_ALIGNMENT::CENTER);
 
 			// Invalidate space
-			container->InvalidateSpace(Vec2(0.0f, spaceUsed.y));
+			container->InvalidateSpace(Vec2(0.0f, spaceUsed.y + container->padding.y));
 
 		}
 
@@ -569,7 +610,7 @@ namespace Orange
 				handleRect.center.x = handlePosX;
 			}
 
-			spaceUsed = DrawSlider_Internal(barRect, handleRect, container->backgroundTextureObject, gContext.hoveredID == id);
+			spaceUsed = DrawSlider_Internal(barRect, handleRect, gPlaceholderTexture, gContext.hoveredID == id);
 
 			Vec2 textStartPosition = container->remainingSpace.GetCorner(RECT_CORNER::TOP_LEFT) + Vec2(barRect.GetSize().x + container->padding.x, -container->padding.y);
 			Vec2 sizeLimit = Vec2(static_cast<uint32_t>(container->containerRect.GetMax().x - textStartPosition.x), static_cast<uint32_t>(barRect.GetSize().y));
@@ -641,21 +682,21 @@ namespace Orange
 			}
 
 			// Draw the container
-			DrawQuad_Internal(container->containerRect, container->color, container->backgroundTextureObject, UIElementType::CONTAINER);
+			DrawQuad_Internal(container->containerRect, container->color, gPlaceholderTexture, UIElementType::CONTAINER);
 
 			// Append the title-bar, if necessary
 			if (container->IsDataFlagSet(UIContainer_ShowTitleBar))
 			{
-				Vec2 titleBarExtent = container->titleBarSize / 2.0f;
+				Vec2 titleBarExtent = Vec2(container->containerRect.extent.x, static_cast<float>(container->titleBarHeight));
 				UIRect titlebarRect;
 				titlebarRect.center = Vec2(container->containerRect.GetCorner(RECT_CORNER::TOP_LEFT).x + titleBarExtent.x, container->containerRect.GetCorner(RECT_CORNER::TOP_LEFT).y - titleBarExtent.y);
 				titlebarRect.extent = titleBarExtent;
-				Vec2 spaceUsed = DrawTitleBar_Internal(titlebarRect, container->backgroundTextureObject);
+				Vec2 spaceUsed = DrawTitleBar_Internal(titlebarRect, gPlaceholderTexture);
 
 				container->titleBarRect = titlebarRect;
 
 				// Draw the name of the container
-				Vec2 sizeLimit = Vec2(static_cast<uint32_t>(container->titleBarSize.x), static_cast<uint32_t>(container->titleBarSize.y));
+				Vec2 sizeLimit = Vec2(static_cast<uint32_t>(titleBarExtent.x * 2.0f), static_cast<uint32_t>(titleBarExtent.y * 2.0f));
 				DrawText_Internal(containerName, container->containerRect.GetCorner(RECT_CORNER::TOP_LEFT), false, sizeLimit, container->padding, HOR_ALIGNMENT::CENTER, VER_ALIGNMENT::CENTER);
 
 				// Invalidate the space from the title-bar. Note that it
@@ -666,6 +707,9 @@ namespace Orange
 			{
 				container->titleBarRect = UIRect(Vec2(0), Vec2(0));
 			}
+
+			// Re-center the resize nook
+			container->resizeNookRect.center = container->containerRect.GetCorner(RECT_CORNER::BOTTOM_RIGHT) - Vec2(container->resizeNookRect.extent.x, -container->resizeNookRect.extent.y);
 
 		}
 
@@ -678,6 +722,13 @@ namespace Orange
 				OG_ASSERT_MSG(false, "Calling UI::End() without a matching UI::Begin()!");
 				return;
 			}
+
+			// Draw the items that show on top of everything that could potentially be pushed
+			// between the Begin and End() calls
+			UIContainer* container = GetContainer();
+
+			DrawQuad_Internal(container->resizeNookRect, titleBarColor, gPlaceholderTexture, UIElementType::IMAGE); // Resize nook
+			//DrawQuad_Internal(container->scrollbarRect, Vec4(1), gPlaceholderTexture, UIElementType::IMAGE); // Scroll bar
 
 			// Pop the container off the stack
 			gContext.containerStack.pop();
@@ -707,12 +758,13 @@ namespace Orange
 		{
 			UNUSED(dt);
 
-			// Reset the active ID if the LMB is up
+			// Reset some data if the LMB is up
 			if (!Input::IsMouseDown(MouseCode::LBUTTON))
 			{
 				gContext.activeID = INVALID_UIHASH;
 				gContext.activeIDTimer = 0;
 				gContext.distToCenterOfActiveContainer = Vec2(0);
+				gContext.currentActions = WidgetActions::NONE;
 			}
 
 			Vec2 mousePos = Input::GetMousePositionRelativeToBottomLeft();
@@ -723,17 +775,53 @@ namespace Orange
 			if (IsContainer(gContext.activeID) && (gContext.activeID != INVALID_UIHASH))
 			{
 				UIContainer* activeContainer = gContext.containerList[gContext.activeID];
-				activeContainer->containerRect.center = Vec2(mousePos + gContext.distToCenterOfActiveContainer);
 
-				if (activeContainer->IsDataFlagSet(UIContainer_KeepInWindowBounds))
+				switch (gContext.currentActions)
 				{
-					Vec2 windowDimensions = Application::Handle->GetMainWindow()->GetSize();
-					Vec2 rectExtent = activeContainer->containerRect.extent;
+				case WidgetActions::MOVING:
+				{
+					activeContainer->containerRect.center = Vec2(mousePos + gContext.distToCenterOfActiveContainer);
 
-					activeContainer->containerRect.center.x = max(0.0f + rectExtent.x, activeContainer->containerRect.center.x);
-					activeContainer->containerRect.center.x = min(windowDimensions.x - rectExtent.x, activeContainer->containerRect.center.x);
-					activeContainer->containerRect.center.y = max(0.0f + rectExtent.y, activeContainer->containerRect.center.y);
-					activeContainer->containerRect.center.y = min(windowDimensions.y - rectExtent.y, activeContainer->containerRect.center.y);
+					if (activeContainer->IsDataFlagSet(UIContainer_KeepInWindowBounds))
+					{
+						Vec2 windowDimensions = Application::Handle->GetMainWindow()->GetSize();
+						Vec2 rectExtent = activeContainer->containerRect.extent;
+
+						activeContainer->containerRect.center.x = max(0.0f + rectExtent.x, activeContainer->containerRect.center.x);
+						activeContainer->containerRect.center.x = min(windowDimensions.x - rectExtent.x, activeContainer->containerRect.center.x);
+						activeContainer->containerRect.center.y = max(0.0f + rectExtent.y, activeContainer->containerRect.center.y);
+						activeContainer->containerRect.center.y = min(windowDimensions.y - rectExtent.y, activeContainer->containerRect.center.y);
+					}
+
+					break;
+				}
+				case WidgetActions::RESIZING:
+				{
+					// Calculate the new width and height, and don't allow the container to become smaller than the minimum size
+					float newWidth = max((mousePos.x - gContext.topLeftPositionWhenResizing.x) / 2.0f, gContext.minContainerSize.x);
+					float newHeight = max((gContext.topLeftPositionWhenResizing.y - mousePos.y) / 2.0f, gContext.minContainerSize.y);
+					
+					// We only want the extent to be an integer -- truncate decimals
+					activeContainer->containerRect.extent = Vec2(trunc(newWidth), trunc(newHeight));
+					
+					// Re-adjust the center
+					Vec2 newTopLeft = activeContainer->containerRect.GetCorner(RECT_CORNER::TOP_LEFT);
+					Vec2 oldTopLeft = gContext.topLeftPositionWhenResizing;
+					activeContainer->containerRect.center += Vec2(oldTopLeft.x - newTopLeft.x, -(newTopLeft.y - oldTopLeft.y));
+					break;
+				}
+				case WidgetActions::SCROLLING:
+				{
+					break;
+				}
+				case WidgetActions::NONE:
+				{
+					break;
+				}
+				default:
+				{
+					OG_ERROR("Please add the new widget action to this switch case");
+				}
 				}
 
 				// Keep the color as "selected", even though the cursor could briefly move out of the container
@@ -741,7 +829,7 @@ namespace Orange
 			}
 
 			// Find the active and hovered container
-			UIHash highestContainerHash = FindHighestContainer();
+			UIHash highestContainerHash = FindHoveredContainerWidget();
 
 			// We're not hovering over any container, so set hoveredID to 0 and bail
 			gContext.hoveredID = INVALID_UIHASH;
@@ -758,10 +846,45 @@ namespace Orange
 
 			if (isMouseDown && (gContext.activeID == INVALID_UIHASH))
 			{
-				if (hotContainer->IsDataFlagSet(UIContainer_CanCursorLock))
+				switch (gContext.hoveredContainerWidget)
 				{
-					// Set the distance to the center of the container in the context
-					gContext.distToCenterOfActiveContainer = hotContainer->containerRect.center - mousePos;
+				case ContainerWidget::TITLEBAR:
+				{
+					if (hotContainer->IsDataFlagSet(UIContainer_CanCursorLock))
+					{
+						if (gContext.currentActions == WidgetActions::MOVING) break;
+
+						gContext.currentActions = WidgetActions::MOVING;
+
+						// Set the distance to the center of the container in the context
+						gContext.distToCenterOfActiveContainer = hotContainer->containerRect.center - mousePos;
+					}
+					break;
+				}
+				case ContainerWidget::RESIZE_NOOK:
+				{
+					if (hotContainer->IsDataFlagSet(UIContainer_CanResize))
+					{
+						if (gContext.currentActions == WidgetActions::RESIZING) break;
+
+						gContext.currentActions = WidgetActions::RESIZING;
+
+						// Store the current top-left coordinate of the container, so
+						// we can resize it without moving it around
+						gContext.topLeftPositionWhenResizing = hotContainer->containerRect.GetCorner(RECT_CORNER::TOP_LEFT);
+					}
+
+					break;
+				}
+				case ContainerWidget::SCROLLBAR:
+				{
+					gContext.currentActions = WidgetActions::SCROLLING;
+					break;
+				}
+				case ContainerWidget::INVALID:
+				{
+					OG_ERROR("We can't click on an invalid widget");
+				}
 				}
 				gContext.activeID = highestContainerHash;
 			}
@@ -773,6 +896,23 @@ namespace Orange
 		void Initialize()
 		{
 			// Do INI parsing and other necessary stuff
+			
+			// Create a placeholder texture
+			//uint32_t placeholderWidth = 256;
+			//uint32_t placeholderHeight = 256;
+			//auto gen = [&](uint32_t x, uint32_t y)
+			//{
+			//	uint32_t currColor = 0xFF000000;
+			//	uint32_t r = (sin(50.0f * x) * 0.5f + 0.5f) * 0xFF;
+			//	uint32_t g = (cos(60.0f * y) * 0.5f + 0.5f) * 0xFF;
+			//	uint32_t b = 0;
+			//	currColor |= r << 0;
+			//	currColor |= g << 8;
+			//	currColor |= b << 16;
+			//	return currColor;
+			//};
+			//gPlaceholderTexture.CreateTextureUsingGenerator(256, 256, gen);
+			gPlaceholderTexture.CreateSolidColorTexture(Vec4(1));
 		}
 
 		void Shutdown()
@@ -783,6 +923,9 @@ namespace Orange
 				delete containerIter.second;
 			}
 			gContext.containerList.clear();
+
+			// Clean up placeholder texture
+			TextureRegistry::RemoveIdFromRegistry(gPlaceholderTexture.GetId());
 		}
 
 		Vec2 GetCoordinateRelativeToTopLeft(const Vec2& coord)
